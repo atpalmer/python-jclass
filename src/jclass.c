@@ -2,8 +2,9 @@
 
 /* TODO: make PyObject */
 typedef struct {
+    uint8_t *magic_number;  /* ptr to .data */
     Py_ssize_t size;
-    char data[];
+    uint8_t data[];
 } JavaClass;
 
 static PyObject *jclass_load(PyObject *self, PyObject *args) {
@@ -16,6 +17,14 @@ static PyObject *jclass_load(PyObject *self, PyObject *args) {
     FILE *fp = fopen(fname, "rb");
     class->size = fread(class->data, 1, 4096, fp);
     fclose(fp);
+
+    class->magic_number = &class->data[0];
+
+    printf("Magic Number: %X%X%X%X\n",
+        class->magic_number[0],
+        class->magic_number[1],
+        class->magic_number[2],
+        class->magic_number[3]);
 
     PyObject *result = PyBytes_FromStringAndSize(class->data, class->size);
     PyMem_Free(class);

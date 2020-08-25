@@ -6,6 +6,7 @@ typedef struct {
     uint8_t *magic_number;
     uint8_t *minor_version;
     uint8_t *major_version;
+    uint8_t *constant_pool_count;
 
     Py_ssize_t size;
     uint8_t data[];
@@ -41,9 +42,11 @@ static PyObject *jclass_load(PyObject *self, PyObject *args) {
     class->magic_number = &class->data[0];
     class->minor_version = &class->data[4];
     class->major_version = &class->data[6];
+    class->constant_pool_count = &class->data[8];
 
     printf("Magic Number: %X\n", deref32(class->magic_number));
     printf("Version: %u.%u\n", deref16(class->major_version), deref16(class->minor_version));
+    printf("Constant Pool Count: %u\n", deref16(class->constant_pool_count));
 
     PyObject *result = PyBytes_FromStringAndSize(class->data, class->size);
     PyMem_Free(class);

@@ -1,18 +1,27 @@
 #import <Python.h>
 
+/* TODO: make PyObject */
+typedef struct {
+    Py_ssize_t size;
+    char data[];
+} JavaClass;
+
 static PyObject *jclass_load(PyObject *self, PyObject *args) {
     char *fname;
     if(!PyArg_ParseTuple(args, "s", &fname))
         return NULL;
 
-    char buff[4096] = {0};
+    JavaClass *class = PyMem_Malloc(sizeof(JavaClass) + 4096);
+
     FILE *fp = fopen(fname, "rb");
-    size_t len = fread(buff, 1, 4096, fp);
+    class->size = fread(class->data, 1, 4096, fp);
     fclose(fp);
 
-    return PyBytes_FromStringAndSize(buff, len);
+    PyObject *result = PyBytes_FromStringAndSize(class->data, class->size);
+    PyMem_Free(class);
+    return result;
 
-    /* TODO: return JavaClass object */
+    /* TODO: return JavaClass object (as PyObject) */
 }
 
 static PyMethodDef module_methods[] = {

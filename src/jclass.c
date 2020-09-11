@@ -1,6 +1,7 @@
 #import <Python.h>
 
 enum constant_type {
+    CONSTANT_TYPE_Utf8= 1,
     CONSTANT_TYPE_Class = 7,
     CONSTANT_TYPE_String = 8,
     CONSTANT_TYPE_Fieldref = 9,
@@ -11,7 +12,7 @@ enum constant_type {
 
 static const char *Constant_description[] = {
     [0] = "",
-    [1] = NULL,
+    [1] = "CONSTANT_Utf8",
     [2] = NULL,
     [3] = NULL,
     [4] = NULL,

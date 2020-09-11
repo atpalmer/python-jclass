@@ -76,6 +76,13 @@ static inline uint16_t Class_name_index(void *head) {
 }
 
 
+/* 8 = String */
+
+static inline uint16_t String_string_index(void *head) {
+    return UINT16_AT(head, 1);
+}
+
+
 /* 9 = Fieldref */
 
 static inline uint16_t Fieldref_class_index(void *head) {
@@ -126,6 +133,12 @@ static void parse_constant_pool(uint8_t *pool, int count) {
 
         if(Constant_tag(c) == CONSTANT_TYPE_Class) {
             printf("**tag(%u), name_index(%u)\n", Constant_tag(c), Class_name_index(c));
+            pool_bytes += 3;
+            continue;
+        }
+
+        if(Constant_tag(c) == CONSTANT_TYPE_String) {
+            printf("**tag(%u), string_index(%u)\n", Constant_tag(c), String_string_index(c));
             pool_bytes += 3;
             continue;
         }

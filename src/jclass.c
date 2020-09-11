@@ -3,30 +3,14 @@
 /* TODO: make PyObject */
 typedef struct {
     /* ptrs to .data[] (big-endian order!) */
-    uint8_t *magic_number;
-    uint8_t *minor_version;
-    uint8_t *major_version;
-    uint8_t *constant_pool_count;
+    uint32_t *magic_number;
+    uint16_t *minor_version;
+    uint16_t *major_version;
+    uint16_t *constant_pool_count;
 
     Py_ssize_t size;
     uint8_t data[];
 } JavaClass;
-
-static uint16_t deref16(uint8_t *val) {
-    uint8_t result[2];
-    result[0] = val[1];
-    result[1] = val[0];
-    return *(uint16_t *)&result;
-}
-
-static uint32_t deref32(uint8_t *val) {
-    uint8_t result[4];
-    result[0] = val[3];
-    result[1] = val[2];
-    result[2] = val[1];
-    result[3] = val[0];
-    return *(uint32_t *)&result;
-}
 
 static PyObject *jclass_load(PyObject *self, PyObject *args) {
     char *fname;
@@ -44,9 +28,9 @@ static PyObject *jclass_load(PyObject *self, PyObject *args) {
     class->major_version = &class->data[6];
     class->constant_pool_count = &class->data[8];
 
-    printf("Magic Number: %X\n", deref32(class->magic_number));
-    printf("Version: %u.%u\n", deref16(class->major_version), deref16(class->minor_version));
-    printf("Constant Pool Count: %u\n", deref16(class->constant_pool_count));
+    printf("Magic Number: %X\n", ntohl(*class->magic_number));
+    printf("Version: %u.%u\n", ntohs(*class->major_version), ntohs(*class->minor_version));
+    printf("Constant Pool Count: %u\n", ntohs(*class->constant_pool_count));
 
     PyObject *result = PyBytes_FromStringAndSize(class->data, class->size);
     PyMem_Free(class);

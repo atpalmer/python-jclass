@@ -86,11 +86,13 @@ static PyObject *jclass_load(PyObject *self, PyObject *args) {
     class->size = fread(class->data, 1, 4096, fp);
     fclose(fp);
 
-    class->magic_number = &class->data[0];
-    class->minor_version = &class->data[4];
-    class->major_version = &class->data[6];
-    class->constant_pool_count = &class->data[8];
-    class->constant_pool = &class->data[10];
+#define NEXT_PTR(last)   ((void *)(((uint8_t *)(last)) + sizeof(*(last))))
+
+    class->magic_number = class->data;
+    class->minor_version = NEXT_PTR(class->magic_number);
+    class->major_version = NEXT_PTR(class->minor_version);
+    class->constant_pool_count = NEXT_PTR(class->major_version);
+    class->constant_pool = NEXT_PTR(class->constant_pool_count);
 
     printf("Magic Number: %X\n", ntohl(*class->magic_number));
     printf("Version: %u.%u\n", ntohs(*class->major_version), ntohs(*class->minor_version));

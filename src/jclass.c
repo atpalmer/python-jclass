@@ -35,6 +35,7 @@ static const char *Constant_description[] = {
 
 #define UINT8_AT(p, i)      UINT8(&(((uint8_t *)(p))[(i)]))
 #define UINT16_AT(p, i)     UINT16(&(((uint8_t *)(p))[(i)]))
+#define POINTER_AT(p, i)    ((void *)&(((uint8_t *)(p))[(i)]))
 
 
 /* TODO: make PyObject */
@@ -52,6 +53,14 @@ typedef struct {
 
 static inline uint8_t Constant_tag(void *head) {
     return UINT8_AT(head, 0);
+}
+
+static inline uint16_t Utf8_length(void *head) {
+    return UINT16_AT(head, 1);
+}
+
+static inline char *Utf8_bytes(void *head) {
+    return POINTER_AT(head, 3);
 }
 
 static inline uint16_t Methodref_class_index(void *head) {
@@ -81,6 +90,13 @@ static void parse_constant_pool(uint8_t *pool, int count) {
     for(int i = count; i > 0; --i) {
         uint8_t *c = &pool[pool_bytes];
         printf("*BYTES INDEX: %u;TAG: %u (%s)\n", pool_bytes, Constant_tag(c), CONSTANT_DESC(c));
+
+        if(Constant_tag(c) == CONSTANT_TYPE_Utf8) {
+            printf("**tag(%u), length(%u), bytes(\"%.*s\")\n",
+                Constant_tag(c), Utf8_length(c), Utf8_length(c), Utf8_bytes(c));
+            pool_bytes += 3 + Utf8_length(c);
+            continue;
+        }
 
         if(Constant_tag(c) == CONSTANT_TYPE_Methodref) {
             printf("**tag(%u), class_index(%u), name_and_type_index(%u)\n",

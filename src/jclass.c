@@ -1,6 +1,20 @@
 #import <Python.h>
 #import "constant_pool.h"
 
+enum access_flag {
+    ACC_PUBLIC      =0x0001,
+    ACC_FINAL       =0x0010,
+    ACC_SUPER       =0x0020,
+    ACC_INTERFACE   =0x0200,
+    ACC_ABSTRACT    =0x0400,
+    ACC_SYNTHETIC   =0x1000,
+    ACC_ANNOTATION  =0x2000,
+    ACC_ENUM        =0x4000,
+};
+
+#define CLASS_HAS_ACCESS(class, flag)  (ntohs(*(class)->access_flags) & (flag))
+
+
 /* TODO: make PyObject */
 typedef struct {
     /* ptrs to .data[] (big-endian order!) */
@@ -9,12 +23,13 @@ typedef struct {
     uint16_t *major_version;
     uint16_t *constant_pool_count;
     uint8_t *constant_pool;
+    uint16_t *access_flags;
 
     Py_ssize_t size;
     uint8_t data[];
 } JavaClass;
 
-static void parse_constant_pool(uint8_t *pool, int count) {
+static size_t parse_constant_pool(uint8_t *pool, int count) {
     size_t pool_bytes = 0;
     for(int i = 1; i < count; ++i) {
         uint8_t *c = &pool[pool_bytes];
@@ -57,7 +72,7 @@ static void parse_constant_pool(uint8_t *pool, int count) {
         }
     }
 
-    return;
+    return pool_bytes;
 }
 
 static PyObject *jclass_load(PyObject *self, PyObject *args) {
@@ -81,7 +96,20 @@ static PyObject *jclass_load(PyObject *self, PyObject *args) {
     printf("Version: %u.%u\n", ntohs(*class->major_version), ntohs(*class->minor_version));
     printf("Constant Pool Count: %u\n", ntohs(*class->constant_pool_count));
 
-    parse_constant_pool(class->constant_pool, ntohs(*class->constant_pool_count));
+    size_t pool_bytes = parse_constant_pool(class->constant_pool, ntohs(*class->constant_pool_count));
+
+    class->access_flags = class->constant_pool + pool_bytes;
+
+    printf("Raw Access Flags: %u\n", *class->access_flags);
+    printf("(Local) Access Flags: %u\n", ntohs(*class->access_flags));
+    printf("PUBLIC Flag: %x\n", CLASS_HAS_ACCESS(class, ACC_PUBLIC));
+    printf("FINAL Flag: %x\n", CLASS_HAS_ACCESS(class, ACC_FINAL));
+    printf("SUPER Flag: %x\n", CLASS_HAS_ACCESS(class, ACC_SUPER));
+    printf("INTERFACE Flag: %x\n", CLASS_HAS_ACCESS(class, ACC_INTERFACE));
+    printf("ABSTRACT Flag: %x\n", CLASS_HAS_ACCESS(class, ACC_ABSTRACT));
+    printf("SYNTHETIC Flag: %x\n", CLASS_HAS_ACCESS(class, ACC_SYNTHETIC));
+    printf("ANNOTATION Flag: %x\n", CLASS_HAS_ACCESS(class, ACC_ANNOTATION));
+    printf("ENUM Flag: %x\n", CLASS_HAS_ACCESS(class, ACC_ENUM));
 
     PyObject *result = PyBytes_FromStringAndSize(class->data, class->size);
     PyMem_Free(class);

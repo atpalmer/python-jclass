@@ -124,48 +124,41 @@ static void parse_constant_pool(uint8_t *pool, int count) {
         uint8_t *c = &pool[pool_bytes];
         printf("*BYTES INDEX: %u;TAG: %u (%s)\n", pool_bytes, Constant_tag(c), CONSTANT_DESC(c));
 
-        if(Constant_tag(c) == CONSTANT_TYPE_Utf8) {
+        switch(Constant_tag(c)) {
+        case CONSTANT_TYPE_Utf8:
             printf("**tag(%u), length(%u), bytes(\"%.*s\")\n",
                 Constant_tag(c), Utf8_length(c), Utf8_length(c), Utf8_bytes(c));
             pool_bytes += 3 + Utf8_length(c);
-            continue;
-        }
+            break;
 
-        if(Constant_tag(c) == CONSTANT_TYPE_Class) {
+        case CONSTANT_TYPE_Class:
             printf("**tag(%u), name_index(%u)\n", Constant_tag(c), Class_name_index(c));
             pool_bytes += 3;
-            continue;
-        }
+            break;
 
-        if(Constant_tag(c) == CONSTANT_TYPE_String) {
+        case CONSTANT_TYPE_String:
             printf("**tag(%u), string_index(%u)\n", Constant_tag(c), String_string_index(c));
             pool_bytes += 3;
-            continue;
-        }
+            break;
 
-        if(Constant_tag(c) == CONSTANT_TYPE_Fieldref) {
+        case CONSTANT_TYPE_Fieldref:
             printf("**tag(%u), class_index(%u), name_and_type_index(%u)\n",
                 Constant_tag(c), Fieldref_class_index(c), Fieldref_name_and_type_index(c));
             pool_bytes += 5;
-            continue;
-        }
+            break;
 
-        if(Constant_tag(c) == CONSTANT_TYPE_Methodref) {
+        case CONSTANT_TYPE_Methodref:
             printf("**tag(%u), class_index(%u), name_and_type_index(%u)\n",
                 Constant_tag(c), Methodref_class_index(c), Methodref_name_and_type_index(c));
             pool_bytes += 5;
-            continue;
-        }
+            break;
 
-        if(Constant_tag(c) == CONSTANT_TYPE_NameAndType) {
+        case CONSTANT_TYPE_NameAndType:
             printf("**tag(%u), name_index(%u), descriptor_index(%u)\n",
                 Constant_tag(c), NameAndType_name_index(c), NameAndType_descriptor_index(c));
             pool_bytes += 5;
-            continue;
+            break;
         }
-
-
-        break;
     }
 
     return;

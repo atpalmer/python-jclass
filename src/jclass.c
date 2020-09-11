@@ -87,8 +87,9 @@ static PyObject *jclass_load(PyObject *self, PyObject *args) {
 
         if(c->tag == CONSTANT_TYPE_Methodref) {
             CONSTANT_Methodref_info *m = (CONSTANT_Methodref_info *)c;
-            printf("**tag(%u), class_index(%u), name_and_type_index(%u)\n",
-                m->tag, ntohs(m->class_index), ntohs(m->name_and_type_index));
+            /* note alignment bug with structs */
+            printf("**tag(%u), class_index(%u, %u), name_and_type_index(%u)\n",
+                m->tag, ntohs(m->class_index), ntohs(*(uint16_t *)&((uint8_t *)m)[1]), ntohs(m->name_and_type_index));
             pool_bytes += 5;
             continue;
         }

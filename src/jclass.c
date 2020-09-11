@@ -75,30 +75,10 @@ static inline uint16_t NameAndType_descriptor_index(void *head) {
 
 #define CONSTANT_DESC(c)    (Constant_description[Constant_tag(c)])
 
-static PyObject *jclass_load(PyObject *self, PyObject *args) {
-    char *fname;
-    if(!PyArg_ParseTuple(args, "s", &fname))
-        return NULL;
-
-    JavaClass *class = PyMem_Malloc(sizeof(JavaClass) + 4096);
-
-    FILE *fp = fopen(fname, "rb");
-    class->size = fread(class->data, 1, 4096, fp);
-    fclose(fp);
-
-    class->magic_number = &class->data[0];
-    class->minor_version = &class->data[4];
-    class->major_version = &class->data[6];
-    class->constant_pool_count = &class->data[8];
-    class->constant_pool = &class->data[10];
-
-    printf("Magic Number: %X\n", ntohl(*class->magic_number));
-    printf("Version: %u.%u\n", ntohs(*class->major_version), ntohs(*class->minor_version));
-    printf("Constant Pool Count: %u\n", ntohs(*class->constant_pool_count));
-
+static void parse_constant_pool(uint8_t *pool, int count) {
     size_t pool_bytes = 0;
-    for(int i = ntohs(*class->constant_pool_count); i > 0; --i) {
-        uint8_t *c = &class->constant_pool[pool_bytes];
+    for(int i = count; i > 0; --i) {
+        uint8_t *c = &pool[pool_bytes];
         printf("*BYTES INDEX: %u;TAG: %u (%s)\n", pool_bytes, Constant_tag(c), CONSTANT_DESC(c));
 
         if(Constant_tag(c) == CONSTANT_TYPE_Methodref) {
@@ -124,6 +104,32 @@ static PyObject *jclass_load(PyObject *self, PyObject *args) {
 
         break;
     }
+
+    return;
+}
+
+static PyObject *jclass_load(PyObject *self, PyObject *args) {
+    char *fname;
+    if(!PyArg_ParseTuple(args, "s", &fname))
+        return NULL;
+
+    JavaClass *class = PyMem_Malloc(sizeof(JavaClass) + 4096);
+
+    FILE *fp = fopen(fname, "rb");
+    class->size = fread(class->data, 1, 4096, fp);
+    fclose(fp);
+
+    class->magic_number = &class->data[0];
+    class->minor_version = &class->data[4];
+    class->major_version = &class->data[6];
+    class->constant_pool_count = &class->data[8];
+    class->constant_pool = &class->data[10];
+
+    printf("Magic Number: %X\n", ntohl(*class->magic_number));
+    printf("Version: %u.%u\n", ntohs(*class->major_version), ntohs(*class->minor_version));
+    printf("Constant Pool Count: %u\n", ntohs(*class->constant_pool_count));
+
+    parse_constant_pool(class->constant_pool, ntohs(*class->constant_pool_count));
 
     PyObject *result = PyBytes_FromStringAndSize(class->data, class->size);
     PyMem_Free(class);

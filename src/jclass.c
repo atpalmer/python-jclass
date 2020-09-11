@@ -7,7 +7,7 @@ enum constant_type {
     CONSTANT_TYPE_InterfaceMethodref = 11,
 };
 
-static const char *CONSTANT_POOL_DESC[] = {
+static const char *Constant_description[] = {
     [0] = "",
     [1] = NULL,
     [2] = NULL,
@@ -63,6 +63,8 @@ static inline uint16_t Class_name_index(void *head) {
     return UINT16_AT(head, 1);
 }
 
+#define CONSTANT_DESC(c)    (Constant_description[Constant_tag(c)])
+
 static PyObject *jclass_load(PyObject *self, PyObject *args) {
     char *fname;
     if(!PyArg_ParseTuple(args, "s", &fname))
@@ -87,7 +89,7 @@ static PyObject *jclass_load(PyObject *self, PyObject *args) {
     size_t pool_bytes = 0;
     for(int i = ntohs(*class->constant_pool_count); i > 0; --i) {
         uint8_t *c = &class->constant_pool[pool_bytes];
-        printf("*BYTES INDEX: %u;TAG: %u (%s)\n", pool_bytes, Constant_tag(c), CONSTANT_POOL_DESC[Constant_tag(c)]);
+        printf("*BYTES INDEX: %u;TAG: %u (%s)\n", pool_bytes, Constant_tag(c), CONSTANT_DESC(c));
 
         if(Constant_tag(c) == CONSTANT_TYPE_Methodref) {
             printf("**tag(%u), class_index(%u), name_and_type_index(%u)\n",

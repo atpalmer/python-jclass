@@ -2,6 +2,7 @@
 
 enum constant_type {
     CONSTANT_TYPE_Class = 7,
+    CONSTANT_TYPE_String = 8,
     CONSTANT_TYPE_Fieldref = 9,
     CONSTANT_TYPE_Methodref = 10,
     CONSTANT_TYPE_InterfaceMethodref = 11,
@@ -16,7 +17,7 @@ static const char *Constant_description[] = {
     [5] = NULL,
     [6] = NULL,
     [7] = "CONSTANT_Class",
-    [8] = NULL,
+    [8] = "CONSTANT_String",
     [9] = "CONSTANT_Fieldref",
     [10] = "CONSTANT_Methodref",
     [11] = "CONSTANT_InterfaceMethodref",

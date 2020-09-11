@@ -120,7 +120,7 @@ static inline uint16_t NameAndType_descriptor_index(void *head) {
 
 static void parse_constant_pool(uint8_t *pool, int count) {
     size_t pool_bytes = 0;
-    for(int i = count; i > 0; --i) {
+    for(int i = 1; i < count; ++i) {
         uint8_t *c = &pool[pool_bytes];
         printf("*BYTES INDEX: %u;TAG: %u (%s)\n", pool_bytes, Constant_tag(c), CONSTANT_DESC(c));
 

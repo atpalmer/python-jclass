@@ -1,6 +1,7 @@
 #import <Python.h>
 
 enum constant_type {
+    CONSTANT_TYPE_Class = 7,
     CONSTANT_TYPE_Fieldref = 9,
     CONSTANT_TYPE_Methodref = 10,
     CONSTANT_TYPE_InterfaceMethodref = 11,
@@ -14,11 +15,11 @@ static const char *CONSTANT_POOL_DESC[] = {
     [4] = NULL,
     [5] = NULL,
     [6] = NULL,
-    [7] = NULL,
+    [7] = "CONSTANT_Class",
     [8] = NULL,
-    [9] = "CONSTANT_Fieldref_info",
-    [10] = "CONSTANT_Methodref_info",
-    [11] = "CONSTANT_InterfaceMethodref_info",
+    [9] = "CONSTANT_Fieldref",
+    [10] = "CONSTANT_Methodref",
+    [11] = "CONSTANT_InterfaceMethodref",
     [12] = NULL,
     [13] = NULL,
     [14] = NULL,
@@ -30,6 +31,11 @@ struct constant_pool_base {
     uint8_t tag;
     uint8_t info[];
 };
+
+typedef struct {
+    uint8_t tag;
+    uint16_t name_index;
+} CONSTANT_Class_info;
 
 typedef struct {
     uint8_t tag;
@@ -81,9 +87,17 @@ static PyObject *jclass_load(PyObject *self, PyObject *args) {
 
         if(c->tag == CONSTANT_TYPE_Methodref) {
             CONSTANT_Methodref_info *m = (CONSTANT_Methodref_info *)c;
-            printf("**METHODREF: tag(%u), class_index(%u), name_and_type_index(%u)\n",
+            printf("**tag(%u), class_index(%u), name_and_type_index(%u)\n",
                 m->tag, ntohs(m->class_index), ntohs(m->name_and_type_index));
             pool_bytes += 5;
+            continue;
+        }
+
+        if(c->tag == CONSTANT_TYPE_Class) {
+            CONSTANT_Class_info *class_info = (CONSTANT_Class_info *)c;
+            printf("**tag(%u), name_index(%u)\n",
+                class_info->tag, ntohs(class_info->name_index));
+            pool_bytes += 3;
             continue;
         }
 

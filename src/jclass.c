@@ -1,5 +1,11 @@
 #import <Python.h>
 
+enum constant_type {
+    CONSTANT_TYPE_Fieldref = 9,
+    CONSTANT_TYPE_Methodref = 10,
+    CONSTANT_TYPE_InterfaceMethodref = 11,
+};
+
 static const char *CONSTANT_POOL_DESC[] = {
     [0] = "",
     [1] = NULL,
@@ -10,9 +16,9 @@ static const char *CONSTANT_POOL_DESC[] = {
     [6] = NULL,
     [7] = NULL,
     [8] = NULL,
-    [9] = NULL,
+    [9] = "CONSTANT_Fieldref_info",
     [10] = "CONSTANT_Methodref_info",
-    [11] = NULL,
+    [11] = "CONSTANT_InterfaceMethodref_info",
     [12] = NULL,
     [13] = NULL,
     [14] = NULL,
@@ -24,6 +30,15 @@ struct constant_pool_base {
     uint8_t tag;
     uint8_t info[];
 };
+
+typedef struct {
+    uint8_t tag;
+    uint16_t class_index;
+    uint16_t name_and_type_index;
+} CONSTANT_Fieldref_info;
+
+typedef CONSTANT_Fieldref_info CONSTANT_Methodref_info;
+typedef CONSTANT_Fieldref_info CONSTANT_InterfaceMethodref_info;
 
 /* TODO: make PyObject */
 typedef struct {
@@ -59,8 +74,20 @@ static PyObject *jclass_load(PyObject *self, PyObject *args) {
     printf("Version: %u.%u\n", ntohs(*class->major_version), ntohs(*class->minor_version));
     printf("Constant Pool Count: %u\n", ntohs(*class->constant_pool_count));
 
+    size_t pool_bytes = 0;
     for(int i = ntohs(*class->constant_pool_count); i > 0; --i) {
-        printf(" TAG: %u (%s)\n", class->constant_pool->tag, CONSTANT_POOL_DESC[class->constant_pool->tag]);
+        struct constant_pool_base *c = &class->constant_pool[pool_bytes];
+        printf("*BYTES INDEX: %u;TAG: %u (%s)\n", pool_bytes, c->tag, CONSTANT_POOL_DESC[c->tag]);
+
+        if(c->tag == CONSTANT_TYPE_Methodref) {
+            CONSTANT_Methodref_info *m = (CONSTANT_Methodref_info *)c;
+            printf("**METHODREF: tag(%u), class_index(%u), name_and_type_index(%u)\n",
+                m->tag, ntohs(m->class_index), ntohs(m->name_and_type_index));
+            pool_bytes += 5;
+            continue;
+        }
+
+
         break;
     }
 

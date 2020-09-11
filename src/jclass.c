@@ -65,6 +65,14 @@ static inline uint16_t Class_name_index(void *head) {
     return UINT16_AT(head, 1);
 }
 
+static inline uint16_t NameAndType_name_index(void *head) {
+    return UINT16_AT(head, 1);
+}
+
+static inline uint16_t NameAndType_descriptor_index(void *head) {
+    return UINT16_AT(head, 3);
+}
+
 #define CONSTANT_DESC(c)    (Constant_description[Constant_tag(c)])
 
 static PyObject *jclass_load(PyObject *self, PyObject *args) {
@@ -103,6 +111,13 @@ static PyObject *jclass_load(PyObject *self, PyObject *args) {
         if(Constant_tag(c) == CONSTANT_TYPE_Class) {
             printf("**tag(%u), name_index(%u)\n", Constant_tag(c), Class_name_index(c));
             pool_bytes += 3;
+            continue;
+        }
+
+        if(Constant_tag(c) == CONSTANT_TYPE_NameAndType) {
+            printf("**tag(%u), name_index(%u), descriptor_index(%u)\n",
+                Constant_tag(c), NameAndType_name_index(c), NameAndType_descriptor_index(c));
+            pool_bytes += 5;
             continue;
         }
 

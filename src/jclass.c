@@ -51,9 +51,14 @@ typedef struct {
     uint8_t data[];
 } JavaClass;
 
+/* common header byte */
+
 static inline uint8_t Constant_tag(void *head) {
     return UINT8_AT(head, 0);
 }
+
+
+/* 1 = Utf8 */
 
 static inline uint16_t Utf8_length(void *head) {
     return UINT16_AT(head, 1);
@@ -63,6 +68,27 @@ static inline char *Utf8_bytes(void *head) {
     return POINTER_AT(head, 3);
 }
 
+
+/* 7 = Class */
+
+static inline uint16_t Class_name_index(void *head) {
+    return UINT16_AT(head, 1);
+}
+
+
+/* 9 = Fieldref */
+
+static inline uint16_t Fieldref_class_index(void *head) {
+    return UINT16_AT(head, 1);
+}
+
+static inline uint16_t Fieldref_name_and_type_index(void *head) {
+    return UINT16_AT(head, 3);
+}
+
+
+/* 10 = Methodref */
+
 static inline uint16_t Methodref_class_index(void *head) {
     return UINT16_AT(head, 1);
 }
@@ -71,9 +97,8 @@ static inline uint16_t Methodref_name_and_type_index(void *head) {
     return UINT16_AT(head, 3);
 }
 
-static inline uint16_t Class_name_index(void *head) {
-    return UINT16_AT(head, 1);
-}
+
+/* 12 = NameAndType */
 
 static inline uint16_t NameAndType_name_index(void *head) {
     return UINT16_AT(head, 1);
@@ -82,6 +107,7 @@ static inline uint16_t NameAndType_name_index(void *head) {
 static inline uint16_t NameAndType_descriptor_index(void *head) {
     return UINT16_AT(head, 3);
 }
+
 
 #define CONSTANT_DESC(c)    (Constant_description[Constant_tag(c)])
 
@@ -98,16 +124,23 @@ static void parse_constant_pool(uint8_t *pool, int count) {
             continue;
         }
 
-        if(Constant_tag(c) == CONSTANT_TYPE_Methodref) {
+        if(Constant_tag(c) == CONSTANT_TYPE_Class) {
+            printf("**tag(%u), name_index(%u)\n", Constant_tag(c), Class_name_index(c));
+            pool_bytes += 3;
+            continue;
+        }
+
+        if(Constant_tag(c) == CONSTANT_TYPE_Fieldref) {
             printf("**tag(%u), class_index(%u), name_and_type_index(%u)\n",
-                Constant_tag(c), Methodref_class_index(c), Methodref_name_and_type_index(c));
+                Constant_tag(c), Fieldref_class_index(c), Fieldref_name_and_type_index(c));
             pool_bytes += 5;
             continue;
         }
 
-        if(Constant_tag(c) == CONSTANT_TYPE_Class) {
-            printf("**tag(%u), name_index(%u)\n", Constant_tag(c), Class_name_index(c));
-            pool_bytes += 3;
+        if(Constant_tag(c) == CONSTANT_TYPE_Methodref) {
+            printf("**tag(%u), class_index(%u), name_and_type_index(%u)\n",
+                Constant_tag(c), Methodref_class_index(c), Methodref_name_and_type_index(c));
+            pool_bytes += 5;
             continue;
         }
 

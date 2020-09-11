@@ -27,24 +27,12 @@ static const char *CONSTANT_POOL_DESC[] = {
     [16] = NULL,
 };
 
-struct constant_pool_base {
-    uint8_t tag;
-    uint8_t info[];
-};
+#define UINT8(p)    (*(p))
+#define UINT16(p)   (ntohs(*(uint16_t *)p))
 
-typedef struct {
-    uint8_t tag;
-    uint16_t name_index;
-} CONSTANT_Class_info;
+#define UINT8_AT(p, i)      UINT8(&(((uint8_t *)(p))[(i)]))
+#define UINT16_AT(p, i)     UINT16(&(((uint8_t *)(p))[(i)]))
 
-typedef struct {
-    uint8_t tag;
-    uint16_t class_index;
-    uint16_t name_and_type_index;
-} CONSTANT_Fieldref_info;
-
-typedef CONSTANT_Fieldref_info CONSTANT_Methodref_info;
-typedef CONSTANT_Fieldref_info CONSTANT_InterfaceMethodref_info;
 
 /* TODO: make PyObject */
 typedef struct {
@@ -53,11 +41,27 @@ typedef struct {
     uint16_t *minor_version;
     uint16_t *major_version;
     uint16_t *constant_pool_count;
-    struct constant_pool_base *constant_pool;
+    uint8_t *constant_pool;
 
     Py_ssize_t size;
     uint8_t data[];
 } JavaClass;
+
+static inline uint8_t Constant_tag(void *head) {
+    return UINT8_AT(head, 0);
+}
+
+static inline uint16_t Methodref_class_index(void *head) {
+    return UINT16_AT(head, 1);
+}
+
+static inline uint16_t Methodref_name_and_type_index(void *head) {
+    return UINT16_AT(head, 3);
+}
+
+static inline uint16_t Class_name_index(void *head) {
+    return UINT16_AT(head, 1);
+}
 
 static PyObject *jclass_load(PyObject *self, PyObject *args) {
     char *fname;
@@ -82,22 +86,18 @@ static PyObject *jclass_load(PyObject *self, PyObject *args) {
 
     size_t pool_bytes = 0;
     for(int i = ntohs(*class->constant_pool_count); i > 0; --i) {
-        struct constant_pool_base *c = &class->constant_pool[pool_bytes];
-        printf("*BYTES INDEX: %u;TAG: %u (%s)\n", pool_bytes, c->tag, CONSTANT_POOL_DESC[c->tag]);
+        uint8_t *c = &class->constant_pool[pool_bytes];
+        printf("*BYTES INDEX: %u;TAG: %u (%s)\n", pool_bytes, Constant_tag(c), CONSTANT_POOL_DESC[Constant_tag(c)]);
 
-        if(c->tag == CONSTANT_TYPE_Methodref) {
-            CONSTANT_Methodref_info *m = (CONSTANT_Methodref_info *)c;
-            /* note alignment bug with structs */
-            printf("**tag(%u), class_index(%u, %u), name_and_type_index(%u)\n",
-                m->tag, ntohs(m->class_index), ntohs(*(uint16_t *)&((uint8_t *)m)[1]), ntohs(m->name_and_type_index));
+        if(Constant_tag(c) == CONSTANT_TYPE_Methodref) {
+            printf("**tag(%u), class_index(%u), name_and_type_index(%u)\n",
+                Constant_tag(c), Methodref_class_index(c), Methodref_name_and_type_index(c));
             pool_bytes += 5;
             continue;
         }
 
-        if(c->tag == CONSTANT_TYPE_Class) {
-            CONSTANT_Class_info *class_info = (CONSTANT_Class_info *)c;
-            printf("**tag(%u), name_index(%u)\n",
-                class_info->tag, ntohs(class_info->name_index));
+        if(Constant_tag(c) == CONSTANT_TYPE_Class) {
+            printf("**tag(%u), name_index(%u)\n", Constant_tag(c), Class_name_index(c));
             pool_bytes += 3;
             continue;
         }

@@ -1,7 +1,7 @@
 #ifndef CONSTANT_POOL_H
 #define CONSTANT_POOL_H
 
-#import "common.h"
+#include "common.h"
 
 enum constant_type {
     CONSTANT_TYPE_Utf8= 1,

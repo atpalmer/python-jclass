@@ -1,8 +1,8 @@
-#import <Python.h>
-#import "constant_pool.h"
-#import "fields.h"
-#import "attributes.h"
-#import "methods.h"
+#include <Python.h>
+#include "constant_pool.h"
+#include "fields.h"
+#include "attributes.h"
+#include "methods.h"
 
 enum access_flag {
     ACC_PUBLIC      =0x0001,

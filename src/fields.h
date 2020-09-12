@@ -1,7 +1,7 @@
 #ifndef FIELDS_H
 #define FIELDS_H
 
-#import "common.h"
+#include "common.h"
 
 
 static inline uint16_t Field_access_flags(void *head) {

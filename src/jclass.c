@@ -178,6 +178,8 @@ static PyObject *jclass_load(PyObject *self, PyObject *args) {
     curr_bytes += parse_constant_pool(class->constant_pool, class->constant_pool_count);
 
     class->access_flags = (void *)&class->data[curr_bytes];
+    class->this_class = NEXT_PTR(class->access_flags);
+    class->super_class = NEXT_PTR(class->this_class);
 
     printf("Access Flags: %u\n", ntohs(*class->access_flags));
     printf("* PUBLIC Flag: %x\n", CLASS_HAS_ACCESS(class, ACC_PUBLIC));
@@ -189,10 +191,8 @@ static PyObject *jclass_load(PyObject *self, PyObject *args) {
     printf("* ANNOTATION Flag: %x\n", CLASS_HAS_ACCESS(class, ACC_ANNOTATION));
     printf("* ENUM Flag: %x\n", CLASS_HAS_ACCESS(class, ACC_ENUM));
 
-    class->this_class = NEXT_PTR(class->access_flags);
     printf("This Class Pool Index: %u\n", ntohs(*class->this_class));
 
-    class->super_class = NEXT_PTR(class->this_class);
     printf("Super Class Pool Index: %u\n", ntohs(*class->super_class));
 
     class->interfaces_count = NEXT_PTR(class->super_class);

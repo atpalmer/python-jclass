@@ -24,7 +24,7 @@ typedef struct {
     uint16_t minor_version;
     uint16_t major_version;
 
-    uint16_t *constant_pool_count;
+    uint16_t constant_pool_count;
     uint8_t *constant_pool;
 
     uint16_t *access_flags;
@@ -171,12 +171,13 @@ static PyObject *jclass_load(PyObject *self, PyObject *args) {
     printf("Magic Number: %X\n", class->magic_number);
     printf("Version: %u.%u\n", class->major_version, class->minor_version);
 
-    class->constant_pool_count = &class->data[curr_bytes];
-    class->constant_pool = NEXT_PTR(class->constant_pool_count);
+    curr_bytes += parse16(&class->data[curr_bytes], &class->constant_pool_count);
 
-    printf("Constant Pool Count: %u\n", ntohs(*class->constant_pool_count));
+    class->constant_pool = &class->data[curr_bytes];
 
-    size_t pool_bytes = parse_constant_pool(class->constant_pool, ntohs(*class->constant_pool_count));
+    printf("Constant Pool Count: %u\n", class->constant_pool_count);
+
+    size_t pool_bytes = parse_constant_pool(class->constant_pool, class->constant_pool_count);
 
     class->access_flags = (void *)&class->constant_pool[pool_bytes];
 

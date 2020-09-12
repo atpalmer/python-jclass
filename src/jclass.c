@@ -1,6 +1,7 @@
 #import <Python.h>
 #import "constant_pool.h"
 #import "fields.h"
+#import "attributes.h"
 
 enum access_flag {
     ACC_PUBLIC      =0x0001,
@@ -42,19 +43,6 @@ typedef struct {
     Py_ssize_t size;
     uint8_t data[];
 } JavaClass;
-
-
-static uint16_t Attribute_name_index(void *head) {
-    return UINT16_AT(head, 0);
-}
-
-static uint32_t Attribute_length(void *head) {
-    return UINT16_AT(head, 2);
-}
-
-static uint8_t *Attribute_info(void *head) {
-    return POINTER_AT(head, 6);
-}
 
 
 static size_t parse_attributes(uint8_t *attrs, int count) {

@@ -147,6 +147,10 @@ static JavaClass *_JavaClass_from_filename(const char *filename) {
     return new;
 }
 
+static void *_JavaClass_free(JavaClass *this) {
+    PyMem_Free(this);
+}
+
 static PyObject *jclass_load(PyObject *self, PyObject *args) {
     char *fname;
     if(!PyArg_ParseTuple(args, "s", &fname))
@@ -213,7 +217,7 @@ static PyObject *jclass_load(PyObject *self, PyObject *args) {
     size_t attributes_bytes = parse_attributes(class->attributes, ntohs(*class->attributes_count));
 
     PyObject *result = PyBytes_FromStringAndSize((char *)class->data, class->size);
-    PyMem_Free(class);
+    _JavaClass_free(class);
     return result;
 
     /* TODO: return JavaClass object (as PyObject) */

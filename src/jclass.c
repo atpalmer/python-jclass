@@ -2,6 +2,7 @@
 #import "constant_pool.h"
 #import "fields.h"
 #import "attributes.h"
+#import "methods.h"
 
 enum access_flag {
     ACC_PUBLIC      =0x0001,
@@ -55,27 +56,6 @@ static size_t parse_attributes(uint8_t *attrs, int count) {
 
     return attrs_bytes;
 }
-
-static inline uint16_t Method_access_flags(void *head) {
-    return UINT16_AT(head, 0);
-}
-
-static inline uint16_t Method_name_index(void *head) {
-    return UINT16_AT(head, 2);
-}
-
-static inline uint16_t Method_descriptor_index(void *head) {
-    return UINT16_AT(head, 4);
-}
-
-static inline uint16_t Method_attributes_count(void *head) {
-    return UINT16_AT(head, 6);
-}
-
-static inline uint8_t *Method_attributes(void *head) {
-    return POINTER_AT(head, 8);
-}
-
 
 static size_t parse_methods(uint8_t *methods, int count) {
     size_t methods_bytes = 0;

@@ -15,7 +15,7 @@ enum access_flag {
     ACC_ENUM        =0x4000,
 };
 
-#define CLASS_HAS_ACCESS(class, flag)  (ntohs(*(class)->access_flags) & (flag))
+#define CLASS_HAS_ACCESS(class, flag)  ((class)->access_flags & (flag))
 
 
 /* TODO: make PyObject */
@@ -27,9 +27,9 @@ typedef struct {
     uint16_t constant_pool_count;
     uint8_t *constant_pool;
 
-    uint16_t *access_flags;
-    uint16_t *this_class;
-    uint16_t *super_class;
+    uint16_t access_flags;
+    uint16_t this_class;
+    uint16_t super_class;
 
     uint16_t *interfaces_count;
     uint16_t *interfaces;  /* interface_indexes */
@@ -177,11 +177,11 @@ static PyObject *jclass_load(PyObject *self, PyObject *args) {
     class->constant_pool = &class->data[curr_bytes];
     curr_bytes += parse_constant_pool(class->constant_pool, class->constant_pool_count);
 
-    class->access_flags = (void *)&class->data[curr_bytes];
-    class->this_class = NEXT_PTR(class->access_flags);
-    class->super_class = NEXT_PTR(class->this_class);
+    curr_bytes += parse16(&class->data[curr_bytes], &class->access_flags);
+    curr_bytes += parse16(&class->data[curr_bytes], &class->this_class);
+    curr_bytes += parse16(&class->data[curr_bytes], &class->super_class);
 
-    printf("Access Flags: %u\n", ntohs(*class->access_flags));
+    printf("Access Flags: %u\n", class->access_flags);
     printf("* PUBLIC Flag: %x\n", CLASS_HAS_ACCESS(class, ACC_PUBLIC));
     printf("* FINAL Flag: %x\n", CLASS_HAS_ACCESS(class, ACC_FINAL));
     printf("* SUPER Flag: %x\n", CLASS_HAS_ACCESS(class, ACC_SUPER));
@@ -191,11 +191,10 @@ static PyObject *jclass_load(PyObject *self, PyObject *args) {
     printf("* ANNOTATION Flag: %x\n", CLASS_HAS_ACCESS(class, ACC_ANNOTATION));
     printf("* ENUM Flag: %x\n", CLASS_HAS_ACCESS(class, ACC_ENUM));
 
-    printf("This Class Pool Index: %u\n", ntohs(*class->this_class));
+    printf("This Class Pool Index: %u\n", class->this_class);
+    printf("Super Class Pool Index: %u\n", class->super_class);
 
-    printf("Super Class Pool Index: %u\n", ntohs(*class->super_class));
-
-    class->interfaces_count = NEXT_PTR(class->super_class);
+    class->interfaces_count = (void *)&class->data[curr_bytes];
     printf("Interfaces count: %u\n", ntohs(*class->interfaces_count));
 
     class->interfaces = NEXT_PTR(class->interfaces_count);

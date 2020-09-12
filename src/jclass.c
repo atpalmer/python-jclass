@@ -25,6 +25,7 @@ typedef struct {
     uint8_t *constant_pool;
     uint16_t *access_flags;
     uint16_t *this_class;
+    uint16_t *super_class;
 
     Py_ssize_t size;
     uint8_t data[];
@@ -115,8 +116,10 @@ static PyObject *jclass_load(PyObject *self, PyObject *args) {
     printf("ENUM Flag: %x\n", CLASS_HAS_ACCESS(class, ACC_ENUM));
 
     class->this_class = NEXT_PTR(class->access_flags);
-
     printf("This Class Pool Index: %u\n", ntohs(*class->this_class));
+
+    class->super_class = NEXT_PTR(class->this_class);
+    printf("Super Class Pool Index: %u\n", ntohs(*class->super_class));
 
     PyObject *result = PyBytes_FromStringAndSize(class->data, class->size);
     PyMem_Free(class);

@@ -27,6 +27,7 @@ typedef struct {
     uint16_t *this_class;
     uint16_t *super_class;
     uint16_t *interfaces_count;
+    uint8_t *interfaces;
 
     Py_ssize_t size;
     uint8_t data[];
@@ -124,6 +125,8 @@ static PyObject *jclass_load(PyObject *self, PyObject *args) {
 
     class->interfaces_count = NEXT_PTR(class->super_class);
     printf("Interfaces count: %u\n", ntohs(*class->interfaces_count));
+
+    class->interfaces = NEXT_PTR(*class->interfaces_count);
 
     PyObject *result = PyBytes_FromStringAndSize(class->data, class->size);
     PyMem_Free(class);

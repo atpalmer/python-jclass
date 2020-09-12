@@ -138,7 +138,7 @@ static PyObject *jclass_load(PyObject *self, PyObject *args) {
     class->interfaces = NEXT_PTR(class->interfaces_count);
     /* interfaces items are fixed-width; skip parsing for now */
 
-    class->fields_count = class->interfaces + *class->interfaces_count;
+    class->fields_count = class->interfaces + ntohs(*class->interfaces_count);
     class->fields = NEXT_PTR(class->fields_count);
 
     PyObject *result = PyBytes_FromStringAndSize((char *)class->data, class->size);

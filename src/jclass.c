@@ -29,6 +29,15 @@ typedef struct {
     uint16_t *interfaces_count;
     uint8_t *interfaces;
 
+    uint16_t *fields_count;
+    uint8_t *fields;
+
+    uint16_t *methods_count;
+    uint8_t *methods;
+
+    uint16_t *attributes_count;
+    uint8_t *attributes;
+
     Py_ssize_t size;
     uint8_t data[];
 } JavaClass;

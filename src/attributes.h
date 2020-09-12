@@ -8,7 +8,7 @@ static inline uint16_t Attribute_name_index(void *head) {
 }
 
 static inline uint32_t Attribute_length(void *head) {
-    return UINT16_AT(head, 2);
+    return UINT32_AT(head, 2);
 }
 
 static inline uint8_t *Attribute_info(void *head) {

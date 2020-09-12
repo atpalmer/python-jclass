@@ -24,12 +24,13 @@ typedef struct {
     uint16_t minor_version;
     uint16_t major_version;
 
-    /* ptrs to .data[] (big-endian order!) */
     uint16_t *constant_pool_count;
     uint8_t *constant_pool;
+
     uint16_t *access_flags;
     uint16_t *this_class;
     uint16_t *super_class;
+
     uint16_t *interfaces_count;
     uint16_t *interfaces;  /* interface_indexes */
     uint16_t *fields_count;
@@ -152,20 +153,17 @@ static void *_JavaClass_free(JavaClass *this) {
     PyMem_Free(this);
 }
 
-static size_t parse_magic_number(void *data, JavaClass *class) {
-    class->magic_number = UINT32(data);
-    return sizeof(class->magic_number);
+
+static inline size_t parse32(void *data, uint32_t *target) {
+    *target = UINT32(data);
+    return 4;
 }
 
-static size_t parse_minor_version(void *data, JavaClass *class) {
-    class->minor_version = UINT16(data);
-    return sizeof(class->minor_version);
+static inline size_t parse16(void *data, uint16_t *target) {
+    *target = UINT16(data);
+    return 2;
 }
 
-static size_t parse_major_version(void *data, JavaClass *class) {
-    class->major_version = UINT16(data);
-    return sizeof(class->major_version);
-}
 
 static PyObject *jclass_load(PyObject *self, PyObject *args) {
     char *fname;
@@ -178,9 +176,9 @@ static PyObject *jclass_load(PyObject *self, PyObject *args) {
 
     size_t curr_bytes = 0;
 
-    curr_bytes += parse_magic_number(&class->data[curr_bytes], class);
-    curr_bytes += parse_minor_version(&class->data[curr_bytes], class);
-    curr_bytes += parse_major_version(&class->data[curr_bytes], class);
+    curr_bytes += parse32(&class->data[curr_bytes], &class->magic_number);
+    curr_bytes += parse16(&class->data[curr_bytes], &class->minor_version);
+    curr_bytes += parse16(&class->data[curr_bytes], &class->major_version);
 
     printf("Magic Number: %X\n", class->magic_number);
     printf("Version: %u.%u\n", class->major_version, class->minor_version);

@@ -42,6 +42,28 @@ typedef struct {
     uint8_t data[];
 } JavaClass;
 
+
+static uint16_t Field_access_flags(void *head) {
+    return UINT16_AT(head, 0);
+}
+
+static uint16_t Field_name_index(void *head) {
+    return UINT16_AT(head, 2);
+}
+
+static uint16_t Field_descriptor_index(void *head) {
+    return UINT16_AT(head, 4);
+}
+
+static uint16_t Field_attributes_count(void *head) {
+    return UINT16_AT(head, 6);
+}
+
+static uint8_t *Field_attributes(void *head) {
+    return POINTER_AT(head, 8);
+}
+
+
 static size_t parse_constant_pool(uint8_t *pool, int count) {
     size_t pool_bytes = 0;
     for(int i = 1; i < count; ++i) {
@@ -140,6 +162,18 @@ static PyObject *jclass_load(PyObject *self, PyObject *args) {
 
     class->fields_count = class->interfaces + ntohs(*class->interfaces_count);
     class->fields = NEXT_PTR(class->fields_count);
+
+    printf("Fields count: %u\n", ntohs(*class->fields_count));
+
+    size_t fields_bytes = 0;
+    for(int i = 0; i < ntohs(*class->fields_count); ++i) {
+        uint8_t *field = &class->fields[fields_bytes];
+        printf("* Field access flags: %u\n", Field_access_flags(field));
+        printf("* Field name index: %u\n", Field_name_index(field));
+        printf("* Field descriptor index: %u\n", Field_descriptor_index(field));
+        printf("* Field attributes count: %u\n", Field_attributes_count(field));
+        break;
+    }
 
     PyObject *result = PyBytes_FromStringAndSize((char *)class->data, class->size);
     PyMem_Free(class);

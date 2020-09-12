@@ -10,4 +10,14 @@
 #define UINT32_AT(p, i)     UINT32(&(((uint8_t *)(p))[(i)]))
 #define POINTER_AT(p, i)    ((void *)&(((uint8_t *)(p))[(i)]))
 
+static inline size_t parse32(void *data, uint32_t *target) {
+    *target = UINT32(data);
+    return 4;
+}
+
+static inline size_t parse16(void *data, uint16_t *target) {
+    *target = UINT16(data);
+    return 2;
+}
+
 #endif

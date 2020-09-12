@@ -153,18 +153,6 @@ static void *_JavaClass_free(JavaClass *this) {
     PyMem_Free(this);
 }
 
-
-static inline size_t parse32(void *data, uint32_t *target) {
-    *target = UINT32(data);
-    return 4;
-}
-
-static inline size_t parse16(void *data, uint16_t *target) {
-    *target = UINT16(data);
-    return 2;
-}
-
-
 static PyObject *jclass_load(PyObject *self, PyObject *args) {
     char *fname;
     if(!PyArg_ParseTuple(args, "s", &fname))

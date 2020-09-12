@@ -206,9 +206,9 @@ static PyObject *jclass_load(PyObject *self, PyObject *args) {
     printf("Fields count: %u\n", class->fields_count);
 
     class->fields = (void *)&class->data[curr_bytes];
-    size_t fields_bytes = parse_fields(class->fields, class->fields_count);
+    curr_bytes += parse_fields(class->fields, class->fields_count);
 
-    class->methods_count = (void *)&class->fields[fields_bytes];
+    class->methods_count = (void *)&class->data[curr_bytes];
     printf("Methods count: %u\n", ntohs(*class->methods_count));
 
     class->methods = NEXT_PTR(class->methods_count);

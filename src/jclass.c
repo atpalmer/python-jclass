@@ -184,16 +184,15 @@ static PyObject *jclass_load(PyObject *self, PyObject *args) {
 
     class->access_flags = (void *)&class->constant_pool[pool_bytes];
 
-    printf("Raw Access Flags: %u\n", *class->access_flags);
-    printf("(Local) Access Flags: %u\n", ntohs(*class->access_flags));
-    printf("PUBLIC Flag: %x\n", CLASS_HAS_ACCESS(class, ACC_PUBLIC));
-    printf("FINAL Flag: %x\n", CLASS_HAS_ACCESS(class, ACC_FINAL));
-    printf("SUPER Flag: %x\n", CLASS_HAS_ACCESS(class, ACC_SUPER));
-    printf("INTERFACE Flag: %x\n", CLASS_HAS_ACCESS(class, ACC_INTERFACE));
-    printf("ABSTRACT Flag: %x\n", CLASS_HAS_ACCESS(class, ACC_ABSTRACT));
-    printf("SYNTHETIC Flag: %x\n", CLASS_HAS_ACCESS(class, ACC_SYNTHETIC));
-    printf("ANNOTATION Flag: %x\n", CLASS_HAS_ACCESS(class, ACC_ANNOTATION));
-    printf("ENUM Flag: %x\n", CLASS_HAS_ACCESS(class, ACC_ENUM));
+    printf("Access Flags: %u\n", ntohs(*class->access_flags));
+    printf("* PUBLIC Flag: %x\n", CLASS_HAS_ACCESS(class, ACC_PUBLIC));
+    printf("* FINAL Flag: %x\n", CLASS_HAS_ACCESS(class, ACC_FINAL));
+    printf("* SUPER Flag: %x\n", CLASS_HAS_ACCESS(class, ACC_SUPER));
+    printf("* INTERFACE Flag: %x\n", CLASS_HAS_ACCESS(class, ACC_INTERFACE));
+    printf("* ABSTRACT Flag: %x\n", CLASS_HAS_ACCESS(class, ACC_ABSTRACT));
+    printf("* SYNTHETIC Flag: %x\n", CLASS_HAS_ACCESS(class, ACC_SYNTHETIC));
+    printf("* ANNOTATION Flag: %x\n", CLASS_HAS_ACCESS(class, ACC_ANNOTATION));
+    printf("* ENUM Flag: %x\n", CLASS_HAS_ACCESS(class, ACC_ENUM));
 
     class->this_class = NEXT_PTR(class->access_flags);
     printf("This Class Pool Index: %u\n", ntohs(*class->this_class));

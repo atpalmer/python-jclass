@@ -20,10 +20,11 @@ enum access_flag {
 
 /* TODO: make PyObject */
 typedef struct {
+    uint32_t magic_number;
+    uint16_t minor_version;
+    uint16_t major_version;
+
     /* ptrs to .data[] (big-endian order!) */
-    uint32_t *magic_number;
-    uint16_t *minor_version;
-    uint16_t *major_version;
     uint16_t *constant_pool_count;
     uint8_t *constant_pool;
     uint16_t *access_flags;
@@ -152,8 +153,18 @@ static void *_JavaClass_free(JavaClass *this) {
 }
 
 static size_t parse_magic_number(void *data, JavaClass *class) {
-    class->magic_number = data;
-    return sizeof(*class->magic_number);
+    class->magic_number = UINT32(data);
+    return sizeof(class->magic_number);
+}
+
+static size_t parse_minor_version(void *data, JavaClass *class) {
+    class->minor_version = UINT16(data);
+    return sizeof(class->minor_version);
+}
+
+static size_t parse_major_version(void *data, JavaClass *class) {
+    class->major_version = UINT16(data);
+    return sizeof(class->major_version);
 }
 
 static PyObject *jclass_load(PyObject *self, PyObject *args) {
@@ -165,19 +176,18 @@ static PyObject *jclass_load(PyObject *self, PyObject *args) {
 
 #define NEXT_PTR(last)   ((void *)(((uint8_t *)(last)) + sizeof(*(last))))
 
-    class->magic_number = (void *)class->data;
-
     size_t curr_bytes = 0;
 
     curr_bytes += parse_magic_number(&class->data[curr_bytes], class);
+    curr_bytes += parse_minor_version(&class->data[curr_bytes], class);
+    curr_bytes += parse_major_version(&class->data[curr_bytes], class);
 
-    class->minor_version = &class->data[curr_bytes];
-    class->major_version = NEXT_PTR(class->minor_version);
-    class->constant_pool_count = NEXT_PTR(class->major_version);
+    printf("Magic Number: %X\n", class->magic_number);
+    printf("Version: %u.%u\n", class->major_version, class->minor_version);
+
+    class->constant_pool_count = &class->data[curr_bytes];
     class->constant_pool = NEXT_PTR(class->constant_pool_count);
 
-    printf("Magic Number: %X\n", ntohl(*class->magic_number));
-    printf("Version: %u.%u\n", ntohs(*class->major_version), ntohs(*class->minor_version));
     printf("Constant Pool Count: %u\n", ntohs(*class->constant_pool_count));
 
     size_t pool_bytes = parse_constant_pool(class->constant_pool, ntohs(*class->constant_pool_count));

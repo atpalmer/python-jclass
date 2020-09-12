@@ -34,8 +34,9 @@ typedef struct {
     uint16_t interfaces_count;
     uint16_t *interfaces;  /* interface_indexes */
 
-    uint16_t *fields_count;
+    uint16_t fields_count;
     uint8_t *fields;
+
     uint16_t *methods_count;
     uint8_t *methods;
     uint16_t *attributes_count;
@@ -199,13 +200,13 @@ static PyObject *jclass_load(PyObject *self, PyObject *args) {
     printf("Interfaces count: %u\n", class->interfaces_count);
 
     class->interfaces = (void *)&class->data[curr_bytes];
-    /* interfaces items are fixed-width; skip parsing for now */
+    curr_bytes +=  2 * class->interfaces_count; /* interfaces items are fixed-width; skip parsing for now */
 
-    class->fields_count = class->interfaces + class->interfaces_count;
-    printf("Fields count: %u\n", ntohs(*class->fields_count));
+    curr_bytes += parse16(&class->data[curr_bytes], &class->fields_count);
+    printf("Fields count: %u\n", class->fields_count);
 
-    class->fields = NEXT_PTR(class->fields_count);
-    size_t fields_bytes = parse_fields(class->fields, ntohs(*class->fields_count));
+    class->fields = (void *)&class->data[curr_bytes];
+    size_t fields_bytes = parse_fields(class->fields, class->fields_count);
 
     class->methods_count = (void *)&class->fields[fields_bytes];
     printf("Methods count: %u\n", ntohs(*class->methods_count));

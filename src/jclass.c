@@ -172,14 +172,12 @@ static PyObject *jclass_load(PyObject *self, PyObject *args) {
     printf("Version: %u.%u\n", class->major_version, class->minor_version);
 
     curr_bytes += parse16(&class->data[curr_bytes], &class->constant_pool_count);
-
-    class->constant_pool = &class->data[curr_bytes];
-
     printf("Constant Pool Count: %u\n", class->constant_pool_count);
 
-    size_t pool_bytes = parse_constant_pool(class->constant_pool, class->constant_pool_count);
+    class->constant_pool = &class->data[curr_bytes];
+    curr_bytes += parse_constant_pool(class->constant_pool, class->constant_pool_count);
 
-    class->access_flags = (void *)&class->constant_pool[pool_bytes];
+    class->access_flags = (void *)&class->data[curr_bytes];
 
     printf("Access Flags: %u\n", ntohs(*class->access_flags));
     printf("* PUBLIC Flag: %x\n", CLASS_HAS_ACCESS(class, ACC_PUBLIC));

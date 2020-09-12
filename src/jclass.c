@@ -30,13 +30,10 @@ typedef struct {
     uint16_t *super_class;
     uint16_t *interfaces_count;
     uint16_t *interfaces;  /* interface_indexes */
-
     uint16_t *fields_count;
     uint8_t *fields;
-
     uint16_t *methods_count;
     uint8_t *methods;
-
     uint16_t *attributes_count;
     uint8_t *attributes;
 

@@ -40,7 +40,7 @@ typedef struct {
     uint16_t methods_count;
     uint8_t *methods;
 
-    uint16_t *attributes_count;
+    uint16_t attributes_count;
     uint8_t *attributes;
 
     Py_ssize_t size;
@@ -217,11 +217,11 @@ static PyObject *jclass_load(PyObject *self, PyObject *args) {
 
     printf("CLASS ATTRIBUTES:\n");
 
-    class->attributes_count = (void *)&class->data[curr_bytes];
-    printf("Attributes count: %u\n", ntohs(*class->attributes_count));
+    curr_bytes += parse16(&class->data[curr_bytes], &class->attributes_count);
+    printf("Attributes count: %u\n", class->attributes_count);
 
-    class->attributes = NEXT_PTR(class->attributes_count);
-    size_t attributes_bytes = parse_attributes(class->attributes, ntohs(*class->attributes_count));
+    class->attributes = (void *)&class->data[curr_bytes];
+    size_t attributes_bytes = parse_attributes(class->attributes, class->attributes_count);
 
     PyObject *result = PyBytes_FromStringAndSize((char *)class->data, class->size);
     _JavaClass_free(class);

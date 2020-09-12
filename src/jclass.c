@@ -151,6 +151,11 @@ static void *_JavaClass_free(JavaClass *this) {
     PyMem_Free(this);
 }
 
+static size_t parse_magic_number(void *data, JavaClass *class) {
+    class->magic_number = data;
+    return sizeof(*class->magic_number);
+}
+
 static PyObject *jclass_load(PyObject *self, PyObject *args) {
     char *fname;
     if(!PyArg_ParseTuple(args, "s", &fname))
@@ -161,7 +166,12 @@ static PyObject *jclass_load(PyObject *self, PyObject *args) {
 #define NEXT_PTR(last)   ((void *)(((uint8_t *)(last)) + sizeof(*(last))))
 
     class->magic_number = (void *)class->data;
-    class->minor_version = NEXT_PTR(class->magic_number);
+
+    size_t curr_bytes = 0;
+
+    curr_bytes += parse_magic_number(&class->data[curr_bytes], class);
+
+    class->minor_version = &class->data[curr_bytes];
     class->major_version = NEXT_PTR(class->minor_version);
     class->constant_pool_count = NEXT_PTR(class->major_version);
     class->constant_pool = NEXT_PTR(class->constant_pool_count);

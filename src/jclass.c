@@ -64,6 +64,50 @@ static uint8_t *Field_attributes(void *head) {
 }
 
 
+static uint16_t Attribute_name_index(void *head) {
+    return UINT16_AT(head, 0);
+}
+
+static uint32_t Attribute_length(void *head) {
+    return UINT16_AT(head, 2);
+}
+
+static uint8_t *Attribute_info(void *head) {
+    return POINTER_AT(head, 6);
+}
+
+
+static size_t parse_attributes(uint8_t *attrs, int count) {
+    size_t attrs_bytes = 0;
+    for(int i = 0; i < count; ++i) {
+        uint8_t *attr = &attrs[attrs_bytes];
+        printf("** Attr name index: %u\n", Attribute_name_index(attr));
+        printf("** Attr length: %u\n", Attribute_length(attr));
+        printf("** Attr info: %.*s\n", Attribute_length(attr), (char *)Attribute_info(attr));
+
+        attrs_bytes += 6 + Attribute_length(attr);
+    }
+
+    return attrs_bytes;
+}
+
+static size_t parse_fields(uint8_t *fields, int count) {
+    size_t fields_bytes = 0;
+    for(int i = 0; i < count; ++i) {
+        uint8_t *field = &fields[fields_bytes];
+        printf("* Field access flags: %u\n", Field_access_flags(field));
+        printf("* Field name index: %u\n", Field_name_index(field));
+        printf("* Field descriptor index: %u\n", Field_descriptor_index(field));
+        printf("* Field attributes count: %u\n", Field_attributes_count(field));
+
+        uint8_t *attrs = Field_attributes(field);
+        size_t attrs_bytes = parse_attributes(attrs, Field_attributes_count(field));
+
+        fields_bytes += 8 + attrs_bytes;
+    }
+    return fields_bytes;
+}
+
 static size_t parse_constant_pool(uint8_t *pool, int count) {
     size_t pool_bytes = 0;
     for(int i = 1; i < count; ++i) {
@@ -161,19 +205,11 @@ static PyObject *jclass_load(PyObject *self, PyObject *args) {
     /* interfaces items are fixed-width; skip parsing for now */
 
     class->fields_count = class->interfaces + ntohs(*class->interfaces_count);
-    class->fields = NEXT_PTR(class->fields_count);
-
     printf("Fields count: %u\n", ntohs(*class->fields_count));
 
-    size_t fields_bytes = 0;
-    for(int i = 0; i < ntohs(*class->fields_count); ++i) {
-        uint8_t *field = &class->fields[fields_bytes];
-        printf("* Field access flags: %u\n", Field_access_flags(field));
-        printf("* Field name index: %u\n", Field_name_index(field));
-        printf("* Field descriptor index: %u\n", Field_descriptor_index(field));
-        printf("* Field attributes count: %u\n", Field_attributes_count(field));
-        break;
-    }
+    class->fields = NEXT_PTR(class->fields_count);
+    size_t fields_bytes = parse_fields(class->fields, ntohs(*class->fields_count));
+
 
     PyObject *result = PyBytes_FromStringAndSize((char *)class->data, class->size);
     PyMem_Free(class);

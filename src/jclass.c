@@ -37,8 +37,9 @@ typedef struct {
     uint16_t fields_count;
     uint8_t *fields;
 
-    uint16_t *methods_count;
+    uint16_t methods_count;
     uint8_t *methods;
+
     uint16_t *attributes_count;
     uint8_t *attributes;
 
@@ -208,11 +209,11 @@ static PyObject *jclass_load(PyObject *self, PyObject *args) {
     class->fields = (void *)&class->data[curr_bytes];
     curr_bytes += parse_fields(class->fields, class->fields_count);
 
-    class->methods_count = (void *)&class->data[curr_bytes];
-    printf("Methods count: %u\n", ntohs(*class->methods_count));
+    curr_bytes += parse16(&class->data[curr_bytes], &class->methods_count);
+    printf("Methods count: %u\n", class->methods_count);
 
-    class->methods = NEXT_PTR(class->methods_count);
-    size_t methods_bytes = parse_methods(class->methods, ntohs(*class->methods_count));
+    class->methods = (void *)&class->data[curr_bytes];
+    size_t methods_bytes = parse_methods(class->methods, class->methods_count);
 
     printf("CLASS ATTRIBUTES:\n");
 

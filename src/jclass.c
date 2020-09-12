@@ -213,11 +213,11 @@ static PyObject *jclass_load(PyObject *self, PyObject *args) {
     printf("Methods count: %u\n", class->methods_count);
 
     class->methods = (void *)&class->data[curr_bytes];
-    size_t methods_bytes = parse_methods(class->methods, class->methods_count);
+    curr_bytes += parse_methods(class->methods, class->methods_count);
 
     printf("CLASS ATTRIBUTES:\n");
 
-    class->attributes_count = (void *)&class->methods[methods_bytes];
+    class->attributes_count = (void *)&class->data[curr_bytes];
     printf("Attributes count: %u\n", ntohs(*class->attributes_count));
 
     class->attributes = NEXT_PTR(class->attributes_count);

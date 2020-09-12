@@ -137,16 +137,22 @@ static size_t parse_constant_pool(uint8_t *pool, int count) {
     return pool_bytes;
 }
 
+static JavaClass *_JavaClass_from_filename(const char *filename) {
+    JavaClass *new = PyMem_Malloc(sizeof(JavaClass) + 4096);
+
+    FILE *fp = fopen(filename, "rb");
+    new->size = fread(new->data, 1, 4096, fp);
+    fclose(fp);
+
+    return new;
+}
+
 static PyObject *jclass_load(PyObject *self, PyObject *args) {
     char *fname;
     if(!PyArg_ParseTuple(args, "s", &fname))
         return NULL;
 
-    JavaClass *class = PyMem_Malloc(sizeof(JavaClass) + 4096);
-
-    FILE *fp = fopen(fname, "rb");
-    class->size = fread(class->data, 1, 4096, fp);
-    fclose(fp);
+    JavaClass *class = _JavaClass_from_filename(fname);
 
 #define NEXT_PTR(last)   ((void *)(((uint8_t *)(last)) + sizeof(*(last))))
 

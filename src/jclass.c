@@ -149,7 +149,7 @@ static JavaClass *_JavaClass_from_filename(const char *filename) {
     return new;
 }
 
-static void *_JavaClass_free(JavaClass *this) {
+static void _JavaClass_free(JavaClass *this) {
     PyMem_Free(this);
 }
 

@@ -46,7 +46,7 @@ static size_t parse_constant_pool(uint8_t *pool, int count) {
     size_t pool_bytes = 0;
     for(int i = 1; i < count; ++i) {
         uint8_t *c = &pool[pool_bytes];
-        printf("%d.) %s=%u: bytes index: %u\n", i, CONSTANT_DESC(c), Constant_tag(c), pool_bytes);
+        printf("%d.) %s=%u: bytes index: %zu\n", i, CONSTANT_DESC(c), Constant_tag(c), pool_bytes);
 
         switch(Constant_tag(c)) {
         case CONSTANT_TYPE_Utf8:
@@ -101,7 +101,7 @@ static PyObject *jclass_load(PyObject *self, PyObject *args) {
 
 #define NEXT_PTR(last)   ((void *)(((uint8_t *)(last)) + sizeof(*(last))))
 
-    class->magic_number = class->data;
+    class->magic_number = (void *)class->data;
     class->minor_version = NEXT_PTR(class->magic_number);
     class->major_version = NEXT_PTR(class->minor_version);
     class->constant_pool_count = NEXT_PTR(class->major_version);
@@ -113,7 +113,7 @@ static PyObject *jclass_load(PyObject *self, PyObject *args) {
 
     size_t pool_bytes = parse_constant_pool(class->constant_pool, ntohs(*class->constant_pool_count));
 
-    class->access_flags = class->constant_pool + pool_bytes;
+    class->access_flags = (void *)&class->constant_pool[pool_bytes];
 
     printf("Raw Access Flags: %u\n", *class->access_flags);
     printf("(Local) Access Flags: %u\n", ntohs(*class->access_flags));
@@ -141,7 +141,7 @@ static PyObject *jclass_load(PyObject *self, PyObject *args) {
     class->fields_count = class->interfaces + *class->interfaces_count;
     class->fields = NEXT_PTR(class->fields_count);
 
-    PyObject *result = PyBytes_FromStringAndSize(class->data, class->size);
+    PyObject *result = PyBytes_FromStringAndSize((char *)class->data, class->size);
     PyMem_Free(class);
     return result;
 

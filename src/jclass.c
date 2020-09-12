@@ -1,5 +1,6 @@
 #import <Python.h>
 #import "constant_pool.h"
+#import "fields.h"
 
 enum access_flag {
     ACC_PUBLIC      =0x0001,
@@ -41,27 +42,6 @@ typedef struct {
     Py_ssize_t size;
     uint8_t data[];
 } JavaClass;
-
-
-static uint16_t Field_access_flags(void *head) {
-    return UINT16_AT(head, 0);
-}
-
-static uint16_t Field_name_index(void *head) {
-    return UINT16_AT(head, 2);
-}
-
-static uint16_t Field_descriptor_index(void *head) {
-    return UINT16_AT(head, 4);
-}
-
-static uint16_t Field_attributes_count(void *head) {
-    return UINT16_AT(head, 6);
-}
-
-static uint8_t *Field_attributes(void *head) {
-    return POINTER_AT(head, 8);
-}
 
 
 static uint16_t Attribute_name_index(void *head) {

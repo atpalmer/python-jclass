@@ -59,6 +59,44 @@ static size_t parse_attributes(uint8_t *attrs, int count) {
     return attrs_bytes;
 }
 
+static inline uint16_t Method_access_flags(void *head) {
+    return UINT16_AT(head, 0);
+}
+
+static inline uint16_t Method_name_index(void *head) {
+    return UINT16_AT(head, 2);
+}
+
+static inline uint16_t Method_descriptor_index(void *head) {
+    return UINT16_AT(head, 4);
+}
+
+static inline uint16_t Method_attributes_count(void *head) {
+    return UINT16_AT(head, 6);
+}
+
+static inline uint8_t *Method_attributes(void *head) {
+    return POINTER_AT(head, 8);
+}
+
+
+static size_t parse_methods(uint8_t *methods, int count) {
+    size_t methods_bytes = 0;
+    for(int i = 0; i < count; ++i) {
+        uint8_t *method = &methods[methods_bytes];
+        printf("* Method access_flags: %u\n", Method_access_flags(method));
+        printf("* Method name_index: %u\n", Method_name_index(method));
+        printf("* Method descriptor_index: %u\n", Method_descriptor_index(method));
+        printf("* Method attributes_count: %u\n", Method_attributes_count(method));
+
+        uint8_t *attrs = Method_attributes(method);
+        size_t attrs_bytes = parse_attributes(attrs, Method_attributes_count(method));
+
+        methods_bytes += 8 + attrs_bytes;
+    }
+    return methods_bytes;
+}
+
 static size_t parse_fields(uint8_t *fields, int count) {
     size_t fields_bytes = 0;
     for(int i = 0; i < count; ++i) {
@@ -178,6 +216,11 @@ static PyObject *jclass_load(PyObject *self, PyObject *args) {
     class->fields = NEXT_PTR(class->fields_count);
     size_t fields_bytes = parse_fields(class->fields, ntohs(*class->fields_count));
 
+    class->methods_count = (void *)&class->fields[fields_bytes];
+    printf("Methods count: %u\n", ntohs(*class->methods_count));
+
+    class->methods = NEXT_PTR(class->methods_count);
+    size_t methods_bytes = parse_methods(class->methods, ntohs(*class->methods_count));
 
     PyObject *result = PyBytes_FromStringAndSize((char *)class->data, class->size);
     PyMem_Free(class);

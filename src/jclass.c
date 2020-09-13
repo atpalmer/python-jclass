@@ -46,6 +46,12 @@ typedef struct {
 typedef JavaClassFieldrefConstant JavaClassMethodrefConstant;
 typedef JavaClassFieldrefConstant JavaClassInterfaceMethodrefConstant;
 
+typedef struct {
+    uint8_t tag;
+    uint16_t name_index;
+    uint16_t descriptor_index;
+} JavaClassNameAndTypeConstant;
+
 /* TODO: make PyObject */
 typedef struct {
     uint32_t magic_number;
@@ -212,6 +218,19 @@ static void _JavaClassInterfaceMethodrefConstant_print(JavaClassInterfaceMethodr
 }
 
 
+static JavaClassConstant *_JavaClassNameAndTypeConstant_from_data(uint8_t *data) {
+    JavaClassNameAndTypeConstant *new = PyMem_Malloc(sizeof(*new));
+    new->tag = Constant_tag(data);
+    new->name_index = NameAndType_name_index(data);
+    new->descriptor_index = NameAndType_descriptor_index(data);
+    return (JavaClassConstant *)new;
+}
+
+static void _JavaClassNameAndTypeConstant_print(JavaClassNameAndTypeConstant *this) {
+    printf("NameAndType=tag(%u), name_index(%u), descriptor_index(%u)\n",
+        this->tag, this->name_index, this->descriptor_index);
+}
+
 
 #define CONSTANT_AT(constants, i)                       ((constants)[(i) - 1])
 #define CONSTANT_AT_MEMBER(constants, i, tp, member)    (((tp *)CONSTANT_AT((constants), (i)))->member)
@@ -265,8 +284,8 @@ static size_t parse_constant_pool(uint8_t *pool, int count, JavaClassConstant **
             break;
 
         case CONSTANT_TYPE_NameAndType:
-            printf("tag(%u), name_index(%u), descriptor_index(%u)\n",
-                Constant_tag(c), NameAndType_name_index(c), NameAndType_descriptor_index(c));
+            printf("-- see below\n");
+            CONSTANT_AT(*obj, i) = _JavaClassNameAndTypeConstant_from_data(c);
             pool_bytes += 5;
             break;
 
@@ -303,6 +322,9 @@ static size_t parse_constant_pool(uint8_t *pool, int count, JavaClassConstant **
             break;
         case CONSTANT_TYPE_InterfaceMethodref:
             _JavaClassInterfaceMethodrefConstant_print(CONSTANT_AT(*obj, i));
+            break;
+        case CONSTANT_TYPE_NameAndType:
+            _JavaClassNameAndTypeConstant_print(CONSTANT_AT(*obj, i));
             break;
         default:
             break;

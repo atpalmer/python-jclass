@@ -1,6 +1,8 @@
 #ifndef ACCESS_H
 #define ACCESS_H
 
+#include <stdint.h>
+
 enum access_flag {
     ACC_PUBLIC      =0x0001,
     ACC_FINAL       =0x0010,
@@ -12,6 +14,6 @@ enum access_flag {
     ACC_ENUM        =0x4000,
 };
 
-#define CLASS_HAS_ACCESS(class, flag)  ((class)->access_flags & (flag))
+void access_flags_print(uint16_t flags);
 
 #endif

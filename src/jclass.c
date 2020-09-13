@@ -343,28 +343,16 @@ static PyObject *jclass_load(PyObject *self, PyObject *args) {
     curr_bytes += parse32(&class->data[curr_bytes], &class->magic_number);
     curr_bytes += parse16(&class->data[curr_bytes], &class->minor_version);
     curr_bytes += parse16(&class->data[curr_bytes], &class->major_version);
-
-    printf("Magic Number: %X\n", class->magic_number);
-    printf("Version: %u.%u\n", class->major_version, class->minor_version);
-
     curr_bytes += parse16(&class->data[curr_bytes], &class->constant_pool_count);
     curr_bytes += parse_constant_pool(&class->data[curr_bytes], class->constant_pool_count, &class->constant_pool);
     curr_bytes += parse16(&class->data[curr_bytes], &class->access_flags);
     curr_bytes += parse16(&class->data[curr_bytes], &class->this_class);
     curr_bytes += parse16(&class->data[curr_bytes], &class->super_class);
 
+    printf("Magic Number: %X\n", class->magic_number);
+    printf("Version: %u.%u\n", class->major_version, class->minor_version);
     print_constant_pool(class->constant_pool, class->constant_pool_count);
-
-    printf("Access Flags: %u\n", class->access_flags);
-    printf("* PUBLIC Flag: %x\n", CLASS_HAS_ACCESS(class, ACC_PUBLIC));
-    printf("* FINAL Flag: %x\n", CLASS_HAS_ACCESS(class, ACC_FINAL));
-    printf("* SUPER Flag: %x\n", CLASS_HAS_ACCESS(class, ACC_SUPER));
-    printf("* INTERFACE Flag: %x\n", CLASS_HAS_ACCESS(class, ACC_INTERFACE));
-    printf("* ABSTRACT Flag: %x\n", CLASS_HAS_ACCESS(class, ACC_ABSTRACT));
-    printf("* SYNTHETIC Flag: %x\n", CLASS_HAS_ACCESS(class, ACC_SYNTHETIC));
-    printf("* ANNOTATION Flag: %x\n", CLASS_HAS_ACCESS(class, ACC_ANNOTATION));
-    printf("* ENUM Flag: %x\n", CLASS_HAS_ACCESS(class, ACC_ENUM));
-
+    access_flags_print(class->access_flags);
     printf("This Class Pool Index: %u\n", class->this_class);
     printf("Super Class Pool Index: %u\n", class->super_class);
 

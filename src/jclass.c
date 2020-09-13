@@ -96,6 +96,12 @@ static size_t parse_fields(uint8_t *fields, int count) {
     return fields_bytes;
 }
 
+static size_t parse_interfaces(uint8_t *data, int count, uint8_t **obj) {
+    *obj = data;
+    printf("Interfaces count: %d\n", count);
+    return 2 * count;
+}
+
 static size_t parse_constant_pool(uint8_t *pool, int count, uint8_t **obj) {
     *obj = pool;
 
@@ -198,10 +204,7 @@ static PyObject *jclass_load(PyObject *self, PyObject *args) {
     printf("Super Class Pool Index: %u\n", class->super_class);
 
     curr_bytes += parse16(&class->data[curr_bytes], &class->interfaces_count);
-    printf("Interfaces count: %u\n", class->interfaces_count);
-
-    class->interfaces = (void *)&class->data[curr_bytes];
-    curr_bytes +=  2 * class->interfaces_count; /* interfaces items are fixed-width; skip parsing for now */
+    curr_bytes += parse_interfaces(&class->data[curr_bytes], class->interfaces_count, &class->interfaces);
 
     curr_bytes += parse16(&class->data[curr_bytes], &class->fields_count);
     printf("Fields count: %u\n", class->fields_count);

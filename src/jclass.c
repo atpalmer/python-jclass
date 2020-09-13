@@ -233,6 +233,8 @@ static void _JavaClassNameAndTypeConstant_print(JavaClassNameAndTypeConstant *th
 
 
 static void print_constant_pool(JavaClassConstant **constants, int count) {
+    printf("Constant Pool Count: %d\n", count);
+
     for(int i = 1; i < count; ++i) {
         JavaClassConstant *c = constants[i - 1];
 
@@ -273,8 +275,6 @@ static void print_constant_pool(JavaClassConstant **constants, int count) {
 
 static size_t parse_constant_pool(uint8_t *pool, int count, JavaClassConstant ***obj) {
     *obj = PyMem_Malloc(sizeof(JavaClassConstant *) * count);
-
-    printf("Constant Pool Count: %d\n", count);
 
     size_t pool_bytes = 0;
     for(int i = 1; i < count; ++i) {
@@ -324,7 +324,6 @@ static size_t parse_constant_pool(uint8_t *pool, int count, JavaClassConstant **
     }
 
     print_constant_pool(*obj, count);
-
     return pool_bytes;
 }
 

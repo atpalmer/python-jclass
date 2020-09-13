@@ -4,6 +4,12 @@
 #include "constant_pool.h"
 
 
+typedef struct {
+    uint16_t interfaces_count;
+    uint16_t interfaces[];
+} JavaClassInterfaces;
+
+
 /* TODO: make PyObject */
 typedef struct {
     uint32_t magic_number;
@@ -87,12 +93,14 @@ static size_t parse_fields(uint8_t *fields, int count, uint8_t **obj) {
     return fields_bytes;
 }
 
-static size_t parse_interfaces(uint8_t *data, int count, uint8_t **obj) {
-    *obj = data;
-    printf("Interfaces count: %d\n", count);
-    return 2 * count;
+static size_t parse_interfaces(uint8_t *data, uint16_t *count, uint8_t **obj) {
+    size_t curr_bytes = 0;
+    curr_bytes += parse16(&data[curr_bytes], count);
+    *obj = &data[curr_bytes];
+    curr_bytes += (2 * (*count));
+    printf("Interfaces count: %d\n", *count);
+    return curr_bytes;
 }
-
 
 static JavaClass *_JavaClass_from_filename(const char *filename) {
     JavaClass *new = PyMem_Malloc(sizeof(JavaClass) + 4096);
@@ -141,8 +149,7 @@ static PyObject *jclass_load(PyObject *self, PyObject *args) {
     printf("This Class Pool Index: %u\n", class->this_class);
     printf("Super Class Pool Index: %u\n", class->super_class);
 
-    curr_bytes += parse16(&class->data[curr_bytes], &class->interfaces_count);
-    curr_bytes += parse_interfaces(&class->data[curr_bytes], class->interfaces_count, &class->interfaces);
+    curr_bytes += parse_interfaces(&class->data[curr_bytes], &class->interfaces_count, &class->interfaces);
     curr_bytes += parse16(&class->data[curr_bytes], &class->fields_count);
     curr_bytes += parse_fields(&class->data[curr_bytes], class->fields_count, &class->fields);
     curr_bytes += parse16(&class->data[curr_bytes], &class->methods_count);

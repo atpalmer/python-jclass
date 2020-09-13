@@ -22,8 +22,7 @@ typedef struct {
     uint16_t this_class;
     uint16_t super_class;
 
-    uint16_t interfaces_count;
-    uint16_t *interfaces;  /* interface_indexes */
+    JavaClassInterfaces *interfaces;
 
     uint16_t fields_count;
     uint8_t *fields;
@@ -93,12 +92,22 @@ static size_t parse_fields(uint8_t *fields, int count, uint8_t **obj) {
     return fields_bytes;
 }
 
-static size_t parse_interfaces(uint8_t *data, uint16_t *count, uint8_t **obj) {
+static size_t parse_interfaces(uint8_t *data, JavaClassInterfaces **obj) {
     size_t curr_bytes = 0;
-    curr_bytes += parse16(&data[curr_bytes], count);
-    *obj = &data[curr_bytes];
-    curr_bytes += (2 * (*count));
-    printf("Interfaces count: %d\n", *count);
+
+    uint16_t count;
+    curr_bytes += parse16(&data[curr_bytes], &count);
+    *obj = PyMem_Malloc(sizeof(JavaClassInterfaces) + (sizeof(uint16_t) * count));
+    (*obj)->interfaces_count = count;
+
+    printf("Interfaces count: %d\n", count);
+
+    for(uint16_t i = 0; i < count; ++i) {
+        uint16_t *p = &((*obj)->interfaces[i]);
+        curr_bytes += parse16(&data[curr_bytes], p);
+        printf("  * interface: %u\n", *p);
+    }
+
     return curr_bytes;
 }
 
@@ -119,8 +128,13 @@ static void JavaClassConstantPool_free(JavaClassConstantPool *this) {
     PyMem_Free(this);
 }
 
+static void JavaClassInterfaces_free(JavaClassInterfaces *this) {
+    PyMem_Free(this);
+}
+
 static void _JavaClass_free(JavaClass *this) {
     JavaClassConstantPool_free(this->constant_pool);
+    JavaClassInterfaces_free(this->interfaces);
     PyMem_Free(this->constant_pool);
     PyMem_Free(this);
 }
@@ -149,7 +163,7 @@ static PyObject *jclass_load(PyObject *self, PyObject *args) {
     printf("This Class Pool Index: %u\n", class->this_class);
     printf("Super Class Pool Index: %u\n", class->super_class);
 
-    curr_bytes += parse_interfaces(&class->data[curr_bytes], &class->interfaces_count, &class->interfaces);
+    curr_bytes += parse_interfaces(&class->data[curr_bytes], &class->interfaces);
     curr_bytes += parse16(&class->data[curr_bytes], &class->fields_count);
     curr_bytes += parse_fields(&class->data[curr_bytes], class->fields_count, &class->fields);
     curr_bytes += parse16(&class->data[curr_bytes], &class->methods_count);

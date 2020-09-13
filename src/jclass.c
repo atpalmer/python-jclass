@@ -232,9 +232,6 @@ static void _JavaClassNameAndTypeConstant_print(JavaClassNameAndTypeConstant *th
 }
 
 
-#define CONSTANT_AT(constants, i)                       ((constants)[(i) - 1])
-#define CONSTANT_AT_MEMBER(constants, i, tp, member)    (((tp *)CONSTANT_AT((constants), (i)))->member)
-
 static void print_constant_pool(JavaClassConstant **constants, int count) {
     for(int i = 1; i < count; ++i) {
         JavaClassConstant *c = constants[i - 1];
@@ -273,6 +270,8 @@ static void print_constant_pool(JavaClassConstant **constants, int count) {
         }
     }
 }
+
+#define CONSTANT_AT(constants, i)                       ((constants)[(i) - 1])
 
 static size_t parse_constant_pool(uint8_t *pool, int count, JavaClassConstant ***obj) {
     *obj = PyMem_Malloc(sizeof(JavaClassConstant *) * count);

@@ -62,7 +62,9 @@ static size_t parse_attributes(uint8_t *attrs, int count) {
     return attrs_bytes;
 }
 
-static size_t parse_methods(uint8_t *methods, int count) {
+static size_t parse_methods(uint8_t *methods, int count, uint8_t **obj) {
+    *obj = methods;
+    printf("Methods count: %d\n", count);
     size_t methods_bytes = 0;
     for(int i = 0; i < count; ++i) {
         uint8_t *method = &methods[methods_bytes];
@@ -209,12 +211,8 @@ static PyObject *jclass_load(PyObject *self, PyObject *args) {
     curr_bytes += parse_interfaces(&class->data[curr_bytes], class->interfaces_count, &class->interfaces);
     curr_bytes += parse16(&class->data[curr_bytes], &class->fields_count);
     curr_bytes += parse_fields(&class->data[curr_bytes], class->fields_count, &class->fields);
-
     curr_bytes += parse16(&class->data[curr_bytes], &class->methods_count);
-    printf("Methods count: %u\n", class->methods_count);
-
-    class->methods = (void *)&class->data[curr_bytes];
-    curr_bytes += parse_methods(class->methods, class->methods_count);
+    curr_bytes += parse_methods(&class->data[curr_bytes], class->methods_count, &class->methods);
 
     printf("CLASS ATTRIBUTES:\n");
 

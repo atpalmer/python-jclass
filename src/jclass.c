@@ -46,23 +46,23 @@ static size_t parse_attributes(uint8_t *attrs, int count, uint8_t **obj) {
     return attrs_bytes;
 }
 
-static size_t parse_methods(uint8_t *methods, int count, uint8_t **obj) {
-    *obj = methods;
-    printf("Methods count: %d\n", count);
-    size_t methods_bytes = 0;
-    for(int i = 0; i < count; ++i) {
-        uint8_t *method = &methods[methods_bytes];
+static size_t parse_methods(uint8_t *data, uint16_t *count, uint8_t **obj) {
+    size_t curr_bytes = 0;
+    curr_bytes += parse16(&data[curr_bytes], count);
+    *obj = &data[curr_bytes];
+    printf("Methods count: %d\n", *count);
+    for(int i = 0; i < *count; ++i) {
+        uint8_t *method = &data[curr_bytes];
         printf("* Method access_flags: %u\n", Method_access_flags(method));
         printf("* Method name_index: %u\n", Method_name_index(method));
         printf("* Method descriptor_index: %u\n", Method_descriptor_index(method));
         printf("* Method attributes_count: %u\n", Method_attributes_count(method));
 
-        uint8_t *attrs;
-        size_t attrs_bytes = parse_attributes(Method_attributes(method), Method_attributes_count(method), &attrs);
-
-        methods_bytes += 8 + attrs_bytes;
+        uint8_t *attrs;  /* TODO: store */
+        curr_bytes += parse_attributes(Method_attributes(method), Method_attributes_count(method), &attrs);
+        curr_bytes += 8;
     }
-    return methods_bytes;
+    return curr_bytes;
 }
 
 static size_t parse_fields(uint8_t *data, uint16_t *count, uint8_t **obj) {
@@ -128,8 +128,7 @@ static PyObject *jclass_load(PyObject *self, PyObject *args) {
     interfaces_print(class->interfaces);
 
     curr_bytes += parse_fields(&class->data[curr_bytes], &class->fields_count, &class->fields);
-    curr_bytes += parse16(&class->data[curr_bytes], &class->methods_count);
-    curr_bytes += parse_methods(&class->data[curr_bytes], class->methods_count, &class->methods);
+    curr_bytes += parse_methods(&class->data[curr_bytes], &class->methods_count, &class->methods);
 
     printf("CLASS ATTRIBUTES:\n");
 

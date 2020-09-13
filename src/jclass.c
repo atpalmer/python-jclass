@@ -4,6 +4,16 @@
 #include "constant_pool.h"
 #include "interfaces.h"
 
+typedef struct {
+    uint16_t attribute_name_index;
+    uint32_t attribute_length;
+    uint8_t info[];
+} JavaClassAttribute;
+
+typedef struct {
+    uint16_t attributes_count;
+    JavaClassAttribute *attributes[];
+} JavaClassAttributes;
 
 /* TODO: make PyObject */
 typedef struct {
@@ -22,15 +32,50 @@ typedef struct {
     uint16_t methods_count;
     uint8_t *methods;
 
-    uint16_t attributes_count;
-    uint8_t *attributes;
+    JavaClassAttributes *attributes;
 
     Py_ssize_t size;
     uint8_t data[];
 } JavaClass;
 
 
-static size_t parse_attributes(uint8_t *attrs, int count, uint8_t **obj) {
+static size_t parse_attributes_obj(uint8_t *data, JavaClassAttributes **obj) {
+    size_t curr_bytes = 0;
+    uint16_t count;
+    curr_bytes += parse16(&data[curr_bytes], &count);
+
+    *obj = PyMem_Malloc(sizeof(JavaClassAttributes) + (sizeof(JavaClassAttribute *) * count));
+
+    (*obj)->attributes_count = count;
+
+    for(uint16_t i = 0; i < count; ++i) {
+        uint8_t *p = &data[curr_bytes];
+
+        JavaClassAttribute **attr = &(*obj)->attributes[i];
+        *attr = PyMem_Malloc(sizeof(JavaClassAttribute) + Attribute_length(p));
+
+        (*attr)->attribute_name_index = Attribute_name_index(p);
+        (*attr)->attribute_length = Attribute_length(p);
+        memcpy((*attr)->info, Attribute_info(p), Attribute_length(p));
+
+        curr_bytes += 6 + Attribute_length(p);
+    }
+
+    return curr_bytes;
+}
+
+static void print_attributes(JavaClassAttributes *this) {
+    printf("attr count: %u\n", this->attributes_count);
+    for(uint16_t i = 0; i < this->attributes_count; ++i) {
+        JavaClassAttribute *attr = this->attributes[i];
+        printf("** Attr name index: %u\n", attr->attribute_name_index);
+        printf("** Attr length: %u\n", attr->attribute_length);
+        printf("** Attr info: %.*s\n", attr->attribute_length, attr->info);
+    }
+}
+
+
+static size_t parse_attributes_data(uint8_t *attrs, int count, uint8_t **obj) {
     *obj = attrs;
     printf("Attributes count: %d\n", count);
     size_t attrs_bytes = 0;
@@ -59,7 +104,7 @@ static size_t parse_methods(uint8_t *data, uint16_t *count, uint8_t **obj) {
         printf("* Method attributes_count: %u\n", Method_attributes_count(method));
 
         uint8_t *attrs;  /* TODO: store */
-        curr_bytes += parse_attributes(Method_attributes(method), Method_attributes_count(method), &attrs);
+        curr_bytes += parse_attributes_data(Method_attributes(method), Method_attributes_count(method), &attrs);
         curr_bytes += 8;
     }
     return curr_bytes;
@@ -78,7 +123,7 @@ static size_t parse_fields(uint8_t *data, uint16_t *count, uint8_t **obj) {
         printf("* Field attributes count: %u\n", Field_attributes_count(field));
 
         uint8_t *attrs;  /* TODO: store */
-        curr_bytes += parse_attributes(Field_attributes(field), Field_attributes_count(field), &attrs);
+        curr_bytes += parse_attributes_data(Field_attributes(field), Field_attributes_count(field), &attrs);
         curr_bytes += 8;
     }
     return curr_bytes;
@@ -94,9 +139,16 @@ static JavaClass *_JavaClass_from_filename(const char *filename) {
     return new;
 }
 
+static void JavaClassAttributes_free(JavaClassAttributes *this) {
+    for(uint16_t i = 0; i < this->attributes_count; ++i)
+        PyMem_Free(this->attributes[i]);
+    PyMem_Free(this);
+}
+
 static void _JavaClass_free(JavaClass *this) {
     JavaClassConstantPool_free(this->constant_pool);
     JavaClassInterfaces_free(this->interfaces);
+    JavaClassAttributes_free(this->attributes);
     PyMem_Free(this->constant_pool);
     PyMem_Free(this);
 }
@@ -130,11 +182,10 @@ static PyObject *jclass_load(PyObject *self, PyObject *args) {
     curr_bytes += parse_fields(&class->data[curr_bytes], &class->fields_count, &class->fields);
     curr_bytes += parse_methods(&class->data[curr_bytes], &class->methods_count, &class->methods);
 
+    curr_bytes += parse_attributes_obj(&class->data[curr_bytes], &class->attributes);
+
     printf("CLASS ATTRIBUTES:\n");
-
-    curr_bytes += parse16(&class->data[curr_bytes], &class->attributes_count);
-    curr_bytes += parse_attributes(&class->data[curr_bytes], class->attributes_count, &class->attributes);
-
+    print_attributes(class->attributes);
     printf("Total Bytes: %lu\n", curr_bytes);
 
     PyObject *result = PyBytes_FromStringAndSize((char *)class->data, class->size);

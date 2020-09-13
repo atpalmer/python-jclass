@@ -10,8 +10,7 @@ typedef struct {
     uint16_t minor_version;
     uint16_t major_version;
 
-    uint16_t constant_pool_count;
-    JavaClassConstant **constant_pool;
+    JavaClassConstantPool *constant_pool;
 
     uint16_t access_flags;
     uint16_t this_class;
@@ -105,10 +104,15 @@ static JavaClass *_JavaClass_from_filename(const char *filename) {
     return new;
 }
 
-static void _JavaClass_free(JavaClass *this) {
+static void JavaClassConstantPool_free(JavaClassConstantPool *this) {
     for(int i = 0; i < this->constant_pool_count - 1; ++i)
         if(this->constant_pool[i])
             PyMem_Free(this->constant_pool[i]);
+    PyMem_Free(this);
+}
+
+static void _JavaClass_free(JavaClass *this) {
+    JavaClassConstantPool_free(this->constant_pool);
     PyMem_Free(this->constant_pool);
     PyMem_Free(this);
 }
@@ -125,14 +129,14 @@ static PyObject *jclass_load(PyObject *self, PyObject *args) {
     curr_bytes += parse32(&class->data[curr_bytes], &class->magic_number);
     curr_bytes += parse16(&class->data[curr_bytes], &class->minor_version);
     curr_bytes += parse16(&class->data[curr_bytes], &class->major_version);
-    curr_bytes += constant_pool_parse(&class->data[curr_bytes], &class->constant_pool_count, &class->constant_pool);
+    curr_bytes += constant_pool_parse(&class->data[curr_bytes], &class->constant_pool);
     curr_bytes += parse16(&class->data[curr_bytes], &class->access_flags);
     curr_bytes += parse16(&class->data[curr_bytes], &class->this_class);
     curr_bytes += parse16(&class->data[curr_bytes], &class->super_class);
 
     printf("Magic Number: %X\n", class->magic_number);
     printf("Version: %u.%u\n", class->major_version, class->minor_version);
-    constant_pool_print(class->constant_pool, class->constant_pool_count);
+    constant_pool_print(class->constant_pool);
     access_flags_print(class->access_flags);
     printf("This Class Pool Index: %u\n", class->this_class);
     printf("Super Class Pool Index: %u\n", class->super_class);

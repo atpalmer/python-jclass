@@ -93,11 +93,11 @@ static void _JavaClassNameAndTypeConstant_print(JavaClassNameAndTypeConstant *th
 }
 
 
-void constant_pool_print(JavaClassConstant **constants, int count) {
-    printf("Constant Pool Count: %d\n", count);
+void constant_pool_print(JavaClassConstantPool *this) {
+    printf("Constant Pool Count: %d\n", this->constant_pool_count);
 
-    for(int i = 1; i < count; ++i) {
-        void *c = constants[i - 1];
+    for(int i = 1; i < this->constant_pool_count; ++i) {
+        void *c = this->constant_pool[i - 1];
 
         printf("  **%4d.) ", i);
         if(!c) {
@@ -134,16 +134,19 @@ void constant_pool_print(JavaClassConstant **constants, int count) {
     }
 }
 
-size_t constant_pool_parse(uint8_t *pool, uint16_t *count, JavaClassConstant ***obj) {
+size_t constant_pool_parse(uint8_t *data, JavaClassConstantPool **obj) {
     size_t pool_bytes = 0;
 
-    pool_bytes += parse16(pool, count);
+    uint16_t count;
+    pool_bytes += parse16(data, &count);
 
-    *obj = PyMem_Malloc(sizeof(JavaClassConstant *) * (*count));
+    *obj = PyMem_Malloc(sizeof(JavaClassConstantPool) + (sizeof(JavaClassConstant *) * count));
 
-    for(uint16_t i = 1; i < *count; ++i) {
-        uint8_t *p = &pool[pool_bytes];
-        JavaClassConstant **c = &((*obj)[i - 1]);
+    (*obj)->constant_pool_count = count;
+
+    for(uint16_t i = 1; i < count; ++i) {
+        uint8_t *p = &data[pool_bytes];
+        JavaClassConstant **c = &((*obj)->constant_pool[i - 1]);
 
         switch(Constant_tag(p)) {
         case CONSTANT_TYPE_Utf8:

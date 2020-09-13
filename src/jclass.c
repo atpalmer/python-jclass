@@ -100,15 +100,19 @@ static size_t parse_interfaces(uint8_t *data, JavaClassInterfaces **obj) {
     *obj = PyMem_Malloc(sizeof(JavaClassInterfaces) + (sizeof(uint16_t) * count));
     (*obj)->interfaces_count = count;
 
-    printf("Interfaces count: %d\n", count);
-
     for(uint16_t i = 0; i < count; ++i) {
         uint16_t *p = &((*obj)->interfaces[i]);
         curr_bytes += parse16(&data[curr_bytes], p);
-        printf("  * interface: %u\n", *p);
     }
 
     return curr_bytes;
+}
+
+static void print_interfaces(JavaClassInterfaces *this) {
+    printf("Interfaces count: %d\n", this->interfaces_count);
+    for(uint16_t i = 0; i < this->interfaces_count; ++i) {
+        printf("  * interface: %u\n", this->interfaces[i]);
+    }
 }
 
 static JavaClass *_JavaClass_from_filename(const char *filename) {
@@ -164,6 +168,7 @@ static PyObject *jclass_load(PyObject *self, PyObject *args) {
     printf("Super Class Pool Index: %u\n", class->super_class);
 
     curr_bytes += parse_interfaces(&class->data[curr_bytes], &class->interfaces);
+    print_interfaces(class->interfaces);
     curr_bytes += parse16(&class->data[curr_bytes], &class->fields_count);
     curr_bytes += parse_fields(&class->data[curr_bytes], class->fields_count, &class->fields);
     curr_bytes += parse16(&class->data[curr_bytes], &class->methods_count);

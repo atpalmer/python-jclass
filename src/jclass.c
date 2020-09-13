@@ -48,7 +48,9 @@ typedef struct {
 } JavaClass;
 
 
-static size_t parse_attributes(uint8_t *attrs, int count) {
+static size_t parse_attributes(uint8_t *attrs, int count, uint8_t **obj) {
+    *obj = attrs;
+    printf("Attributes count: %d\n", count);
     size_t attrs_bytes = 0;
     for(int i = 0; i < count; ++i) {
         uint8_t *attr = &attrs[attrs_bytes];
@@ -73,8 +75,8 @@ static size_t parse_methods(uint8_t *methods, int count, uint8_t **obj) {
         printf("* Method descriptor_index: %u\n", Method_descriptor_index(method));
         printf("* Method attributes_count: %u\n", Method_attributes_count(method));
 
-        uint8_t *attrs = Method_attributes(method);
-        size_t attrs_bytes = parse_attributes(attrs, Method_attributes_count(method));
+        uint8_t *attrs;
+        size_t attrs_bytes = parse_attributes(Method_attributes(method), Method_attributes_count(method), &attrs);
 
         methods_bytes += 8 + attrs_bytes;
     }
@@ -92,8 +94,8 @@ static size_t parse_fields(uint8_t *fields, int count, uint8_t **obj) {
         printf("* Field descriptor index: %u\n", Field_descriptor_index(field));
         printf("* Field attributes count: %u\n", Field_attributes_count(field));
 
-        uint8_t *attrs = Field_attributes(field);
-        size_t attrs_bytes = parse_attributes(attrs, Field_attributes_count(field));
+        uint8_t *attrs;
+        size_t attrs_bytes = parse_attributes(Field_attributes(field), Field_attributes_count(field), &attrs);
 
         fields_bytes += 8 + attrs_bytes;
     }
@@ -217,10 +219,7 @@ static PyObject *jclass_load(PyObject *self, PyObject *args) {
     printf("CLASS ATTRIBUTES:\n");
 
     curr_bytes += parse16(&class->data[curr_bytes], &class->attributes_count);
-    printf("Attributes count: %u\n", class->attributes_count);
-
-    class->attributes = (void *)&class->data[curr_bytes];
-    curr_bytes += parse_attributes(class->attributes, class->attributes_count);
+    curr_bytes += parse_attributes(&class->data[curr_bytes], class->attributes_count, &class->attributes);
 
     printf("Total Bytes: %lu\n", curr_bytes);
 

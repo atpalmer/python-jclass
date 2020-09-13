@@ -193,3 +193,9 @@ size_t constant_pool_parse(uint8_t *data, JavaClassConstantPool **obj) {
     return pool_bytes;
 }
 
+void JavaClassConstantPool_free(JavaClassConstantPool *this) {
+    for(int i = 0; i < this->constant_pool_count - 1; ++i)
+        if(this->constant_pool[i])
+            PyMem_Free(this->constant_pool[i]);
+    PyMem_Free(this);
+}

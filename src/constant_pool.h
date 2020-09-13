@@ -53,5 +53,6 @@ typedef struct {
 
 void constant_pool_print(JavaClassConstantPool *this);
 size_t constant_pool_parse(uint8_t *data, JavaClassConstantPool **obj);
+void JavaClassConstantPool_free(JavaClassConstantPool *this);
 
 #endif

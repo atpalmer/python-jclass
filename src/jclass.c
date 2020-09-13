@@ -94,13 +94,6 @@ static JavaClass *_JavaClass_from_filename(const char *filename) {
     return new;
 }
 
-static void JavaClassConstantPool_free(JavaClassConstantPool *this) {
-    for(int i = 0; i < this->constant_pool_count - 1; ++i)
-        if(this->constant_pool[i])
-            PyMem_Free(this->constant_pool[i]);
-    PyMem_Free(this);
-}
-
 static void _JavaClass_free(JavaClass *this) {
     JavaClassConstantPool_free(this->constant_pool);
     JavaClassInterfaces_free(this->interfaces);

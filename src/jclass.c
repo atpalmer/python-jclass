@@ -65,23 +65,23 @@ static size_t parse_methods(uint8_t *methods, int count, uint8_t **obj) {
     return methods_bytes;
 }
 
-static size_t parse_fields(uint8_t *fields, int count, uint8_t **obj) {
-    *obj = fields;
-    printf("Fields count: %d\n", count);
-    size_t fields_bytes = 0;
-    for(int i = 0; i < count; ++i) {
-        uint8_t *field = &fields[fields_bytes];
+static size_t parse_fields(uint8_t *data, uint16_t *count, uint8_t **obj) {
+    size_t curr_bytes = 0;
+    curr_bytes += parse16(&data[curr_bytes], count);
+    *obj = &data[curr_bytes];
+    printf("Fields count: %d\n", *count);
+    for(uint16_t i = 0; i < *count; ++i) {
+        uint8_t *field = &data[curr_bytes];
         printf("* Field access flags: %u\n", Field_access_flags(field));
         printf("* Field name index: %u\n", Field_name_index(field));
         printf("* Field descriptor index: %u\n", Field_descriptor_index(field));
         printf("* Field attributes count: %u\n", Field_attributes_count(field));
 
-        uint8_t *attrs;
-        size_t attrs_bytes = parse_attributes(Field_attributes(field), Field_attributes_count(field), &attrs);
-
-        fields_bytes += 8 + attrs_bytes;
+        uint8_t *attrs;  /* TODO: store */
+        curr_bytes += parse_attributes(Field_attributes(field), Field_attributes_count(field), &attrs);
+        curr_bytes += 8;
     }
-    return fields_bytes;
+    return curr_bytes;
 }
 
 static JavaClass *_JavaClass_from_filename(const char *filename) {
@@ -127,8 +127,7 @@ static PyObject *jclass_load(PyObject *self, PyObject *args) {
     printf("Super Class Pool Index: %u\n", class->super_class);
     interfaces_print(class->interfaces);
 
-    curr_bytes += parse16(&class->data[curr_bytes], &class->fields_count);
-    curr_bytes += parse_fields(&class->data[curr_bytes], class->fields_count, &class->fields);
+    curr_bytes += parse_fields(&class->data[curr_bytes], &class->fields_count, &class->fields);
     curr_bytes += parse16(&class->data[curr_bytes], &class->methods_count);
     curr_bytes += parse_methods(&class->data[curr_bytes], class->methods_count, &class->methods);
 

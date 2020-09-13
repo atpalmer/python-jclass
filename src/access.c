@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include "access.h"
 
 void access_flags_print(uint16_t flags) {

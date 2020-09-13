@@ -15,6 +15,7 @@ setup(
         Extension('jclass', sources=[
             'src/jclass.c',
             'src/access.c',
+            'src/constant_pool.c',
         ])
     ],
 

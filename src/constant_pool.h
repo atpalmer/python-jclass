@@ -13,26 +13,6 @@ enum constant_type {
     CONSTANT_TYPE_NameAndType = 12,
 };
 
-static const char *Constant_description[] = {
-    [0] = "",
-    [1] = "Utf8",
-    [2] = NULL,
-    [3] = NULL,
-    [4] = NULL,
-    [5] = NULL,
-    [6] = NULL,
-    [7] = "Class",
-    [8] = "String",
-    [9] = "Fieldref",
-    [10] = "Methodref",
-    [11] = "InterfaceMethodref",
-    [12] = "NameAndType",
-    [13] = NULL,
-    [14] = NULL,
-    [15] = NULL,
-    [16] = NULL,
-};
-
 
 /* common header byte */
 
@@ -98,7 +78,5 @@ static inline uint16_t NameAndType_descriptor_index(void *head) {
     return UINT16_AT(head, 3);
 }
 
-
-#define CONSTANT_DESC(c)    (Constant_description[Constant_tag(c)])
 
 #endif

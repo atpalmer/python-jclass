@@ -1,8 +1,6 @@
 #ifndef CONSTANT_POOL_H
 #define CONSTANT_POOL_H
 
-#include "common.h"
-
 enum constant_type {
     CONSTANT_TYPE_Utf8= 1,
     CONSTANT_TYPE_Class = 7,
@@ -12,71 +10,5 @@ enum constant_type {
     CONSTANT_TYPE_InterfaceMethodref = 11,
     CONSTANT_TYPE_NameAndType = 12,
 };
-
-
-/* common header byte */
-
-static inline uint8_t Constant_tag(void *head) {
-    return UINT8_AT(head, 0);
-}
-
-
-/* 1 = Utf8 */
-
-static inline uint16_t Utf8_length(void *head) {
-    return UINT16_AT(head, 1);
-}
-
-static inline char *Utf8_bytes(void *head) {
-    return POINTER_AT(head, 3);
-}
-
-
-/* 7 = Class */
-
-static inline uint16_t Class_name_index(void *head) {
-    return UINT16_AT(head, 1);
-}
-
-
-/* 8 = String */
-
-static inline uint16_t String_string_index(void *head) {
-    return UINT16_AT(head, 1);
-}
-
-
-/* 9 = Fieldref */
-
-static inline uint16_t Fieldref_class_index(void *head) {
-    return UINT16_AT(head, 1);
-}
-
-static inline uint16_t Fieldref_name_and_type_index(void *head) {
-    return UINT16_AT(head, 3);
-}
-
-
-/* 10 = Methodref */
-
-static inline uint16_t Methodref_class_index(void *head) {
-    return UINT16_AT(head, 1);
-}
-
-static inline uint16_t Methodref_name_and_type_index(void *head) {
-    return UINT16_AT(head, 3);
-}
-
-
-/* 12 = NameAndType */
-
-static inline uint16_t NameAndType_name_index(void *head) {
-    return UINT16_AT(head, 1);
-}
-
-static inline uint16_t NameAndType_descriptor_index(void *head) {
-    return UINT16_AT(head, 3);
-}
-
 
 #endif

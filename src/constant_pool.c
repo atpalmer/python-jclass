@@ -97,7 +97,7 @@ void constant_pool_print(JavaClassConstant **constants, int count) {
     printf("Constant Pool Count: %d\n", count);
 
     for(int i = 1; i < count; ++i) {
-        JavaClassConstant *c = constants[i - 1];
+        void *c = constants[i - 1];
 
         printf("  **%4d.) ", i);
         if(!c) {
@@ -106,7 +106,7 @@ void constant_pool_print(JavaClassConstant **constants, int count) {
             continue;
         }
 
-        switch(c->tag) {
+        switch(((JavaClassConstant *)c)->tag) {
         case CONSTANT_TYPE_Utf8:
             _JavaClassUtf8Constant_print(c);
             break;

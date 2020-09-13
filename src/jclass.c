@@ -32,6 +32,11 @@ typedef struct {
     uint16_t name_index;
 } JavaClassClassConstant;
 
+typedef struct {
+    uint8_t tag;
+    uint16_t string_index;
+} JavaClassStringConstant;
+
 /* TODO: make PyObject */
 typedef struct {
     uint32_t magic_number;
@@ -149,6 +154,19 @@ static void _JavaClassClassConstant_print(JavaClassClassConstant *this) {
 }
 
 
+static JavaClassConstant *_JavaClassStringConstant_from_data(uint8_t *data) {
+    JavaClassStringConstant *new = PyMem_Malloc(sizeof(*new));
+    new->tag = Constant_tag(data);
+    new->string_index = String_string_index(data);
+    return (JavaClassConstant *)new;
+}
+
+static void _JavaClassStringConstant_print(JavaClassStringConstant *this) {
+    printf("String=tag(%u), string_index(%u)\n",
+        this->tag, this->string_index);
+}
+
+
 #define CONSTANT_AT(constants, i)                       ((constants)[(i) - 1])
 #define CONSTANT_AT_MEMBER(constants, i, tp, member)    (((tp *)CONSTANT_AT((constants), (i)))->member)
 
@@ -177,7 +195,8 @@ static size_t parse_constant_pool(uint8_t *pool, int count, JavaClassConstant **
             break;
 
         case CONSTANT_TYPE_String:
-            printf("tag(%u), string_index(%u)\n", Constant_tag(c), String_string_index(c));
+            printf("-- see below\n");
+            CONSTANT_AT(*obj, i) = _JavaClassStringConstant_from_data(c);
             pool_bytes += 3;
             break;
 
@@ -220,6 +239,9 @@ static size_t parse_constant_pool(uint8_t *pool, int count, JavaClassConstant **
             break;
         case CONSTANT_TYPE_Class:
             _JavaClassClassConstant_print(CONSTANT_AT(*obj, i));
+            break;
+        case CONSTANT_TYPE_String:
+            _JavaClassStringConstant_print(CONSTANT_AT(*obj, i));
             break;
         default:
             break;

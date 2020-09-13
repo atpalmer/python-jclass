@@ -332,8 +332,6 @@ static void _JavaClass_free(JavaClass *this) {
     PyMem_Free(this);
 }
 
-#define NEXT_PTR(last)   ((void *)(((uint8_t *)(last)) + sizeof(*(last))))
-
 static PyObject *jclass_load(PyObject *self, PyObject *args) {
     char *fname;
     if(!PyArg_ParseTuple(args, "s", &fname))

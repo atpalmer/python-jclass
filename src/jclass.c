@@ -325,7 +325,6 @@ static JavaClass *_JavaClass_from_filename(const char *filename) {
 }
 
 static void _JavaClass_free(JavaClass *this) {
-    /* TODO: free constant_pool items */
     for(int i = 0; i < this->constant_pool_count - 1; ++i)
         if(this->constant_pool[i])
             PyMem_Free(this->constant_pool[i]);

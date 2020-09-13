@@ -235,6 +235,45 @@ static void _JavaClassNameAndTypeConstant_print(JavaClassNameAndTypeConstant *th
 #define CONSTANT_AT(constants, i)                       ((constants)[(i) - 1])
 #define CONSTANT_AT_MEMBER(constants, i, tp, member)    (((tp *)CONSTANT_AT((constants), (i)))->member)
 
+static void print_constant_pool(JavaClassConstant **constants, int count) {
+    for(int i = 1; i < count; ++i) {
+        JavaClassConstant *c = constants[i - 1];
+
+        printf("  **%4d.) ", i);
+        if(!c) {
+            /* TODO: this branch should be deleted when all types are implemented */
+            printf("Not implemented.\n");
+            continue;
+        }
+
+        switch(c->tag) {
+        case CONSTANT_TYPE_Utf8:
+            _JavaClassUtf8Constant_print(c);
+            break;
+        case CONSTANT_TYPE_Class:
+            _JavaClassClassConstant_print(c);
+            break;
+        case CONSTANT_TYPE_String:
+            _JavaClassStringConstant_print(c);
+            break;
+        case CONSTANT_TYPE_Fieldref:
+            _JavaClassFieldrefConstant_print(c);
+            break;
+        case CONSTANT_TYPE_Methodref:
+            _JavaClassMethodrefConstant_print(c);
+            break;
+        case CONSTANT_TYPE_InterfaceMethodref:
+            _JavaClassInterfaceMethodrefConstant_print(c);
+            break;
+        case CONSTANT_TYPE_NameAndType:
+            _JavaClassNameAndTypeConstant_print(c);
+            break;
+        default:
+            break;
+        }
+    }
+}
+
 static size_t parse_constant_pool(uint8_t *pool, int count, JavaClassConstant ***obj) {
     *obj = PyMem_Malloc(sizeof(JavaClassConstant *) * count);
 
@@ -242,49 +281,40 @@ static size_t parse_constant_pool(uint8_t *pool, int count, JavaClassConstant **
 
     size_t pool_bytes = 0;
     for(int i = 1; i < count; ++i) {
-
         uint8_t *c = &pool[pool_bytes];
-        printf("  * %4d.) %s=", i, CONSTANT_DESC(c));
 
         switch(Constant_tag(c)) {
         case CONSTANT_TYPE_Utf8:
-            printf("-- see below\n");
             CONSTANT_AT(*obj, i) = _JavaClassUtf8Constant_from_data(c);
             pool_bytes += 3 + Utf8_length(c);
             break;
 
         case CONSTANT_TYPE_Class:
-            printf("-- see below\n");
             CONSTANT_AT(*obj, i) = _JavaClassClassConstant_from_data(c);
             pool_bytes += 3;
             break;
 
         case CONSTANT_TYPE_String:
-            printf("-- see below\n");
             CONSTANT_AT(*obj, i) = _JavaClassStringConstant_from_data(c);
             pool_bytes += 3;
             break;
 
         case CONSTANT_TYPE_Fieldref:
-            printf("-- see below\n");
             CONSTANT_AT(*obj, i) = _JavaClassFieldrefConstant_from_data(c);
             pool_bytes += 5;
             break;
 
         case CONSTANT_TYPE_Methodref:
-            printf("-- see below\n");
             CONSTANT_AT(*obj, i) = _JavaClassMethodrefConstant_from_data(c);
             pool_bytes += 5;
             break;
 
         case CONSTANT_TYPE_InterfaceMethodref:
-            printf("-- see below\n");
             CONSTANT_AT(*obj, i) = _JavaClassInterfaceMethodrefConstant_from_data(c);
             pool_bytes += 5;
             break;
 
         case CONSTANT_TYPE_NameAndType:
-            printf("-- see below\n");
             CONSTANT_AT(*obj, i) = _JavaClassNameAndTypeConstant_from_data(c);
             pool_bytes += 5;
             break;
@@ -295,41 +325,7 @@ static size_t parse_constant_pool(uint8_t *pool, int count, JavaClassConstant **
         }
     }
 
-    /* output */
-    for(int i = 1; i < count; ++i) {
-        printf("  **%4d.) ", i);
-        if(!CONSTANT_AT(*obj, i)) {
-            /* TODO: this branch should be deleted when all types are implemented */
-            printf("Not implemented.\n");
-            continue;
-        }
-
-        switch(CONSTANT_AT_MEMBER(*obj, i, JavaClassConstant, tag)) {
-        case CONSTANT_TYPE_Utf8:
-            _JavaClassUtf8Constant_print(CONSTANT_AT(*obj, i));
-            break;
-        case CONSTANT_TYPE_Class:
-            _JavaClassClassConstant_print(CONSTANT_AT(*obj, i));
-            break;
-        case CONSTANT_TYPE_String:
-            _JavaClassStringConstant_print(CONSTANT_AT(*obj, i));
-            break;
-        case CONSTANT_TYPE_Fieldref:
-            _JavaClassFieldrefConstant_print(CONSTANT_AT(*obj, i));
-            break;
-        case CONSTANT_TYPE_Methodref:
-            _JavaClassMethodrefConstant_print(CONSTANT_AT(*obj, i));
-            break;
-        case CONSTANT_TYPE_InterfaceMethodref:
-            _JavaClassInterfaceMethodrefConstant_print(CONSTANT_AT(*obj, i));
-            break;
-        case CONSTANT_TYPE_NameAndType:
-            _JavaClassNameAndTypeConstant_print(CONSTANT_AT(*obj, i));
-            break;
-        default:
-            break;
-        }
-    }
+    print_constant_pool(*obj, count);
 
     return pool_bytes;
 }

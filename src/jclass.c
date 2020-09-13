@@ -96,7 +96,11 @@ static size_t parse_fields(uint8_t *fields, int count) {
     return fields_bytes;
 }
 
-static size_t parse_constant_pool(uint8_t *pool, int count) {
+static size_t parse_constant_pool(uint8_t *pool, int count, uint8_t **obj) {
+    *obj = pool;
+
+    printf("Constant Pool Count: %d\n", count);
+
     size_t pool_bytes = 0;
     for(int i = 1; i < count; ++i) {
         uint8_t *c = &pool[pool_bytes];
@@ -175,11 +179,7 @@ static PyObject *jclass_load(PyObject *self, PyObject *args) {
     printf("Version: %u.%u\n", class->major_version, class->minor_version);
 
     curr_bytes += parse16(&class->data[curr_bytes], &class->constant_pool_count);
-    printf("Constant Pool Count: %u\n", class->constant_pool_count);
-
-    class->constant_pool = &class->data[curr_bytes];
-    curr_bytes += parse_constant_pool(class->constant_pool, class->constant_pool_count);
-
+    curr_bytes += parse_constant_pool(&class->data[curr_bytes], class->constant_pool_count, &class->constant_pool);
     curr_bytes += parse16(&class->data[curr_bytes], &class->access_flags);
     curr_bytes += parse16(&class->data[curr_bytes], &class->this_class);
     curr_bytes += parse16(&class->data[curr_bytes], &class->super_class);

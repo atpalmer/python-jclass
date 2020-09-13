@@ -10,13 +10,10 @@ typedef struct {
     uint32_t magic_number;
     uint16_t minor_version;
     uint16_t major_version;
-
     JavaClassConstantPool *constant_pool;
-
     uint16_t access_flags;
     uint16_t this_class;
     uint16_t super_class;
-
     JavaClassInterfaces *interfaces;
 
     uint16_t fields_count;
@@ -127,6 +124,7 @@ static PyObject *jclass_load(PyObject *self, PyObject *args) {
     curr_bytes += parse16(&class->data[curr_bytes], &class->access_flags);
     curr_bytes += parse16(&class->data[curr_bytes], &class->this_class);
     curr_bytes += parse16(&class->data[curr_bytes], &class->super_class);
+    curr_bytes += interfaces_parse(&class->data[curr_bytes], &class->interfaces);
 
     printf("Magic Number: %X\n", class->magic_number);
     printf("Version: %u.%u\n", class->major_version, class->minor_version);
@@ -134,9 +132,8 @@ static PyObject *jclass_load(PyObject *self, PyObject *args) {
     access_flags_print(class->access_flags);
     printf("This Class Pool Index: %u\n", class->this_class);
     printf("Super Class Pool Index: %u\n", class->super_class);
-
-    curr_bytes += interfaces_parse(&class->data[curr_bytes], &class->interfaces);
     interfaces_print(class->interfaces);
+
     curr_bytes += parse16(&class->data[curr_bytes], &class->fields_count);
     curr_bytes += parse_fields(&class->data[curr_bytes], class->fields_count, &class->fields);
     curr_bytes += parse16(&class->data[curr_bytes], &class->methods_count);

@@ -310,7 +310,6 @@ static size_t parse_constant_pool(uint8_t *pool, int count, JavaClassConstant **
         }
     }
 
-    print_constant_pool(*obj, count);
     return pool_bytes;
 }
 
@@ -353,6 +352,8 @@ static PyObject *jclass_load(PyObject *self, PyObject *args) {
     curr_bytes += parse16(&class->data[curr_bytes], &class->access_flags);
     curr_bytes += parse16(&class->data[curr_bytes], &class->this_class);
     curr_bytes += parse16(&class->data[curr_bytes], &class->super_class);
+
+    print_constant_pool(class->constant_pool, class->constant_pool_count);
 
     printf("Access Flags: %u\n", class->access_flags);
     printf("* PUBLIC Flag: %x\n", CLASS_HAS_ACCESS(class, ACC_PUBLIC));

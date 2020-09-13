@@ -221,7 +221,9 @@ static PyObject *jclass_load(PyObject *self, PyObject *args) {
     printf("Attributes count: %u\n", class->attributes_count);
 
     class->attributes = (void *)&class->data[curr_bytes];
-    size_t attributes_bytes = parse_attributes(class->attributes, class->attributes_count);
+    curr_bytes += parse_attributes(class->attributes, class->attributes_count);
+
+    printf("Total Bytes: %lu\n", curr_bytes);
 
     PyObject *result = PyBytes_FromStringAndSize((char *)class->data, class->size);
     _JavaClass_free(class);

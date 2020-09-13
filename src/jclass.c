@@ -2,12 +2,7 @@
 #include "access.h"
 #include "parse.h"
 #include "constant_pool.h"
-
-
-typedef struct {
-    uint16_t interfaces_count;
-    uint16_t interfaces[];
-} JavaClassInterfaces;
+#include "interfaces.h"
 
 
 /* TODO: make PyObject */
@@ -92,29 +87,6 @@ static size_t parse_fields(uint8_t *fields, int count, uint8_t **obj) {
     return fields_bytes;
 }
 
-static size_t parse_interfaces(uint8_t *data, JavaClassInterfaces **obj) {
-    size_t curr_bytes = 0;
-
-    uint16_t count;
-    curr_bytes += parse16(&data[curr_bytes], &count);
-    *obj = PyMem_Malloc(sizeof(JavaClassInterfaces) + (sizeof(uint16_t) * count));
-    (*obj)->interfaces_count = count;
-
-    for(uint16_t i = 0; i < count; ++i) {
-        uint16_t *p = &((*obj)->interfaces[i]);
-        curr_bytes += parse16(&data[curr_bytes], p);
-    }
-
-    return curr_bytes;
-}
-
-static void print_interfaces(JavaClassInterfaces *this) {
-    printf("Interfaces count: %d\n", this->interfaces_count);
-    for(uint16_t i = 0; i < this->interfaces_count; ++i) {
-        printf("  * interface: %u\n", this->interfaces[i]);
-    }
-}
-
 static JavaClass *_JavaClass_from_filename(const char *filename) {
     JavaClass *new = PyMem_Malloc(sizeof(JavaClass) + 4096);
 
@@ -129,10 +101,6 @@ static void JavaClassConstantPool_free(JavaClassConstantPool *this) {
     for(int i = 0; i < this->constant_pool_count - 1; ++i)
         if(this->constant_pool[i])
             PyMem_Free(this->constant_pool[i]);
-    PyMem_Free(this);
-}
-
-static void JavaClassInterfaces_free(JavaClassInterfaces *this) {
     PyMem_Free(this);
 }
 
@@ -167,8 +135,8 @@ static PyObject *jclass_load(PyObject *self, PyObject *args) {
     printf("This Class Pool Index: %u\n", class->this_class);
     printf("Super Class Pool Index: %u\n", class->super_class);
 
-    curr_bytes += parse_interfaces(&class->data[curr_bytes], &class->interfaces);
-    print_interfaces(class->interfaces);
+    curr_bytes += interfaces_parse(&class->data[curr_bytes], &class->interfaces);
+    interfaces_print(class->interfaces);
     curr_bytes += parse16(&class->data[curr_bytes], &class->fields_count);
     curr_bytes += parse_fields(&class->data[curr_bytes], class->fields_count, &class->fields);
     curr_bytes += parse16(&class->data[curr_bytes], &class->methods_count);

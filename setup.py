@@ -16,6 +16,7 @@ setup(
             'src/jclass.c',
             'src/access.c',
             'src/constant_pool.c',
+            'src/interfaces.c',
         ])
     ],
 

@@ -271,8 +271,6 @@ static void print_constant_pool(JavaClassConstant **constants, int count) {
     }
 }
 
-#define CONSTANT_AT(constants, i)                       ((constants)[(i) - 1])
-
 static size_t parse_constant_pool(uint8_t *pool, int count, JavaClassConstant ***obj) {
     *obj = PyMem_Malloc(sizeof(JavaClassConstant *) * count);
 
@@ -281,45 +279,46 @@ static size_t parse_constant_pool(uint8_t *pool, int count, JavaClassConstant **
     size_t pool_bytes = 0;
     for(int i = 1; i < count; ++i) {
         uint8_t *p = &pool[pool_bytes];
+        JavaClassConstant **c = &((*obj)[i - 1]);
 
         switch(Constant_tag(p)) {
         case CONSTANT_TYPE_Utf8:
-            CONSTANT_AT(*obj, i) = _JavaClassUtf8Constant_from_data(p);
+            *c = _JavaClassUtf8Constant_from_data(p);
             pool_bytes += 3 + Utf8_length(p);
             break;
 
         case CONSTANT_TYPE_Class:
-            CONSTANT_AT(*obj, i) = _JavaClassClassConstant_from_data(p);
+            *c = _JavaClassClassConstant_from_data(p);
             pool_bytes += 3;
             break;
 
         case CONSTANT_TYPE_String:
-            CONSTANT_AT(*obj, i) = _JavaClassStringConstant_from_data(p);
+            *c = _JavaClassStringConstant_from_data(p);
             pool_bytes += 3;
             break;
 
         case CONSTANT_TYPE_Fieldref:
-            CONSTANT_AT(*obj, i) = _JavaClassFieldrefConstant_from_data(p);
+            *c = _JavaClassFieldrefConstant_from_data(p);
             pool_bytes += 5;
             break;
 
         case CONSTANT_TYPE_Methodref:
-            CONSTANT_AT(*obj, i) = _JavaClassMethodrefConstant_from_data(p);
+            *c = _JavaClassMethodrefConstant_from_data(p);
             pool_bytes += 5;
             break;
 
         case CONSTANT_TYPE_InterfaceMethodref:
-            CONSTANT_AT(*obj, i) = _JavaClassInterfaceMethodrefConstant_from_data(p);
+            *c = _JavaClassInterfaceMethodrefConstant_from_data(p);
             pool_bytes += 5;
             break;
 
         case CONSTANT_TYPE_NameAndType:
-            CONSTANT_AT(*obj, i) = _JavaClassNameAndTypeConstant_from_data(p);
+            *c = _JavaClassNameAndTypeConstant_from_data(p);
             pool_bytes += 5;
             break;
 
         default:
-            CONSTANT_AT(*obj, i) = NULL;
+            *c = NULL;
             break;
         }
     }

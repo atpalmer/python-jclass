@@ -37,6 +37,15 @@ typedef struct {
     uint16_t string_index;
 } JavaClassStringConstant;
 
+typedef struct {
+    uint8_t tag;
+    uint16_t class_index;
+    uint16_t name_and_type_index;
+} JavaClassFieldrefConstant;
+
+typedef JavaClassFieldrefConstant JavaClassMethodrefConstant;
+typedef JavaClassFieldrefConstant JavaClassInterfaceMethodrefConstant;
+
 /* TODO: make PyObject */
 typedef struct {
     uint32_t magic_number;
@@ -167,6 +176,43 @@ static void _JavaClassStringConstant_print(JavaClassStringConstant *this) {
 }
 
 
+static JavaClassConstant *_JavaClassFieldrefConstant_from_data(uint8_t *data) {
+    JavaClassFieldrefConstant *new = PyMem_Malloc(sizeof(*new));
+    new->tag = Constant_tag(data);
+    new->class_index = Fieldref_class_index(data);
+    new->name_and_type_index = Fieldref_name_and_type_index(data);
+    return (JavaClassConstant *)new;
+}
+
+static void _JavaClassFieldrefConstant_print(JavaClassFieldrefConstant *this) {
+    printf("Fieldref=tag(%u), class_index(%u), name_and_type_index(%u)\n",
+        this->tag, this->class_index, this->name_and_type_index);
+}
+
+
+static JavaClassConstant *_JavaClassMethodrefConstant_from_data(uint8_t *data) {
+    JavaClassMethodrefConstant *new = (JavaClassMethodrefConstant *)_JavaClassFieldrefConstant_from_data(data);
+    return (JavaClassConstant *)new;
+}
+
+static void _JavaClassMethodrefConstant_print(JavaClassMethodrefConstant *this) {
+    printf("Methodref=tag(%u), class_index(%u), name_and_type_index(%u)\n",
+        this->tag, this->class_index, this->name_and_type_index);
+}
+
+
+static JavaClassConstant *_JavaClassInterfaceMethodrefConstant_from_data(uint8_t *data) {
+    JavaClassInterfaceMethodrefConstant *new = (JavaClassInterfaceMethodrefConstant *)_JavaClassFieldrefConstant_from_data(data);
+    return (JavaClassConstant *)new;
+}
+
+static void _JavaClassInterfaceMethodrefConstant_print(JavaClassInterfaceMethodrefConstant *this) {
+    printf("InterfaceMethodref=tag(%u), class_index(%u), name_and_type_index(%u)\n",
+        this->tag, this->class_index, this->name_and_type_index);
+}
+
+
+
 #define CONSTANT_AT(constants, i)                       ((constants)[(i) - 1])
 #define CONSTANT_AT_MEMBER(constants, i, tp, member)    (((tp *)CONSTANT_AT((constants), (i)))->member)
 
@@ -201,14 +247,20 @@ static size_t parse_constant_pool(uint8_t *pool, int count, JavaClassConstant **
             break;
 
         case CONSTANT_TYPE_Fieldref:
-            printf("tag(%u), class_index(%u), name_and_type_index(%u)\n",
-                Constant_tag(c), Fieldref_class_index(c), Fieldref_name_and_type_index(c));
+            printf("-- see below\n");
+            CONSTANT_AT(*obj, i) = _JavaClassFieldrefConstant_from_data(c);
             pool_bytes += 5;
             break;
 
         case CONSTANT_TYPE_Methodref:
-            printf("tag(%u), class_index(%u), name_and_type_index(%u)\n",
-                Constant_tag(c), Methodref_class_index(c), Methodref_name_and_type_index(c));
+            printf("-- see below\n");
+            CONSTANT_AT(*obj, i) = _JavaClassMethodrefConstant_from_data(c);
+            pool_bytes += 5;
+            break;
+
+        case CONSTANT_TYPE_InterfaceMethodref:
+            printf("-- see below\n");
+            CONSTANT_AT(*obj, i) = _JavaClassInterfaceMethodrefConstant_from_data(c);
             pool_bytes += 5;
             break;
 
@@ -242,6 +294,15 @@ static size_t parse_constant_pool(uint8_t *pool, int count, JavaClassConstant **
             break;
         case CONSTANT_TYPE_String:
             _JavaClassStringConstant_print(CONSTANT_AT(*obj, i));
+            break;
+        case CONSTANT_TYPE_Fieldref:
+            _JavaClassFieldrefConstant_print(CONSTANT_AT(*obj, i));
+            break;
+        case CONSTANT_TYPE_Methodref:
+            _JavaClassMethodrefConstant_print(CONSTANT_AT(*obj, i));
+            break;
+        case CONSTANT_TYPE_InterfaceMethodref:
+            _JavaClassInterfaceMethodrefConstant_print(CONSTANT_AT(*obj, i));
             break;
         default:
             break;

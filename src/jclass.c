@@ -17,6 +17,15 @@ enum access_flag {
 
 #define CLASS_HAS_ACCESS(class, flag)  ((class)->access_flags & (flag))
 
+typedef struct {
+    uint8_t tag;
+} JavaClassConstant;
+
+typedef struct {
+    uint8_t tag;
+    uint16_t length;
+    char bytes[];
+} JavaClassUtf8Constant;
 
 /* TODO: make PyObject */
 typedef struct {
@@ -25,7 +34,7 @@ typedef struct {
     uint16_t major_version;
 
     uint16_t constant_pool_count;
-    uint8_t *constant_pool;
+    JavaClassConstant **constant_pool;
 
     uint16_t access_flags;
     uint16_t this_class;
@@ -108,49 +117,88 @@ static size_t parse_interfaces(uint8_t *data, int count, uint8_t **obj) {
     return 2 * count;
 }
 
-static size_t parse_constant_pool(uint8_t *pool, int count, uint8_t **obj) {
-    *obj = pool;
+static JavaClassConstant *_JavaClassUtf8Constant_from_data(uint8_t *data) {
+    JavaClassUtf8Constant *new = PyMem_Malloc(sizeof(*new) + Utf8_length(data));
+    new->tag = Constant_tag(data);
+    new->length = Utf8_length(data);
+    memcpy(new->bytes, Utf8_bytes(data), Utf8_length(data));
+    return (JavaClassConstant *)new;
+}
+
+static void _JavaClassUtf8Constant_print(JavaClassUtf8Constant *this) {
+    printf("Utf8=tag(%u), length(%u), bytes(\"%.*s\")\n",
+        this->tag, this->length, this->length, this->bytes);
+}
+
+#define CONSTANT_AT(constants, i)                       ((constants)[(i) - 1])
+#define CONSTANT_AT_MEMBER(constants, i, tp, member)    (((tp *)CONSTANT_AT((constants), (i)))->member)
+
+static size_t parse_constant_pool(uint8_t *pool, int count, JavaClassConstant ***obj) {
+    *obj = PyMem_Malloc(sizeof(JavaClassConstant *) * count);
 
     printf("Constant Pool Count: %d\n", count);
 
     size_t pool_bytes = 0;
     for(int i = 1; i < count; ++i) {
+
         uint8_t *c = &pool[pool_bytes];
-        printf("%d.) %s=%u: bytes index: %zu\n", i, CONSTANT_DESC(c), Constant_tag(c), pool_bytes);
+        printf("  * %4d.) %s=", i, CONSTANT_DESC(c));
 
         switch(Constant_tag(c)) {
         case CONSTANT_TYPE_Utf8:
-            printf("        * tag(%u), length(%u), bytes(\"%.*s\")\n",
-                Constant_tag(c), Utf8_length(c), Utf8_length(c), Utf8_bytes(c));
+            printf("-- see below\n");
+            CONSTANT_AT(*obj, i) = _JavaClassUtf8Constant_from_data(c);
             pool_bytes += 3 + Utf8_length(c);
             break;
 
         case CONSTANT_TYPE_Class:
-            printf("        * tag(%u), name_index(%u)\n", Constant_tag(c), Class_name_index(c));
+            printf("tag(%u), name_index(%u)\n", Constant_tag(c), Class_name_index(c));
             pool_bytes += 3;
             break;
 
         case CONSTANT_TYPE_String:
-            printf("        * tag(%u), string_index(%u)\n", Constant_tag(c), String_string_index(c));
+            printf("tag(%u), string_index(%u)\n", Constant_tag(c), String_string_index(c));
             pool_bytes += 3;
             break;
 
         case CONSTANT_TYPE_Fieldref:
-            printf("        * tag(%u), class_index(%u), name_and_type_index(%u)\n",
+            printf("tag(%u), class_index(%u), name_and_type_index(%u)\n",
                 Constant_tag(c), Fieldref_class_index(c), Fieldref_name_and_type_index(c));
             pool_bytes += 5;
             break;
 
         case CONSTANT_TYPE_Methodref:
-            printf("        * tag(%u), class_index(%u), name_and_type_index(%u)\n",
+            printf("tag(%u), class_index(%u), name_and_type_index(%u)\n",
                 Constant_tag(c), Methodref_class_index(c), Methodref_name_and_type_index(c));
             pool_bytes += 5;
             break;
 
         case CONSTANT_TYPE_NameAndType:
-            printf("        * tag(%u), name_index(%u), descriptor_index(%u)\n",
+            printf("tag(%u), name_index(%u), descriptor_index(%u)\n",
                 Constant_tag(c), NameAndType_name_index(c), NameAndType_descriptor_index(c));
             pool_bytes += 5;
+            break;
+
+        default:
+            CONSTANT_AT(*obj, i) = NULL;
+            break;
+        }
+    }
+
+    /* output */
+    for(int i = 1; i < count; ++i) {
+        printf("  **%4d.) ", i);
+        if(!CONSTANT_AT(*obj, i)) {
+            /* TODO: this branch should be deleted when all types are implemented */
+            printf("Not implemented.\n");
+            continue;
+        }
+
+        switch(CONSTANT_AT_MEMBER(*obj, i, JavaClassConstant, tag)) {
+        case CONSTANT_TYPE_Utf8:
+            _JavaClassUtf8Constant_print(CONSTANT_AT(*obj, i));
+            break;
+        default:
             break;
         }
     }
@@ -169,6 +217,11 @@ static JavaClass *_JavaClass_from_filename(const char *filename) {
 }
 
 static void _JavaClass_free(JavaClass *this) {
+    /* TODO: free constant_pool items */
+    for(int i = 0; i < this->constant_pool_count - 1; ++i)
+        if(this->constant_pool[i])
+            PyMem_Free(this->constant_pool[i]);
+    PyMem_Free(this->constant_pool);
     PyMem_Free(this);
 }
 

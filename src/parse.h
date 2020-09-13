@@ -1,6 +1,8 @@
 #ifndef PARSE_H
 #define PARSE_H
 
+#include <arpa/inet.h>
+
 #define UINT8(p)    (*(p))
 #define UINT16(p)   (ntohs(*(uint16_t *)p))
 #define UINT32(p)   (ntohl(*(uint32_t *)p))

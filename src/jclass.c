@@ -149,7 +149,6 @@ static void _JavaClass_free(JavaClass *this) {
     JavaClassConstantPool_free(this->constant_pool);
     JavaClassInterfaces_free(this->interfaces);
     JavaClassAttributes_free(this->attributes);
-    PyMem_Free(this->constant_pool);
     PyMem_Free(this);
 }
 

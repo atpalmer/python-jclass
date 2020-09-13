@@ -47,6 +47,6 @@ typedef struct {
 } JavaClassNameAndTypeConstant;
 
 void constant_pool_print(JavaClassConstant **constants, int count);
-size_t constant_pool_parse(uint8_t *pool, int count, JavaClassConstant ***obj);
+size_t constant_pool_parse(uint8_t *pool, uint16_t *count, JavaClassConstant ***obj);
 
 #endif

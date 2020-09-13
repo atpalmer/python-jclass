@@ -134,11 +134,14 @@ void constant_pool_print(JavaClassConstant **constants, int count) {
     }
 }
 
-size_t constant_pool_parse(uint8_t *pool, int count, JavaClassConstant ***obj) {
-    *obj = PyMem_Malloc(sizeof(JavaClassConstant *) * count);
-
+size_t constant_pool_parse(uint8_t *pool, uint16_t *count, JavaClassConstant ***obj) {
     size_t pool_bytes = 0;
-    for(int i = 1; i < count; ++i) {
+
+    pool_bytes += parse16(pool, count);
+
+    *obj = PyMem_Malloc(sizeof(JavaClassConstant *) * (*count));
+
+    for(uint16_t i = 1; i < *count; ++i) {
         uint8_t *p = &pool[pool_bytes];
         JavaClassConstant **c = &((*obj)[i - 1]);
 

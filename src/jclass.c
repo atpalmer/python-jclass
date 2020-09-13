@@ -125,8 +125,7 @@ static PyObject *jclass_load(PyObject *self, PyObject *args) {
     curr_bytes += parse32(&class->data[curr_bytes], &class->magic_number);
     curr_bytes += parse16(&class->data[curr_bytes], &class->minor_version);
     curr_bytes += parse16(&class->data[curr_bytes], &class->major_version);
-    curr_bytes += parse16(&class->data[curr_bytes], &class->constant_pool_count);
-    curr_bytes += constant_pool_parse(&class->data[curr_bytes], class->constant_pool_count, &class->constant_pool);
+    curr_bytes += constant_pool_parse(&class->data[curr_bytes], &class->constant_pool_count, &class->constant_pool);
     curr_bytes += parse16(&class->data[curr_bytes], &class->access_flags);
     curr_bytes += parse16(&class->data[curr_bytes], &class->this_class);
     curr_bytes += parse16(&class->data[curr_bytes], &class->super_class);

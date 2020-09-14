@@ -5,6 +5,17 @@
 #include "interfaces.h"
 #include "attributes.h"
 
+typedef struct {
+    uint16_t access_flags;
+    uint16_t name_index;
+    uint16_t descriptor_index;
+    JavaClassAttributes *attributes;
+} JavaClassField;
+
+typedef struct {
+    uint16_t fields_count;
+    JavaClassField *fields[];
+} JavaClassFields;
 
 /* TODO: make PyObject */
 typedef struct {
@@ -16,9 +27,7 @@ typedef struct {
     uint16_t this_class;
     uint16_t super_class;
     JavaClassInterfaces *interfaces;
-
-    uint16_t fields_count;
-    uint8_t *fields;
+    JavaClassFields *fields;
 
     uint16_t methods_count;
     uint8_t *methods;
@@ -65,23 +74,45 @@ static size_t parse_methods(uint8_t *data, uint16_t *count, uint8_t **obj) {
     return curr_bytes;
 }
 
-static size_t parse_fields(uint8_t *data, uint16_t *count, uint8_t **obj) {
-    size_t curr_bytes = 0;
-    curr_bytes += parse16(&data[curr_bytes], count);
-    *obj = &data[curr_bytes];
-    printf("Fields count: %d\n", *count);
-    for(uint16_t i = 0; i < *count; ++i) {
-        uint8_t *field = &data[curr_bytes];
-        printf("* Field access flags: %u\n", Field_access_flags(field));
-        printf("* Field name index: %u\n", Field_name_index(field));
-        printf("* Field descriptor index: %u\n", Field_descriptor_index(field));
-        printf("* Field attributes count: %u\n", Field_attributes_count(field));
+/* TODO: clean this up */
+#define FIELD_ATTR_OBJ_PTR(p) (((uint8_t *)Field_attributes(p)) - 2)
 
-        uint8_t *attrs;  /* TODO: store */
-        curr_bytes += parse_attributes_data(Field_attributes(field), Field_attributes_count(field), &attrs);
-        curr_bytes += 8;
+static size_t fields_parse(uint8_t *data, JavaClassFields **obj) {
+    size_t curr_bytes = 0;
+
+    uint16_t count;
+    curr_bytes += parse16(&data[curr_bytes], &count);
+
+    *obj = PyMem_Malloc(sizeof(JavaClassFields) + (sizeof(JavaClassField *) * count));
+    (*obj)->fields_count = count;
+
+    for(uint16_t i = 0; i < count; ++i) {
+        uint8_t *p = &data[curr_bytes];
+
+        JavaClassField **field = &(*obj)->fields[i];
+        JavaClassAttributes *attributes;
+        size_t attr_size = attributes_obj_parse(FIELD_ATTR_OBJ_PTR(p), &attributes);
+        *field = PyMem_Malloc(sizeof(JavaClassField) + (sizeof(JavaClassAttribute *) * attributes->attributes_count));
+        (*field)->access_flags = Field_access_flags(p);
+        (*field)->name_index = Field_name_index(p);
+        (*field)->descriptor_index = Field_descriptor_index(p);
+        (*field)->attributes = attributes;
+        curr_bytes += attr_size;
+        curr_bytes += 6;  /* exclude sizeof(attributes_count) */
     }
     return curr_bytes;
+}
+
+void fields_print(JavaClassFields *this) {
+    printf("Fields count: %u\n", this->fields_count);
+    for(uint16_t i = 0; i < this->fields_count; ++i) {
+        JavaClassField *field = this->fields[i];
+        printf("* Field access flags: %u\n", field->access_flags);
+        printf("* Field name index: %u\n", field->name_index);
+        printf("* Field descriptor index: %u\n", field->descriptor_index);
+        printf("* Field attributes:\n");
+        attributes_print(field->attributes);
+    }
 }
 
 static JavaClass *_JavaClass_from_filename(const char *filename) {
@@ -94,9 +125,22 @@ static JavaClass *_JavaClass_from_filename(const char *filename) {
     return new;
 }
 
+static void JavaClassField_free(JavaClassField *this) {
+    JavaClassAttributes_free(this->attributes);
+    PyMem_Free(this);
+}
+
+static void JavaClassFields_free(JavaClassFields *this) {
+    for(uint16_t i = 0; i < this->fields_count; ++i) {
+        JavaClassField_free(this->fields[i]);
+    }
+    PyMem_Free(this);
+}
+
 static void _JavaClass_free(JavaClass *this) {
     JavaClassConstantPool_free(this->constant_pool);
     JavaClassInterfaces_free(this->interfaces);
+    JavaClassFields_free(this->fields);
     JavaClassAttributes_free(this->attributes);
     PyMem_Free(this);
 }
@@ -118,6 +162,7 @@ static PyObject *jclass_load(PyObject *self, PyObject *args) {
     curr_bytes += parse16(&class->data[curr_bytes], &class->this_class);
     curr_bytes += parse16(&class->data[curr_bytes], &class->super_class);
     curr_bytes += interfaces_parse(&class->data[curr_bytes], &class->interfaces);
+    curr_bytes += fields_parse(&class->data[curr_bytes], &class->fields);
 
     printf("Magic Number: %X\n", class->magic_number);
     printf("Version: %u.%u\n", class->major_version, class->minor_version);
@@ -126,8 +171,8 @@ static PyObject *jclass_load(PyObject *self, PyObject *args) {
     printf("This Class Pool Index: %u\n", class->this_class);
     printf("Super Class Pool Index: %u\n", class->super_class);
     interfaces_print(class->interfaces);
+    fields_print(class->fields);
 
-    curr_bytes += parse_fields(&class->data[curr_bytes], &class->fields_count, &class->fields);
     curr_bytes += parse_methods(&class->data[curr_bytes], &class->methods_count, &class->methods);
 
     curr_bytes += attributes_obj_parse(&class->data[curr_bytes], &class->attributes);

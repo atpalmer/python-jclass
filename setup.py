@@ -17,6 +17,7 @@ setup(
             'src/access.c',
             'src/constant_pool.c',
             'src/interfaces.c',
+            'src/attributes.c',
         ])
     ],
 

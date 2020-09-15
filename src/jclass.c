@@ -80,8 +80,7 @@ static PyObject *jclass_load(PyObject *self, PyObject *args) {
     interfaces_parse(r, &class->interfaces);
     fields_parse(r, &class->fields);
     parse_methods(r, &class->methods);
-
-    r->pos += attributes_parse(&r->data[r->pos], &class->attributes);
+    attributes_parse_wrapper(r, &class->attributes);
 
     JavaClass_print(class);
     printf("Bytes Read: %lu\n", r->pos);

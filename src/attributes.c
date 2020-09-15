@@ -1,6 +1,7 @@
 #include <Python.h>
 #include "parse.h"
 #include "attributes.h"
+#include "membuff.h"
 
 
 size_t attributes_parse(uint8_t *data, JavaClassAttributes **obj) {
@@ -26,6 +27,10 @@ size_t attributes_parse(uint8_t *data, JavaClassAttributes **obj) {
     }
 
     return curr_bytes;
+}
+
+void attributes_parse_wrapper(MemReader *reader, JavaClassAttributes **obj) {
+    reader->pos += attributes_parse(MEMREADER_CURR(reader), obj);
 }
 
 void attributes_print(JavaClassAttributes *this) {

@@ -1,6 +1,8 @@
 #ifndef ATTRIBUTES_H
 #define ATTRIBUTES_H
 
+#include "membuff.h"
+
 typedef struct {
     uint16_t attribute_name_index;
     uint32_t attribute_length;
@@ -13,6 +15,7 @@ typedef struct {
 } JavaClassAttributes;
 
 size_t attributes_parse(uint8_t *data, JavaClassAttributes **obj);
+void attributes_parse_wrapper(MemReader *reader, JavaClassAttributes **obj);
 void attributes_print(JavaClassAttributes *this);
 void JavaClassAttributes_free(JavaClassAttributes *this);
 

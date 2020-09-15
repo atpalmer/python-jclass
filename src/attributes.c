@@ -5,30 +5,25 @@
 
 
 void attributes_parse(MemReader *reader, JavaClassAttributes **obj) {
-    size_t curr_bytes = 0;
-    uint8_t *data = MEMREADER_CURR(reader);
-
-    uint16_t count;
-    curr_bytes += parse16(&data[curr_bytes], &count);
-
+    uint16_t count = MemReader_next_uint16(reader);
     *obj = PyMem_Malloc(sizeof(JavaClassAttributes) + (sizeof(JavaClassAttribute *) * count));
-
     (*obj)->attributes_count = count;
 
     for(uint16_t i = 0; i < count; ++i) {
-        uint8_t *p = &data[curr_bytes];
-
         JavaClassAttribute **attr = &(*obj)->attributes[i];
-        *attr = PyMem_Malloc(sizeof(JavaClassAttribute) + Attribute_length(p));
 
-        (*attr)->attribute_name_index = Attribute_name_index(p);
-        (*attr)->attribute_length = Attribute_length(p);
-        memcpy((*attr)->info, Attribute_info(p), Attribute_length(p));
+        uint16_t name_index = MemReader_next_uint16(reader);
+        uint32_t length = MemReader_next_uint32(reader);
 
-        curr_bytes += 6 + Attribute_length(p);
+        *attr = PyMem_Malloc(sizeof(JavaClassAttribute) + length);
+
+        (*attr)->attribute_name_index = name_index;
+        (*attr)->attribute_length = length;
+
+        /* TODO: MemReader API for this */
+        memcpy((*attr)->info, MEMREADER_CURR(reader), length);
+        reader->pos += length;
     }
-
-    reader->pos += curr_bytes;
 }
 
 void attributes_print(JavaClassAttributes *this) {

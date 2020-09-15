@@ -6,34 +6,25 @@
 #include "membuff.h"
 
 
-/* TODO: clean this up */
-#define FIELD_ATTR_OBJ_PTR(p) (((uint8_t *)Field_attributes(p)) - 2)
-
-
 void fields_parse(MemReader *reader, JavaClassFields **obj) {
-    size_t curr_bytes = 0;
-
     uint16_t count = MemReader_next_uint16(reader);
 
     *obj = PyMem_Malloc(sizeof(JavaClassFields) + (sizeof(JavaClassField *) * count));
     (*obj)->fields_count = count;
 
     for(uint16_t i = 0; i < count; ++i) {
-        uint8_t *p = MEMREADER_CURR(reader);
-
         JavaClassField **field = &(*obj)->fields[i];
+
+        *field = PyMem_Malloc(sizeof(JavaClassField));
+
+        (*field)->access_flags = MemReader_next_uint16(reader);
+        (*field)->name_index = MemReader_next_uint16(reader);
+        (*field)->descriptor_index = MemReader_next_uint16(reader);
+
         JavaClassAttributes *attributes;
+        attributes_parse_wrapper(reader, &attributes);
 
-        size_t attr_size = attributes_parse(FIELD_ATTR_OBJ_PTR(p), &attributes);
-
-        *field = PyMem_Malloc(sizeof(JavaClassField) + (sizeof(JavaClassAttribute *) * attributes->attributes_count));
-        (*field)->access_flags = Field_access_flags(p);
-        (*field)->name_index = Field_name_index(p);
-        (*field)->descriptor_index = Field_descriptor_index(p);
         (*field)->attributes = attributes;
-
-        reader->pos += attr_size;
-        reader->pos += 6;  /* exclude sizeof(attributes_count) */
     }
 }
 

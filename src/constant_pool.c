@@ -4,6 +4,84 @@
 #include "membuff.h"
 
 
+static inline size_t parse32(void *data, uint32_t *target) {
+    *target = UINT32(data);
+    return 4;
+}
+
+static inline size_t parse16(void *data, uint16_t *target) {
+    *target = UINT16(data);
+    return 2;
+}
+
+
+/* CONSTANT POOL */
+
+/* common header byte */
+
+static inline uint8_t Constant_tag(void *head) {
+    return UINT8_AT(head, 0);
+}
+
+
+/* 1 = Utf8 */
+
+static inline uint16_t Utf8_length(void *head) {
+    return UINT16_AT(head, 1);
+}
+
+static inline char *Utf8_bytes(void *head) {
+    return POINTER_AT(head, 3);
+}
+
+
+/* 7 = Class */
+
+static inline uint16_t Class_name_index(void *head) {
+    return UINT16_AT(head, 1);
+}
+
+
+/* 8 = String */
+
+static inline uint16_t String_string_index(void *head) {
+    return UINT16_AT(head, 1);
+}
+
+
+/* 9 = Fieldref */
+
+static inline uint16_t Fieldref_class_index(void *head) {
+    return UINT16_AT(head, 1);
+}
+
+static inline uint16_t Fieldref_name_and_type_index(void *head) {
+    return UINT16_AT(head, 3);
+}
+
+
+/* 10 = Methodref */
+
+static inline uint16_t Methodref_class_index(void *head) {
+    return UINT16_AT(head, 1);
+}
+
+static inline uint16_t Methodref_name_and_type_index(void *head) {
+    return UINT16_AT(head, 3);
+}
+
+
+/* 12 = NameAndType */
+
+static inline uint16_t NameAndType_name_index(void *head) {
+    return UINT16_AT(head, 1);
+}
+
+static inline uint16_t NameAndType_descriptor_index(void *head) {
+    return UINT16_AT(head, 3);
+}
+
+
 static JavaClassConstant *_JavaClassUtf8Constant_from_data(uint8_t *data) {
     JavaClassUtf8Constant *new = PyMem_Malloc(sizeof(*new) + Utf8_length(data));
     new->tag = Constant_tag(data);

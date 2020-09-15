@@ -4,17 +4,6 @@
 #include "membuff.h"
 
 
-static inline size_t parse32(void *data, uint32_t *target) {
-    *target = UINT32(data);
-    return 4;
-}
-
-static inline size_t parse16(void *data, uint16_t *target) {
-    *target = UINT16(data);
-    return 2;
-}
-
-
 /* CONSTANT POOL */
 
 /* common header byte */

@@ -14,8 +14,14 @@
 #define POINTER_AT(p, i)    ((void *)&(((uint8_t *)(p))[(i)]))
 
 
-static inline uint32_t MemReader_uint32(MemReader *this) {
+static inline uint32_t MemReader_next_uint32(MemReader *this) {
     uint32_t result = UINT32(&this->data[this->pos]);
+    this->pos += sizeof(result);
+    return result;
+}
+
+static inline uint16_t MemReader_next_uint16(MemReader *this) {
+    uint16_t result = UINT16(&this->data[this->pos]);
     this->pos += sizeof(result);
     return result;
 }

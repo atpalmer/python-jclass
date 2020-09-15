@@ -13,15 +13,16 @@
 #define UINT32_AT(p, i)     UINT32(&(((uint8_t *)(p))[(i)]))
 #define POINTER_AT(p, i)    ((void *)&(((uint8_t *)(p))[(i)]))
 
+#define MEMREADER_CURR(r)   (&(r)->data[(r)->pos])
 
 static inline uint32_t MemReader_next_uint32(MemReader *this) {
-    uint32_t result = UINT32(&this->data[this->pos]);
+    uint32_t result = UINT32(MEMREADER_CURR(this));
     this->pos += sizeof(result);
     return result;
 }
 
 static inline uint16_t MemReader_next_uint16(MemReader *this) {
-    uint16_t result = UINT16(&this->data[this->pos]);
+    uint16_t result = UINT16(MEMREADER_CURR(this));
     this->pos += sizeof(result);
     return result;
 }

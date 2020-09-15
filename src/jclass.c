@@ -6,6 +6,17 @@
 #include "fields.h"
 #include "attributes.h"
 
+typedef struct {
+    uint16_t access_flags;
+    uint16_t name_index;
+    uint16_t descriptor_index;
+    JavaClassAttributes *attributes;
+} JavaClassMethod;
+
+typedef struct {
+    uint16_t methods_count;
+    JavaClassMethod *methods[];
+} JavaClassMethods;
 
 /* TODO: make PyObject */
 typedef struct {
@@ -18,10 +29,7 @@ typedef struct {
     uint16_t super_class;
     JavaClassInterfaces *interfaces;
     JavaClassFields *fields;
-
-    uint16_t methods_count;
-    uint8_t *methods;
-
+    JavaClassMethods *methods;
     JavaClassAttributes *attributes;
 
     Py_ssize_t size;
@@ -45,23 +53,44 @@ static size_t parse_attributes_data(uint8_t *attrs, int count, uint8_t **obj) {
     return attrs_bytes;
 }
 
-static size_t parse_methods(uint8_t *data, uint16_t *count, uint8_t **obj) {
+static size_t parse_methods(uint8_t *data, JavaClassMethods **obj) {
     size_t curr_bytes = 0;
-    curr_bytes += parse16(&data[curr_bytes], count);
-    *obj = &data[curr_bytes];
-    printf("Methods count: %d\n", *count);
-    for(int i = 0; i < *count; ++i) {
-        uint8_t *method = &data[curr_bytes];
-        printf("* Method access_flags: %u\n", Method_access_flags(method));
-        printf("* Method name_index: %u\n", Method_name_index(method));
-        printf("* Method descriptor_index: %u\n", Method_descriptor_index(method));
-        printf("* Method attributes_count: %u\n", Method_attributes_count(method));
 
-        uint8_t *attrs;  /* TODO: store */
-        curr_bytes += parse_attributes_data(Method_attributes(method), Method_attributes_count(method), &attrs);
-        curr_bytes += 8;
+    uint16_t count;
+    curr_bytes += parse16(&data[curr_bytes], &count);
+
+    *obj = PyMem_Malloc(sizeof(JavaClassMethods) + (sizeof(JavaClassMethod *) * count));
+    (*obj)->methods_count = count;
+
+    for(int i = 0; i < count; ++i) {
+        uint8_t *p = &data[curr_bytes];
+        JavaClassMethod **method = &(*obj)->methods[i];
+
+        JavaClassAttributes *attributes;
+        size_t attr_bytes = attributes_obj_parse(((uint8_t *)Method_attributes(p)) - 2, &attributes);  /* TODO: cleanup ptr math */
+
+        *method = PyMem_Malloc(sizeof(JavaClassMethod));
+        (*method)->access_flags = Method_access_flags(p);
+        (*method)->name_index = Method_name_index(p);
+        (*method)->descriptor_index = Method_descriptor_index(p);
+        (*method)->attributes = attributes;
+
+        curr_bytes += attr_bytes;
+        curr_bytes += 6;
     }
     return curr_bytes;
+}
+
+
+static void methods_print(JavaClassMethods *this) {
+    printf("Methods count: %d\n", this->methods_count);
+    for(uint16_t i = 0; i < this->methods_count; ++i) {
+        JavaClassMethod *m = this->methods[i];
+        printf("* Method access_flags: %u\n", m->access_flags);
+        printf("* Method name_index: %u\n", m->name_index);
+        printf("* Method descriptor_index: %u\n", m->descriptor_index);
+        attributes_print(m->attributes);
+    }
 }
 
 
@@ -101,6 +130,8 @@ static PyObject *jclass_load(PyObject *self, PyObject *args) {
     curr_bytes += parse16(&class->data[curr_bytes], &class->super_class);
     curr_bytes += interfaces_parse(&class->data[curr_bytes], &class->interfaces);
     curr_bytes += fields_parse(&class->data[curr_bytes], &class->fields);
+    curr_bytes += parse_methods(&class->data[curr_bytes], &class->methods);
+    curr_bytes += attributes_obj_parse(&class->data[curr_bytes], &class->attributes);
 
     printf("Magic Number: %X\n", class->magic_number);
     printf("Version: %u.%u\n", class->major_version, class->minor_version);
@@ -110,11 +141,7 @@ static PyObject *jclass_load(PyObject *self, PyObject *args) {
     printf("Super Class Pool Index: %u\n", class->super_class);
     interfaces_print(class->interfaces);
     fields_print(class->fields);
-
-    curr_bytes += parse_methods(&class->data[curr_bytes], &class->methods_count, &class->methods);
-
-    curr_bytes += attributes_obj_parse(&class->data[curr_bytes], &class->attributes);
-
+    methods_print(class->methods);
     printf("CLASS ATTRIBUTES:\n");
     attributes_print(class->attributes);
     printf("Total Bytes: %lu\n", curr_bytes);

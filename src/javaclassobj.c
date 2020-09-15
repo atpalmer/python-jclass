@@ -1,4 +1,5 @@
 #include <Python.h>
+#include "structmember.h"
 #include "membuff.h"
 #include "access.h"
 #include "constant_pool.h"
@@ -54,6 +55,10 @@ static void _dealloc(PyObject *self) {
     Py_TYPE(self)->tp_free(self);
 }
 
+static PyMemberDef members[] = {
+    {0},
+};
+
 PyTypeObject JavaClass_Type = {
     PyVarObject_HEAD_INIT(NULL, 0)
     .tp_name = "JavaClass",
@@ -62,4 +67,5 @@ PyTypeObject JavaClass_Type = {
     .tp_flags = Py_TPFLAGS_DEFAULT,
     .tp_new = NULL,
     .tp_dealloc = _dealloc,
+    .tp_members = members,
 };

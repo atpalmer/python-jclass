@@ -1,4 +1,5 @@
 #include <Python.h>
+#include "membuff.h"
 #include "access.h"
 #include "parse.h"
 #include "constant_pool.h"
@@ -21,14 +22,12 @@ typedef struct {
     JavaClassFields *fields;
     JavaClassMethods *methods;
     JavaClassAttributes *attributes;
-
-    Py_ssize_t size;
-    uint8_t data[];
 } JavaClass;
 
 
-static JavaClass *_JavaClass_from_filename(const char *filename) {
-    JavaClass *new = PyMem_Malloc(sizeof(JavaClass) + 4096);
+static MemReader *_MemReader_from_filename(const char *filename) {
+    MemReader *new = PyMem_Malloc(sizeof(MemReader) + 4096);
+    new->pos = 0;
 
     FILE *fp = fopen(filename, "rb");
     new->size = fread(new->data, 1, 4096, fp);
@@ -58,7 +57,6 @@ static void JavaClass_print(JavaClass *class) {
     methods_print(class->methods);
     printf("CLASS ATTRIBUTES:\n");
     attributes_print(class->attributes);
-    printf("File Bytes: %lu\n", class->size);
 }
 
 static PyObject *jclass_load(PyObject *self, PyObject *args) {
@@ -66,26 +64,28 @@ static PyObject *jclass_load(PyObject *self, PyObject *args) {
     if(!PyArg_ParseTuple(args, "s", &fname))
         return NULL;
 
-    JavaClass *class = _JavaClass_from_filename(fname);
+    MemReader *r = _MemReader_from_filename(fname);
+    JavaClass *class = PyMem_Malloc(sizeof(*class));
 
-    size_t curr_bytes = 0;
+    r->pos = 0;
 
-    curr_bytes += parse32(&class->data[curr_bytes], &class->magic_number);
-    curr_bytes += parse16(&class->data[curr_bytes], &class->minor_version);
-    curr_bytes += parse16(&class->data[curr_bytes], &class->major_version);
-    curr_bytes += constant_pool_parse(&class->data[curr_bytes], &class->constant_pool);
-    curr_bytes += parse16(&class->data[curr_bytes], &class->access_flags);
-    curr_bytes += parse16(&class->data[curr_bytes], &class->this_class);
-    curr_bytes += parse16(&class->data[curr_bytes], &class->super_class);
-    curr_bytes += interfaces_parse(&class->data[curr_bytes], &class->interfaces);
-    curr_bytes += fields_parse(&class->data[curr_bytes], &class->fields);
-    curr_bytes += parse_methods(&class->data[curr_bytes], &class->methods);
-    curr_bytes += attributes_parse(&class->data[curr_bytes], &class->attributes);
+    r->pos += parse32(&r->data[r->pos], &class->magic_number);
+    r->pos += parse16(&r->data[r->pos], &class->minor_version);
+    r->pos += parse16(&r->data[r->pos], &class->major_version);
+    r->pos += constant_pool_parse(&r->data[r->pos], &class->constant_pool);
+    r->pos += parse16(&r->data[r->pos], &class->access_flags);
+    r->pos += parse16(&r->data[r->pos], &class->this_class);
+    r->pos += parse16(&r->data[r->pos], &class->super_class);
+    r->pos += interfaces_parse(&r->data[r->pos], &class->interfaces);
+    r->pos += fields_parse(&r->data[r->pos], &class->fields);
+    r->pos += parse_methods(&r->data[r->pos], &class->methods);
+    r->pos += attributes_parse(&r->data[r->pos], &class->attributes);
 
     JavaClass_print(class);
-    printf("Bytes Read: %lu\n", curr_bytes);
+    printf("Bytes Read: %lu\n", r->pos);
+    printf("File Bytes: %lu\n", r->size);
 
-    PyObject *result = PyBytes_FromStringAndSize((char *)class->data, class->size);
+    PyObject *result = PyBytes_FromStringAndSize((char *)r->data, r->size);
     _JavaClass_free(class);
     return result;
 

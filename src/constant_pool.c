@@ -1,7 +1,6 @@
 #include <Python.h>
-#include "parse.h"
-#include "constant_pool.h"
 #include "membuff.h"
+#include "constant_pool.h"
 
 
 static void _JavaClassUtf8Constant_print(JavaClassUtf8Constant *this) {

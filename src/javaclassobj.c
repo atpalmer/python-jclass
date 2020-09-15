@@ -57,6 +57,8 @@ static void _dealloc(PyObject *self) {
 
 static PyMemberDef members[] = {
     {"magic_number", T_UINT, offsetof(JavaClass, magic_number), READONLY, 0},
+    {"minor_version", T_USHORT, offsetof(JavaClass, minor_version), READONLY, 0},
+    {"major_version", T_USHORT, offsetof(JavaClass, major_version), READONLY, 0},
     {0},
 };
 

@@ -182,36 +182,36 @@ static JavaClassConstant *_JavaClassClassConstant_from_reader(MemReader *reader)
     return (JavaClassConstant *)new;
 }
 
-static JavaClassConstant *_JavaClassStringConstant_from_data(uint8_t *data) {
+static JavaClassConstant *_JavaClassStringConstant_from_reader(MemReader *reader) {
     JavaClassStringConstant *new = PyMem_Malloc(sizeof(*new));
-    new->tag = Constant_tag(data);
-    new->string_index = String_string_index(data);
+    new->tag = MemReader_next_uint8(reader);
+    new->string_index = MemReader_next_uint16(reader);
     return (JavaClassConstant *)new;
 }
 
-static JavaClassConstant *_JavaClassFieldrefConstant_from_data(uint8_t *data) {
+static JavaClassConstant *_JavaClassFieldrefConstant_from_reader(MemReader *reader) {
     JavaClassFieldrefConstant *new = PyMem_Malloc(sizeof(*new));
-    new->tag = Constant_tag(data);
-    new->class_index = Fieldref_class_index(data);
-    new->name_and_type_index = Fieldref_name_and_type_index(data);
+    new->tag = MemReader_next_uint8(reader);
+    new->class_index = MemReader_next_uint16(reader);
+    new->name_and_type_index = MemReader_next_uint16(reader);
     return (JavaClassConstant *)new;
 }
 
-static JavaClassConstant *_JavaClassMethodrefConstant_from_data(uint8_t *data) {
-    JavaClassMethodrefConstant *new = (JavaClassMethodrefConstant *)_JavaClassFieldrefConstant_from_data(data);
+static JavaClassConstant *_JavaClassMethodrefConstant_from_reader(MemReader *reader) {
+    JavaClassMethodrefConstant *new = (JavaClassMethodrefConstant *)_JavaClassFieldrefConstant_from_reader(reader);
     return (JavaClassConstant *)new;
 }
 
-static JavaClassConstant *_JavaClassInterfaceMethodrefConstant_from_data(uint8_t *data) {
-    JavaClassInterfaceMethodrefConstant *new = (JavaClassInterfaceMethodrefConstant *)_JavaClassFieldrefConstant_from_data(data);
+static JavaClassConstant *_JavaClassInterfaceMethodrefConstant_from_reader(MemReader *reader) {
+    JavaClassInterfaceMethodrefConstant *new = (JavaClassInterfaceMethodrefConstant *)_JavaClassFieldrefConstant_from_reader(reader);
     return (JavaClassConstant *)new;
 }
 
-static JavaClassConstant *_JavaClassNameAndTypeConstant_from_data(uint8_t *data) {
+static JavaClassConstant *_JavaClassNameAndTypeConstant_from_reader(MemReader *reader) {
     JavaClassNameAndTypeConstant *new = PyMem_Malloc(sizeof(*new));
-    new->tag = Constant_tag(data);
-    new->name_index = NameAndType_name_index(data);
-    new->descriptor_index = NameAndType_descriptor_index(data);
+    new->tag = MemReader_next_uint8(reader);
+    new->name_index = MemReader_next_uint16(reader);
+    new->descriptor_index = MemReader_next_uint16(reader);
     return (JavaClassConstant *)new;
 }
 
@@ -224,42 +224,30 @@ void constant_pool_parse(MemReader *reader, JavaClassConstantPool **obj) {
     (*obj)->constant_pool_count = count;
 
     for(uint16_t i = 1; i < count; ++i) {
-        uint8_t *p = MEMREADER_CURR(reader);
         JavaClassConstant **c = &((*obj)->constant_pool[i - 1]);
 
-        switch(Constant_tag(p)) {
+        switch(Constant_tag(MEMREADER_CURR(reader))) {
         case CONSTANT_TYPE_Utf8:
             *c = _JavaClassUtf8Constant_from_reader(reader);
             break;
         case CONSTANT_TYPE_Class:
             *c = _JavaClassClassConstant_from_reader(reader);
             break;
-
         case CONSTANT_TYPE_String:
-            *c = _JavaClassStringConstant_from_data(p);
-            reader->pos += 3;
+            *c = _JavaClassStringConstant_from_reader(reader);
             break;
-
         case CONSTANT_TYPE_Fieldref:
-            *c = _JavaClassFieldrefConstant_from_data(p);
-            reader->pos += 5;
+            *c = _JavaClassFieldrefConstant_from_reader(reader);
             break;
-
         case CONSTANT_TYPE_Methodref:
-            *c = _JavaClassMethodrefConstant_from_data(p);
-            reader->pos += 5;
+            *c = _JavaClassMethodrefConstant_from_reader(reader);
             break;
-
         case CONSTANT_TYPE_InterfaceMethodref:
-            *c = _JavaClassInterfaceMethodrefConstant_from_data(p);
-            reader->pos += 5;
+            *c = _JavaClassInterfaceMethodrefConstant_from_reader(reader);
             break;
-
         case CONSTANT_TYPE_NameAndType:
-            *c = _JavaClassNameAndTypeConstant_from_data(p);
-            reader->pos += 5;
+            *c = _JavaClassNameAndTypeConstant_from_reader(reader);
             break;
-
         default:
             *c = NULL;
             break;

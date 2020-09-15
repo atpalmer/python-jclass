@@ -55,6 +55,23 @@ static void _dealloc(PyObject *self) {
     Py_TYPE(self)->tp_free(self);
 }
 
+static PyObject *_constant(PyObject *self, PyObject *arg) {
+    if(!PyLong_Check(arg))
+        return NULL;
+    unsigned long index = PyLong_AsUnsignedLong(arg);
+    JavaClassConstantPool *pool = ((JavaClass *)self)->constant_pool;
+    if(index < 1 || index > pool->constant_pool_count - 1) {
+        PyErr_SetString(PyExc_IndexError, "Index out of range");
+        return NULL;
+    }
+    Py_RETURN_NONE;
+}
+
+static PyMethodDef methods[] = {
+    {"constant", _constant, METH_O, 0},
+    {0},
+};
+
 static PyMemberDef members[] = {
     {"magic", T_UINT, offsetof(JavaClass, magic), READONLY, 0},
     {"minor_version", T_USHORT, offsetof(JavaClass, minor_version), READONLY, 0},
@@ -71,4 +88,5 @@ PyTypeObject JavaClass_Type = {
     .tp_new = NULL,
     .tp_dealloc = _dealloc,
     .tp_members = members,
+    .tp_methods = methods,
 };

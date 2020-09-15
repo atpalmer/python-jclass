@@ -1,7 +1,6 @@
 #include <Python.h>
 #include "membuff.h"
 #include "access.h"
-#include "parse.h"
 #include "constant_pool.h"
 #include "interfaces.h"
 #include "fields.h"

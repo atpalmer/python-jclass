@@ -1,6 +1,5 @@
 #include <Python.h>
 #include "access.h"
-#include "parse.h"
 #include "attributes.h"
 #include "fields.h"
 #include "membuff.h"

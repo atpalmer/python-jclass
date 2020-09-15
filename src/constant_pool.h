@@ -1,6 +1,8 @@
 #ifndef CONSTANT_POOL_H
 #define CONSTANT_POOL_H
 
+#include "membuff.h"
+
 enum constant_type {
     CONSTANT_TYPE_Utf8= 1,
     CONSTANT_TYPE_Class = 7,
@@ -52,7 +54,7 @@ typedef struct {
 } JavaClassConstantPool;
 
 void constant_pool_print(JavaClassConstantPool *this);
-size_t constant_pool_parse(uint8_t *data, JavaClassConstantPool **obj);
+void constant_pool_parse(MemReader *reader, JavaClassConstantPool **obj);
 void JavaClassConstantPool_free(JavaClassConstantPool *this);
 
 #endif

@@ -1,6 +1,7 @@
 #include <Python.h>
 #include "parse.h"
 #include "constant_pool.h"
+#include "membuff.h"
 
 
 static JavaClassConstant *_JavaClassUtf8Constant_from_data(uint8_t *data) {
@@ -134,7 +135,8 @@ void constant_pool_print(JavaClassConstantPool *this) {
     }
 }
 
-size_t constant_pool_parse(uint8_t *data, JavaClassConstantPool **obj) {
+void constant_pool_parse(MemReader *reader, JavaClassConstantPool **obj) {
+    uint8_t *data = MEMREADER_CURR(reader);
     size_t pool_bytes = 0;
 
     uint16_t count;
@@ -190,7 +192,7 @@ size_t constant_pool_parse(uint8_t *data, JavaClassConstantPool **obj) {
         }
     }
 
-    return pool_bytes;
+    reader->pos += pool_bytes;
 }
 
 void JavaClassConstantPool_free(JavaClassConstantPool *this) {

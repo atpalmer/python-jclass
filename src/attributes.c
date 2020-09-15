@@ -20,9 +20,7 @@ void attributes_parse(MemReader *reader, JavaClassAttributes **obj) {
         (*attr)->attribute_name_index = name_index;
         (*attr)->attribute_length = length;
 
-        /* TODO: MemReader API for this */
-        memcpy((*attr)->info, MEMREADER_CURR(reader), length);
-        reader->pos += length;
+        MemReader_copy_next(reader, length, (*attr)->info);
     }
 }
 

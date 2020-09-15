@@ -4,7 +4,7 @@
 #include "membuff.h"
 
 
-size_t attributes_parse(uint8_t *data, JavaClassAttributes **obj) {
+size_t attributes_parse_internal(uint8_t *data, JavaClassAttributes **obj) {
     size_t curr_bytes = 0;
     uint16_t count;
     curr_bytes += parse16(&data[curr_bytes], &count);
@@ -29,8 +29,8 @@ size_t attributes_parse(uint8_t *data, JavaClassAttributes **obj) {
     return curr_bytes;
 }
 
-void attributes_parse_wrapper(MemReader *reader, JavaClassAttributes **obj) {
-    reader->pos += attributes_parse(MEMREADER_CURR(reader), obj);
+void attributes_parse(MemReader *reader, JavaClassAttributes **obj) {
+    reader->pos += attributes_parse_internal(MEMREADER_CURR(reader), obj);
 }
 
 void attributes_print(JavaClassAttributes *this) {

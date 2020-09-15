@@ -21,7 +21,7 @@ void parse_methods(MemReader *reader, JavaClassMethods **obj) {
         (*method)->descriptor_index = MemReader_next_uint16(reader);
 
         JavaClassAttributes *attributes;
-        attributes_parse_wrapper(reader, &attributes);
+        attributes_parse(reader, &attributes);
 
         (*method)->attributes = attributes;
     }

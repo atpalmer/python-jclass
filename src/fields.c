@@ -22,7 +22,7 @@ void fields_parse(MemReader *reader, JavaClassFields **obj) {
         (*field)->descriptor_index = MemReader_next_uint16(reader);
 
         JavaClassAttributes *attributes;
-        attributes_parse_wrapper(reader, &attributes);
+        attributes_parse(reader, &attributes);
 
         (*field)->attributes = attributes;
     }

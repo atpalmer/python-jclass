@@ -14,8 +14,7 @@ typedef struct {
     JavaClassAttribute *attributes[];
 } JavaClassAttributes;
 
-size_t attributes_parse(uint8_t *data, JavaClassAttributes **obj);
-void attributes_parse_wrapper(MemReader *reader, JavaClassAttributes **obj);
+void attributes_parse(MemReader *reader, JavaClassAttributes **obj);
 void attributes_print(JavaClassAttributes *this);
 void JavaClassAttributes_free(JavaClassAttributes *this);
 

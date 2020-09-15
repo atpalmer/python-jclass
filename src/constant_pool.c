@@ -217,8 +217,7 @@ static JavaClassConstant *_JavaClassNameAndTypeConstant_from_reader(MemReader *r
 
 
 void constant_pool_parse(MemReader *reader, JavaClassConstantPool **obj) {
-    uint16_t count;
-    reader->pos += parse16(MEMREADER_CURR(reader), &count);
+    uint16_t count = MemReader_next_uint16(reader);
 
     *obj = PyMem_Malloc(sizeof(JavaClassConstantPool) + (sizeof(JavaClassConstant *) * count));
     (*obj)->constant_pool_count = count;

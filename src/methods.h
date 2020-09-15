@@ -2,6 +2,7 @@
 #define METHODS_H
 
 #include "attributes.h"
+#include "membuff.h"
 
 typedef struct {
     uint16_t access_flags;
@@ -15,7 +16,7 @@ typedef struct {
     JavaClassMethod *methods[];
 } JavaClassMethods;
 
-size_t parse_methods(uint8_t *data, JavaClassMethods **obj);
+void parse_methods(MemReader *reader, JavaClassMethods **obj);
 void methods_print(JavaClassMethods *this);
 void JavaClassMethod_free(JavaClassMethod *this);
 void JavaClassMethods_free(JavaClassMethods *this);

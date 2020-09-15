@@ -3,9 +3,11 @@
 #include "parse.h"
 #include "attributes.h"
 #include "methods.h"
+#include "membuff.h"
 
 
-size_t parse_methods(uint8_t *data, JavaClassMethods **obj) {
+void parse_methods(MemReader *reader, JavaClassMethods **obj) {
+    uint8_t *data = MEMREADER_CURR(reader);
     size_t curr_bytes = 0;
 
     uint16_t count;
@@ -30,7 +32,8 @@ size_t parse_methods(uint8_t *data, JavaClassMethods **obj) {
         curr_bytes += attr_bytes;
         curr_bytes += 6;
     }
-    return curr_bytes;
+
+    reader->pos += curr_bytes;
 }
 
 void methods_print(JavaClassMethods *this) {

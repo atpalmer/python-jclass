@@ -10,7 +10,7 @@
 
 typedef struct {
     PyObject_HEAD
-    uint32_t magic_number;
+    uint32_t magic;
     uint16_t minor_version;
     uint16_t major_version;
     JavaClassConstantPool *constant_pool;

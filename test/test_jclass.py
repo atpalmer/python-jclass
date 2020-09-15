@@ -6,9 +6,9 @@ def test_jclass():
     assert isinstance(jcls, jclass.JavaClass)
 
 
-def test_JavaClass_magic_number():
+def test_JavaClass_magic():
     jcls = jclass.load('java/HelloWorld.class')
-    assert jcls.magic_number == 0xCAFEBABE
+    assert jcls.magic == 0xCAFEBABE
 
 
 def test_JavaClass_minor_version():

@@ -13,7 +13,7 @@
 JavaClass *JavaClass_from_MemReader(MemReader *r) {
     JavaClass *class = (JavaClass *)JavaClass_Type.tp_alloc(&JavaClass_Type, 0);
 
-    class->magic_number = MemReader_next_uint32(r);
+    class->magic = MemReader_next_uint32(r);
     class->minor_version = MemReader_next_uint16(r);
     class->major_version = MemReader_next_uint16(r);
 
@@ -32,7 +32,7 @@ JavaClass *JavaClass_from_MemReader(MemReader *r) {
 }
 
 void JavaClass_print(JavaClass *class) {
-    printf("Magic Number: %X\n", class->magic_number);
+    printf("Magic Number: %X\n", class->magic);
     printf("Version: %u.%u\n", class->major_version, class->minor_version);
     constant_pool_print(class->constant_pool);
     access_flags_print(class->access_flags);
@@ -56,7 +56,7 @@ static void _dealloc(PyObject *self) {
 }
 
 static PyMemberDef members[] = {
-    {"magic_number", T_UINT, offsetof(JavaClass, magic_number), READONLY, 0},
+    {"magic", T_UINT, offsetof(JavaClass, magic), READONLY, 0},
     {"minor_version", T_USHORT, offsetof(JavaClass, minor_version), READONLY, 0},
     {"major_version", T_USHORT, offsetof(JavaClass, major_version), READONLY, 0},
     {0},

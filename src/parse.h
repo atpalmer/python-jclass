@@ -2,7 +2,6 @@
 #define PARSE_H
 
 #include <arpa/inet.h>
-#include "membuff.h"
 
 #define UINT8(p)    (*(p))
 #define UINT16(p)   (ntohs(*(uint16_t *)p))
@@ -13,26 +12,6 @@
 #define UINT32_AT(p, i)     UINT32(&(((uint8_t *)(p))[(i)]))
 #define POINTER_AT(p, i)    ((void *)&(((uint8_t *)(p))[(i)]))
 
-#define MEMREADER_CURR(r)   (&(r)->data[(r)->pos])
-
-/* TODO: bounds-checking and error handling... */
-
-static inline uint32_t MemReader_next_uint32(MemReader *this) {
-    uint32_t result = UINT32(MEMREADER_CURR(this));
-    this->pos += sizeof(result);
-    return result;
-}
-
-static inline uint16_t MemReader_next_uint16(MemReader *this) {
-    uint16_t result = UINT16(MEMREADER_CURR(this));
-    this->pos += sizeof(result);
-    return result;
-}
-
-static inline void MemReader_copy_next(MemReader *this, size_t size, void *target) {
-    memcpy(target, MEMREADER_CURR(this), size);
-    this->pos += size;
-}
 
 static inline size_t parse32(void *data, uint32_t *target) {
     *target = UINT32(data);

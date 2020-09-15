@@ -4,17 +4,6 @@
 #include "membuff.h"
 
 
-/* CONSTANT POOL */
-
-/* common header byte */
-
-static inline uint8_t Constant_tag(void *head) {
-    return UINT8_AT(head, 0);
-}
-
-
-/* print functions */
-
 static void _JavaClassUtf8Constant_print(JavaClassUtf8Constant *this) {
     printf("Utf8=tag(%u), length(%u), bytes(\"%.*s\")\n",
         this->tag, this->length, this->length, this->bytes);
@@ -92,8 +81,6 @@ void constant_pool_print(JavaClassConstantPool *this) {
 }
 
 
-/* parser functions */
-
 static JavaClassConstant *_JavaClassUtf8Constant_from_reader(MemReader *reader) {
     uint8_t tag = MemReader_next_uint8(reader);
     uint16_t length = MemReader_next_uint16(reader);
@@ -146,7 +133,6 @@ static JavaClassConstant *_JavaClassNameAndTypeConstant_from_reader(MemReader *r
     return (JavaClassConstant *)new;
 }
 
-
 void constant_pool_parse(MemReader *reader, JavaClassConstantPool **obj) {
     uint16_t count = MemReader_next_uint16(reader);
 
@@ -155,8 +141,9 @@ void constant_pool_parse(MemReader *reader, JavaClassConstantPool **obj) {
 
     for(uint16_t i = 1; i < count; ++i) {
         JavaClassConstant **c = &((*obj)->constant_pool[i - 1]);
+        uint8_t constant_type = MemReader_peek_uint8(reader);
 
-        switch(Constant_tag(MEMREADER_CURR(reader))) {
+        switch(constant_type) {
         case CONSTANT_TYPE_Utf8:
             *c = _JavaClassUtf8Constant_from_reader(reader);
             break;

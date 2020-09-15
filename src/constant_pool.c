@@ -13,64 +13,6 @@ static inline uint8_t Constant_tag(void *head) {
 }
 
 
-/* 1 = Utf8 */
-
-static inline uint16_t Utf8_length(void *head) {
-    return UINT16_AT(head, 1);
-}
-
-static inline char *Utf8_bytes(void *head) {
-    return POINTER_AT(head, 3);
-}
-
-
-/* 7 = Class */
-
-static inline uint16_t Class_name_index(void *head) {
-    return UINT16_AT(head, 1);
-}
-
-
-/* 8 = String */
-
-static inline uint16_t String_string_index(void *head) {
-    return UINT16_AT(head, 1);
-}
-
-
-/* 9 = Fieldref */
-
-static inline uint16_t Fieldref_class_index(void *head) {
-    return UINT16_AT(head, 1);
-}
-
-static inline uint16_t Fieldref_name_and_type_index(void *head) {
-    return UINT16_AT(head, 3);
-}
-
-
-/* 10 = Methodref */
-
-static inline uint16_t Methodref_class_index(void *head) {
-    return UINT16_AT(head, 1);
-}
-
-static inline uint16_t Methodref_name_and_type_index(void *head) {
-    return UINT16_AT(head, 3);
-}
-
-
-/* 12 = NameAndType */
-
-static inline uint16_t NameAndType_name_index(void *head) {
-    return UINT16_AT(head, 1);
-}
-
-static inline uint16_t NameAndType_descriptor_index(void *head) {
-    return UINT16_AT(head, 3);
-}
-
-
 /* print functions */
 
 static void _JavaClassUtf8Constant_print(JavaClassUtf8Constant *this) {

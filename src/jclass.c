@@ -10,8 +10,10 @@ static PyObject *jclass_load(PyObject *self, PyObject *args) {
 
     MemReader *r = MemReader_from_filename(fname);
     JavaClass *class = JavaClass_from_MemReader(r);
+
     JavaClass_print(class);
-    JavaClass_free(class);
+
+    Py_DECREF(class);
 
     MemReader_print(r);
 
@@ -36,6 +38,14 @@ static PyModuleDef module = {
 
 PyMODINIT_FUNC PyInit_jclass(void) {
     PyObject *m = PyModule_Create(&module);
+
+    if(PyType_Ready(&JavaClass_Type) < 0)
+        return NULL;
+
+    Py_INCREF(&JavaClass_Type);
+
+    PyModule_AddObject(m, JavaClass_Type.tp_name, (PyObject *)&JavaClass_Type);
+
     return m;
 }
 

@@ -8,9 +8,8 @@
 #include "methods.h"
 #include "attributes.h"
 
-
-/* TODO: make PyObject */
 typedef struct {
+    PyObject_HEAD
     uint32_t magic_number;
     uint16_t minor_version;
     uint16_t major_version;
@@ -24,8 +23,9 @@ typedef struct {
     JavaClassAttributes *attributes;
 } JavaClass;
 
-void _JavaClass_free(JavaClass *this);
 JavaClass *JavaClass_from_MemReader(MemReader *r);
 void JavaClass_print(JavaClass *class);
+
+extern PyTypeObject JavaClass_Type;
 
 #endif

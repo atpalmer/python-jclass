@@ -9,17 +9,8 @@
 #include "javaclassobj.h"
 
 
-void JavaClass_free(JavaClass *this) {
-    JavaClassConstantPool_free(this->constant_pool);
-    JavaClassInterfaces_free(this->interfaces);
-    JavaClassFields_free(this->fields);
-    JavaClassMethods_free(this->methods);
-    JavaClassAttributes_free(this->attributes);
-    PyMem_Free(this);
-}
-
 JavaClass *JavaClass_from_MemReader(MemReader *r) {
-    JavaClass *class = PyMem_Malloc(sizeof(*class));
+    JavaClass *class = (JavaClass *)JavaClass_Type.tp_alloc(&JavaClass_Type, 0);
 
     class->magic_number = MemReader_next_uint32(r);
     class->minor_version = MemReader_next_uint16(r);
@@ -52,3 +43,23 @@ void JavaClass_print(JavaClass *class) {
     printf("CLASS ATTRIBUTES:\n");
     attributes_print(class->attributes);
 }
+
+static void _dealloc(PyObject *self) {
+    JavaClass *class = (JavaClass *)self;
+    JavaClassConstantPool_free(class->constant_pool);
+    JavaClassInterfaces_free(class->interfaces);
+    JavaClassFields_free(class->fields);
+    JavaClassMethods_free(class->methods);
+    JavaClassAttributes_free(class->attributes);
+    Py_TYPE(self)->tp_free(self);
+}
+
+PyTypeObject JavaClass_Type = {
+    PyVarObject_HEAD_INIT(NULL, 0)
+    .tp_name = "JavaClass",
+    .tp_doc = NULL,
+    .tp_basicsize = sizeof(JavaClass),
+    .tp_flags = Py_TPFLAGS_DEFAULT,
+    .tp_new = NULL,
+    .tp_dealloc = _dealloc,
+};

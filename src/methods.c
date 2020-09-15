@@ -7,17 +7,13 @@
 
 
 void parse_methods(MemReader *reader, JavaClassMethods **obj) {
-    uint8_t *data = MEMREADER_CURR(reader);
-    size_t curr_bytes = 0;
-
-    uint16_t count;
-    curr_bytes += parse16(&data[curr_bytes], &count);
+    uint16_t count = MemReader_next_uint16(reader);
 
     *obj = PyMem_Malloc(sizeof(JavaClassMethods) + (sizeof(JavaClassMethod *) * count));
     (*obj)->methods_count = count;
 
     for(int i = 0; i < count; ++i) {
-        uint8_t *p = &data[curr_bytes];
+        uint8_t *p = MEMREADER_CURR(reader);
         JavaClassMethod **method = &(*obj)->methods[i];
 
         JavaClassAttributes *attributes;
@@ -29,11 +25,9 @@ void parse_methods(MemReader *reader, JavaClassMethods **obj) {
         (*method)->descriptor_index = Method_descriptor_index(p);
         (*method)->attributes = attributes;
 
-        curr_bytes += attr_bytes;
-        curr_bytes += 6;
+        reader->pos += attr_bytes;
+        reader->pos += 6;
     }
-
-    reader->pos += curr_bytes;
 }
 
 void methods_print(JavaClassMethods *this) {

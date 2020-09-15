@@ -2,6 +2,7 @@
 #define FIELDS_H
 
 #include "attributes.h"
+#include "membuff.h"
 
 typedef struct {
     uint16_t access_flags;
@@ -15,7 +16,7 @@ typedef struct {
     JavaClassField *fields[];
 } JavaClassFields;
 
-size_t fields_parse(uint8_t *data, JavaClassFields **obj);
+void fields_parse(MemReader *reader, JavaClassFields **obj);
 void fields_print(JavaClassFields *this);
 void JavaClassField_free(JavaClassField *this);
 void JavaClassFields_free(JavaClassFields *this);

@@ -3,13 +3,15 @@
 #include "parse.h"
 #include "attributes.h"
 #include "fields.h"
+#include "membuff.h"
 
 
 /* TODO: clean this up */
 #define FIELD_ATTR_OBJ_PTR(p) (((uint8_t *)Field_attributes(p)) - 2)
 
 
-size_t fields_parse(uint8_t *data, JavaClassFields **obj) {
+void fields_parse(MemReader *reader, JavaClassFields **obj) {
+    uint8_t *data = MEMREADER_CURR(reader);
     size_t curr_bytes = 0;
 
     uint16_t count;
@@ -32,7 +34,8 @@ size_t fields_parse(uint8_t *data, JavaClassFields **obj) {
         curr_bytes += attr_size;
         curr_bytes += 6;  /* exclude sizeof(attributes_count) */
     }
-    return curr_bytes;
+
+    reader->pos += curr_bytes;
 }
 
 void fields_print(JavaClassFields *this) {

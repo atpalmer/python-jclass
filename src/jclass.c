@@ -10,10 +10,6 @@ static PyObject *jclass_load(PyObject *self, PyObject *args) {
 
     MemReader *r = MemReader_from_filename(fname);
     JavaClass *class = JavaClass_from_MemReader(r);
-
-    JavaClass_print(class);
-    MemReader_print(r);
-
     MemReader_free(r);
 
     return class;

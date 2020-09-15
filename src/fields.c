@@ -23,7 +23,7 @@ size_t fields_parse(uint8_t *data, JavaClassFields **obj) {
 
         JavaClassField **field = &(*obj)->fields[i];
         JavaClassAttributes *attributes;
-        size_t attr_size = attributes_obj_parse(FIELD_ATTR_OBJ_PTR(p), &attributes);
+        size_t attr_size = attributes_parse(FIELD_ATTR_OBJ_PTR(p), &attributes);
         *field = PyMem_Malloc(sizeof(JavaClassField) + (sizeof(JavaClassAttribute *) * attributes->attributes_count));
         (*field)->access_flags = Field_access_flags(p);
         (*field)->name_index = Field_name_index(p);

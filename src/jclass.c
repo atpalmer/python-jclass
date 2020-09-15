@@ -37,22 +37,6 @@ typedef struct {
 } JavaClass;
 
 
-static size_t parse_attributes_data(uint8_t *attrs, int count, uint8_t **obj) {
-    *obj = attrs;
-    printf("Attributes count: %d\n", count);
-    size_t attrs_bytes = 0;
-    for(int i = 0; i < count; ++i) {
-        uint8_t *attr = &attrs[attrs_bytes];
-        printf("** Attr name index: %u\n", Attribute_name_index(attr));
-        printf("** Attr length: %u\n", Attribute_length(attr));
-        printf("** Attr info: %.*s\n", Attribute_length(attr), (char *)Attribute_info(attr));
-
-        attrs_bytes += 6 + Attribute_length(attr);
-    }
-
-    return attrs_bytes;
-}
-
 static size_t parse_methods(uint8_t *data, JavaClassMethods **obj) {
     size_t curr_bytes = 0;
 
@@ -67,7 +51,7 @@ static size_t parse_methods(uint8_t *data, JavaClassMethods **obj) {
         JavaClassMethod **method = &(*obj)->methods[i];
 
         JavaClassAttributes *attributes;
-        size_t attr_bytes = attributes_obj_parse(((uint8_t *)Method_attributes(p)) - 2, &attributes);  /* TODO: cleanup ptr math */
+        size_t attr_bytes = attributes_parse(((uint8_t *)Method_attributes(p)) - 2, &attributes);  /* TODO: cleanup ptr math */
 
         *method = PyMem_Malloc(sizeof(JavaClassMethod));
         (*method)->access_flags = Method_access_flags(p);
@@ -104,10 +88,23 @@ static JavaClass *_JavaClass_from_filename(const char *filename) {
     return new;
 }
 
+static void JavaClassMethod_free(JavaClassMethod *this) {
+    JavaClassAttributes_free(this->attributes);
+    PyMem_Free(this);
+}
+
+static void JavaClassMethods_free(JavaClassMethods *this) {
+    for(uint16_t i = 0; i < this->methods_count; ++i) {
+        JavaClassMethod_free(this->methods[i]);
+    }
+    PyMem_Free(this);
+}
+
 static void _JavaClass_free(JavaClass *this) {
     JavaClassConstantPool_free(this->constant_pool);
     JavaClassInterfaces_free(this->interfaces);
     JavaClassFields_free(this->fields);
+    JavaClassMethods_free(this->methods);
     JavaClassAttributes_free(this->attributes);
     PyMem_Free(this);
 }
@@ -131,7 +128,7 @@ static PyObject *jclass_load(PyObject *self, PyObject *args) {
     curr_bytes += interfaces_parse(&class->data[curr_bytes], &class->interfaces);
     curr_bytes += fields_parse(&class->data[curr_bytes], &class->fields);
     curr_bytes += parse_methods(&class->data[curr_bytes], &class->methods);
-    curr_bytes += attributes_obj_parse(&class->data[curr_bytes], &class->attributes);
+    curr_bytes += attributes_parse(&class->data[curr_bytes], &class->attributes);
 
     printf("Magic Number: %X\n", class->magic_number);
     printf("Version: %u.%u\n", class->major_version, class->minor_version);

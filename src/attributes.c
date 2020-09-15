@@ -3,7 +3,7 @@
 #include "attributes.h"
 
 
-size_t attributes_obj_parse(uint8_t *data, JavaClassAttributes **obj) {
+size_t attributes_parse(uint8_t *data, JavaClassAttributes **obj) {
     size_t curr_bytes = 0;
     uint16_t count;
     curr_bytes += parse16(&data[curr_bytes], &count);

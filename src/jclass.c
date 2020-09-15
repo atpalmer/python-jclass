@@ -46,6 +46,21 @@ static void _JavaClass_free(JavaClass *this) {
     PyMem_Free(this);
 }
 
+static void JavaClass_print(JavaClass *class) {
+    printf("Magic Number: %X\n", class->magic_number);
+    printf("Version: %u.%u\n", class->major_version, class->minor_version);
+    constant_pool_print(class->constant_pool);
+    access_flags_print(class->access_flags);
+    printf("This Class Pool Index: %u\n", class->this_class);
+    printf("Super Class Pool Index: %u\n", class->super_class);
+    interfaces_print(class->interfaces);
+    fields_print(class->fields);
+    methods_print(class->methods);
+    printf("CLASS ATTRIBUTES:\n");
+    attributes_print(class->attributes);
+    printf("File Bytes: %lu\n", class->size);
+}
+
 static PyObject *jclass_load(PyObject *self, PyObject *args) {
     char *fname;
     if(!PyArg_ParseTuple(args, "s", &fname))
@@ -67,18 +82,8 @@ static PyObject *jclass_load(PyObject *self, PyObject *args) {
     curr_bytes += parse_methods(&class->data[curr_bytes], &class->methods);
     curr_bytes += attributes_parse(&class->data[curr_bytes], &class->attributes);
 
-    printf("Magic Number: %X\n", class->magic_number);
-    printf("Version: %u.%u\n", class->major_version, class->minor_version);
-    constant_pool_print(class->constant_pool);
-    access_flags_print(class->access_flags);
-    printf("This Class Pool Index: %u\n", class->this_class);
-    printf("Super Class Pool Index: %u\n", class->super_class);
-    interfaces_print(class->interfaces);
-    fields_print(class->fields);
-    methods_print(class->methods);
-    printf("CLASS ATTRIBUTES:\n");
-    attributes_print(class->attributes);
-    printf("Total Bytes: %lu\n", curr_bytes);
+    JavaClass_print(class);
+    printf("Bytes Read: %lu\n", curr_bytes);
 
     PyObject *result = PyBytes_FromStringAndSize((char *)class->data, class->size);
     _JavaClass_free(class);

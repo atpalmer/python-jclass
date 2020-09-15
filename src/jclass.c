@@ -72,9 +72,11 @@ static PyObject *jclass_load(PyObject *self, PyObject *args) {
     class->major_version = MemReader_next_uint16(r);
 
     r->pos += constant_pool_parse(&r->data[r->pos], &class->constant_pool);
-    r->pos += parse16(&r->data[r->pos], &class->access_flags);
-    r->pos += parse16(&r->data[r->pos], &class->this_class);
-    r->pos += parse16(&r->data[r->pos], &class->super_class);
+
+    class->access_flags = MemReader_next_uint16(r);
+    class->this_class = MemReader_next_uint16(r);
+    class->super_class = MemReader_next_uint16(r);
+
     r->pos += interfaces_parse(&r->data[r->pos], &class->interfaces);
     r->pos += fields_parse(&r->data[r->pos], &class->fields);
     r->pos += parse_methods(&r->data[r->pos], &class->methods);

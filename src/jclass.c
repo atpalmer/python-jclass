@@ -4,19 +4,9 @@
 #include "constant_pool.h"
 #include "interfaces.h"
 #include "fields.h"
+#include "methods.h"
 #include "attributes.h"
 
-typedef struct {
-    uint16_t access_flags;
-    uint16_t name_index;
-    uint16_t descriptor_index;
-    JavaClassAttributes *attributes;
-} JavaClassMethod;
-
-typedef struct {
-    uint16_t methods_count;
-    JavaClassMethod *methods[];
-} JavaClassMethods;
 
 /* TODO: make PyObject */
 typedef struct {
@@ -37,47 +27,6 @@ typedef struct {
 } JavaClass;
 
 
-static size_t parse_methods(uint8_t *data, JavaClassMethods **obj) {
-    size_t curr_bytes = 0;
-
-    uint16_t count;
-    curr_bytes += parse16(&data[curr_bytes], &count);
-
-    *obj = PyMem_Malloc(sizeof(JavaClassMethods) + (sizeof(JavaClassMethod *) * count));
-    (*obj)->methods_count = count;
-
-    for(int i = 0; i < count; ++i) {
-        uint8_t *p = &data[curr_bytes];
-        JavaClassMethod **method = &(*obj)->methods[i];
-
-        JavaClassAttributes *attributes;
-        size_t attr_bytes = attributes_parse(((uint8_t *)Method_attributes(p)) - 2, &attributes);  /* TODO: cleanup ptr math */
-
-        *method = PyMem_Malloc(sizeof(JavaClassMethod));
-        (*method)->access_flags = Method_access_flags(p);
-        (*method)->name_index = Method_name_index(p);
-        (*method)->descriptor_index = Method_descriptor_index(p);
-        (*method)->attributes = attributes;
-
-        curr_bytes += attr_bytes;
-        curr_bytes += 6;
-    }
-    return curr_bytes;
-}
-
-
-static void methods_print(JavaClassMethods *this) {
-    printf("Methods count: %d\n", this->methods_count);
-    for(uint16_t i = 0; i < this->methods_count; ++i) {
-        JavaClassMethod *m = this->methods[i];
-        printf("* Method access_flags: %u\n", m->access_flags);
-        printf("* Method name_index: %u\n", m->name_index);
-        printf("* Method descriptor_index: %u\n", m->descriptor_index);
-        attributes_print(m->attributes);
-    }
-}
-
-
 static JavaClass *_JavaClass_from_filename(const char *filename) {
     JavaClass *new = PyMem_Malloc(sizeof(JavaClass) + 4096);
 
@@ -86,18 +35,6 @@ static JavaClass *_JavaClass_from_filename(const char *filename) {
     fclose(fp);
 
     return new;
-}
-
-static void JavaClassMethod_free(JavaClassMethod *this) {
-    JavaClassAttributes_free(this->attributes);
-    PyMem_Free(this);
-}
-
-static void JavaClassMethods_free(JavaClassMethods *this) {
-    for(uint16_t i = 0; i < this->methods_count; ++i) {
-        JavaClassMethod_free(this->methods[i]);
-    }
-    PyMem_Free(this);
 }
 
 static void _JavaClass_free(JavaClass *this) {

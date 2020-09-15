@@ -18,6 +18,7 @@ setup(
             'src/constant_pool.c',
             'src/interfaces.c',
             'src/fields.c',
+            'src/methods.c',
             'src/attributes.c',
         ])
     ],

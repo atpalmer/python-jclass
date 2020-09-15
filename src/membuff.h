@@ -64,4 +64,9 @@ static inline void MemReader_free(MemReader *this) {
     PyMem_Free(this);
 }
 
+static inline void MemReader_print(MemReader *this) {
+    printf("Bytes Read: %lu\n", this->pos);
+    printf("Total Bytes: %lu\n", this->size);
+}
+
 #endif

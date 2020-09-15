@@ -77,8 +77,7 @@ static PyObject *jclass_load(PyObject *self, PyObject *args) {
     JavaClass_print(class);
     _JavaClass_free(class);
 
-    printf("Bytes Read: %lu\n", r->pos);
-    printf("File Bytes: %lu\n", r->size);
+    MemReader_print(r);
 
     PyObject *result = PyBytes_FromStringAndSize((char *)r->data, r->size);
     MemReader_free(r);

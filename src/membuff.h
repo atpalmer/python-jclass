@@ -49,4 +49,19 @@ static inline void MemReader_copy_next(MemReader *this, size_t size, void *targe
     this->pos += size;
 }
 
+static inline MemReader *MemReader_from_filename(const char *filename) {
+    MemReader *new = PyMem_Malloc(sizeof(MemReader) + 4096);
+    new->pos = 0;
+
+    FILE *fp = fopen(filename, "rb");
+    new->size = fread(new->data, 1, 4096, fp);
+    fclose(fp);
+
+    return new;
+}
+
+static inline void MemReader_free(MemReader *this) {
+    PyMem_Free(this);
+}
+
 #endif

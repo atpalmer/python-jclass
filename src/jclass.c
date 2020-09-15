@@ -23,18 +23,6 @@ typedef struct {
     JavaClassAttributes *attributes;
 } JavaClass;
 
-
-static MemReader *_MemReader_from_filename(const char *filename) {
-    MemReader *new = PyMem_Malloc(sizeof(MemReader) + 4096);
-    new->pos = 0;
-
-    FILE *fp = fopen(filename, "rb");
-    new->size = fread(new->data, 1, 4096, fp);
-    fclose(fp);
-
-    return new;
-}
-
 static void _JavaClass_free(JavaClass *this) {
     JavaClassConstantPool_free(this->constant_pool);
     JavaClassInterfaces_free(this->interfaces);
@@ -63,7 +51,7 @@ static PyObject *jclass_load(PyObject *self, PyObject *args) {
     if(!PyArg_ParseTuple(args, "s", &fname))
         return NULL;
 
-    MemReader *r = _MemReader_from_filename(fname);
+    MemReader *r = MemReader_from_filename(fname);
     JavaClass *class = PyMem_Malloc(sizeof(*class));
 
     class->magic_number = MemReader_next_uint32(r);
@@ -82,11 +70,13 @@ static PyObject *jclass_load(PyObject *self, PyObject *args) {
     attributes_parse(r, &class->attributes);
 
     JavaClass_print(class);
+    _JavaClass_free(class);
+
     printf("Bytes Read: %lu\n", r->pos);
     printf("File Bytes: %lu\n", r->size);
 
     PyObject *result = PyBytes_FromStringAndSize((char *)r->data, r->size);
-    _JavaClass_free(class);
+    MemReader_free(r);
     return result;
 
     /* TODO: return JavaClass object (as PyObject) */

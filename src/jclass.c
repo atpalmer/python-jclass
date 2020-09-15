@@ -67,9 +67,8 @@ static PyObject *jclass_load(PyObject *self, PyObject *args) {
     MemReader *r = _MemReader_from_filename(fname);
     JavaClass *class = PyMem_Malloc(sizeof(*class));
 
-    r->pos = 0;
+    class->magic_number = MemReader_uint32(r);
 
-    r->pos += parse32(&r->data[r->pos], &class->magic_number);
     r->pos += parse16(&r->data[r->pos], &class->minor_version);
     r->pos += parse16(&r->data[r->pos], &class->major_version);
     r->pos += constant_pool_parse(&r->data[r->pos], &class->constant_pool);

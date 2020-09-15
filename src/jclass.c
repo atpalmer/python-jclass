@@ -12,16 +12,11 @@ static PyObject *jclass_load(PyObject *self, PyObject *args) {
     JavaClass *class = JavaClass_from_MemReader(r);
 
     JavaClass_print(class);
-
-    Py_DECREF(class);
-
     MemReader_print(r);
 
-    PyObject *result = PyBytes_FromStringAndSize((char *)r->data, r->size);
     MemReader_free(r);
-    return result;
 
-    /* TODO: return JavaClass object (as PyObject) */
+    return class;
 }
 
 static PyMethodDef module_methods[] = {

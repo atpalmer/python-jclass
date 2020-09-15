@@ -175,11 +175,10 @@ static JavaClassConstant *_JavaClassUtf8Constant_from_reader(MemReader *reader) 
     return (JavaClassConstant *)new;
 }
 
-
-static JavaClassConstant *_JavaClassClassConstant_from_data(uint8_t *data) {
+static JavaClassConstant *_JavaClassClassConstant_from_reader(MemReader *reader) {
     JavaClassClassConstant *new = PyMem_Malloc(sizeof(*new));
-    new->tag = Constant_tag(data);
-    new->name_index = Class_name_index(data);
+    new->tag = MemReader_next_uint8(reader);
+    new->name_index = MemReader_next_uint16(reader);
     return (JavaClassConstant *)new;
 }
 
@@ -232,10 +231,8 @@ void constant_pool_parse(MemReader *reader, JavaClassConstantPool **obj) {
         case CONSTANT_TYPE_Utf8:
             *c = _JavaClassUtf8Constant_from_reader(reader);
             break;
-
         case CONSTANT_TYPE_Class:
-            *c = _JavaClassClassConstant_from_data(p);
-            reader->pos += 3;
+            *c = _JavaClassClassConstant_from_reader(reader);
             break;
 
         case CONSTANT_TYPE_String:

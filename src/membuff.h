@@ -25,6 +25,12 @@ static inline uint16_t MemReader_next_uint16(MemReader *this) {
     return result;
 }
 
+static inline uint8_t MemReader_next_uint8(MemReader *this) {
+    uint8_t result = UINT8(MEMREADER_CURR(this));
+    this->pos += sizeof(result);
+    return result;
+}
+
 static inline void MemReader_copy_next(MemReader *this, size_t size, void *target) {
     memcpy(target, MEMREADER_CURR(this), size);
     this->pos += size;

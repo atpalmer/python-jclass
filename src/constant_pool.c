@@ -82,11 +82,15 @@ static inline uint16_t NameAndType_descriptor_index(void *head) {
 }
 
 
-static JavaClassConstant *_JavaClassUtf8Constant_from_data(uint8_t *data) {
-    JavaClassUtf8Constant *new = PyMem_Malloc(sizeof(*new) + Utf8_length(data));
-    new->tag = Constant_tag(data);
-    new->length = Utf8_length(data);
-    memcpy(new->bytes, Utf8_bytes(data), Utf8_length(data));
+static JavaClassConstant *_JavaClassUtf8Constant_from_reader(MemReader *reader) {
+    uint8_t tag = MemReader_next_uint8(reader);
+    uint16_t length = MemReader_next_uint16(reader);
+
+    JavaClassUtf8Constant *new = PyMem_Malloc(sizeof(*new) + length);
+    new->tag = tag;
+    new->length = length;
+    MemReader_copy_next(reader, length, new->bytes);
+
     return (JavaClassConstant *)new;
 }
 
@@ -226,8 +230,7 @@ void constant_pool_parse(MemReader *reader, JavaClassConstantPool **obj) {
 
         switch(Constant_tag(p)) {
         case CONSTANT_TYPE_Utf8:
-            *c = _JavaClassUtf8Constant_from_data(p);
-            reader->pos += 3 + Utf8_length(p);
+            *c = _JavaClassUtf8Constant_from_reader(reader);
             break;
 
         case CONSTANT_TYPE_Class:

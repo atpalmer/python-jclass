@@ -77,7 +77,8 @@ static PyObject *jclass_load(PyObject *self, PyObject *args) {
     class->this_class = MemReader_next_uint16(r);
     class->super_class = MemReader_next_uint16(r);
 
-    r->pos += interfaces_parse(&r->data[r->pos], &class->interfaces);
+    interfaces_parse(r, &class->interfaces);
+
     r->pos += fields_parse(&r->data[r->pos], &class->fields);
     r->pos += parse_methods(&r->data[r->pos], &class->methods);
     r->pos += attributes_parse(&r->data[r->pos], &class->attributes);

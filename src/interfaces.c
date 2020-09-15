@@ -1,9 +1,10 @@
 #include <Python.h>
 #include "parse.h"
 #include "interfaces.h"
+#include "membuff.h"
 
-
-size_t interfaces_parse(uint8_t *data, JavaClassInterfaces **obj) {
+void interfaces_parse(MemReader *reader, JavaClassInterfaces **obj) {
+    uint8_t *data = MEMREADER_CURR(reader);
     size_t curr_bytes = 0;
 
     uint16_t count;
@@ -16,7 +17,7 @@ size_t interfaces_parse(uint8_t *data, JavaClassInterfaces **obj) {
         curr_bytes += parse16(&data[curr_bytes], p);
     }
 
-    return curr_bytes;
+    reader->pos += curr_bytes;
 }
 
 void interfaces_print(JavaClassInterfaces *this) {

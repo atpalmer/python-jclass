@@ -214,54 +214,50 @@ void constant_pool_print(JavaClassConstantPool *this) {
 }
 
 void constant_pool_parse(MemReader *reader, JavaClassConstantPool **obj) {
-    uint8_t *data = MEMREADER_CURR(reader);
-    size_t pool_bytes = 0;
-
     uint16_t count;
-    pool_bytes += parse16(data, &count);
+    reader->pos += parse16(MEMREADER_CURR(reader), &count);
 
     *obj = PyMem_Malloc(sizeof(JavaClassConstantPool) + (sizeof(JavaClassConstant *) * count));
-
     (*obj)->constant_pool_count = count;
 
     for(uint16_t i = 1; i < count; ++i) {
-        uint8_t *p = &data[pool_bytes];
+        uint8_t *p = MEMREADER_CURR(reader);
         JavaClassConstant **c = &((*obj)->constant_pool[i - 1]);
 
         switch(Constant_tag(p)) {
         case CONSTANT_TYPE_Utf8:
             *c = _JavaClassUtf8Constant_from_data(p);
-            pool_bytes += 3 + Utf8_length(p);
+            reader->pos += 3 + Utf8_length(p);
             break;
 
         case CONSTANT_TYPE_Class:
             *c = _JavaClassClassConstant_from_data(p);
-            pool_bytes += 3;
+            reader->pos += 3;
             break;
 
         case CONSTANT_TYPE_String:
             *c = _JavaClassStringConstant_from_data(p);
-            pool_bytes += 3;
+            reader->pos += 3;
             break;
 
         case CONSTANT_TYPE_Fieldref:
             *c = _JavaClassFieldrefConstant_from_data(p);
-            pool_bytes += 5;
+            reader->pos += 5;
             break;
 
         case CONSTANT_TYPE_Methodref:
             *c = _JavaClassMethodrefConstant_from_data(p);
-            pool_bytes += 5;
+            reader->pos += 5;
             break;
 
         case CONSTANT_TYPE_InterfaceMethodref:
             *c = _JavaClassInterfaceMethodrefConstant_from_data(p);
-            pool_bytes += 5;
+            reader->pos += 5;
             break;
 
         case CONSTANT_TYPE_NameAndType:
             *c = _JavaClassNameAndTypeConstant_from_data(p);
-            pool_bytes += 5;
+            reader->pos += 5;
             break;
 
         default:
@@ -269,8 +265,6 @@ void constant_pool_parse(MemReader *reader, JavaClassConstantPool **obj) {
             break;
         }
     }
-
-    reader->pos += pool_bytes;
 }
 
 void JavaClassConstantPool_free(JavaClassConstantPool *this) {

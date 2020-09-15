@@ -82,29 +82,11 @@ static inline uint16_t NameAndType_descriptor_index(void *head) {
 }
 
 
-static JavaClassConstant *_JavaClassUtf8Constant_from_reader(MemReader *reader) {
-    uint8_t tag = MemReader_next_uint8(reader);
-    uint16_t length = MemReader_next_uint16(reader);
-
-    JavaClassUtf8Constant *new = PyMem_Malloc(sizeof(*new) + length);
-    new->tag = tag;
-    new->length = length;
-    MemReader_copy_next(reader, length, new->bytes);
-
-    return (JavaClassConstant *)new;
-}
+/* print functions */
 
 static void _JavaClassUtf8Constant_print(JavaClassUtf8Constant *this) {
     printf("Utf8=tag(%u), length(%u), bytes(\"%.*s\")\n",
         this->tag, this->length, this->length, this->bytes);
-}
-
-
-static JavaClassConstant *_JavaClassClassConstant_from_data(uint8_t *data) {
-    JavaClassClassConstant *new = PyMem_Malloc(sizeof(*new));
-    new->tag = Constant_tag(data);
-    new->name_index = Class_name_index(data);
-    return (JavaClassConstant *)new;
 }
 
 static void _JavaClassClassConstant_print(JavaClassClassConstant *this) {
@@ -112,26 +94,9 @@ static void _JavaClassClassConstant_print(JavaClassClassConstant *this) {
         this->tag, this->name_index);
 }
 
-
-static JavaClassConstant *_JavaClassStringConstant_from_data(uint8_t *data) {
-    JavaClassStringConstant *new = PyMem_Malloc(sizeof(*new));
-    new->tag = Constant_tag(data);
-    new->string_index = String_string_index(data);
-    return (JavaClassConstant *)new;
-}
-
 static void _JavaClassStringConstant_print(JavaClassStringConstant *this) {
     printf("String=tag(%u), string_index(%u)\n",
         this->tag, this->string_index);
-}
-
-
-static JavaClassConstant *_JavaClassFieldrefConstant_from_data(uint8_t *data) {
-    JavaClassFieldrefConstant *new = PyMem_Malloc(sizeof(*new));
-    new->tag = Constant_tag(data);
-    new->class_index = Fieldref_class_index(data);
-    new->name_and_type_index = Fieldref_name_and_type_index(data);
-    return (JavaClassConstant *)new;
 }
 
 static void _JavaClassFieldrefConstant_print(JavaClassFieldrefConstant *this) {
@@ -139,21 +104,9 @@ static void _JavaClassFieldrefConstant_print(JavaClassFieldrefConstant *this) {
         this->tag, this->class_index, this->name_and_type_index);
 }
 
-
-static JavaClassConstant *_JavaClassMethodrefConstant_from_data(uint8_t *data) {
-    JavaClassMethodrefConstant *new = (JavaClassMethodrefConstant *)_JavaClassFieldrefConstant_from_data(data);
-    return (JavaClassConstant *)new;
-}
-
 static void _JavaClassMethodrefConstant_print(JavaClassMethodrefConstant *this) {
     printf("Methodref=tag(%u), class_index(%u), name_and_type_index(%u)\n",
         this->tag, this->class_index, this->name_and_type_index);
-}
-
-
-static JavaClassConstant *_JavaClassInterfaceMethodrefConstant_from_data(uint8_t *data) {
-    JavaClassInterfaceMethodrefConstant *new = (JavaClassInterfaceMethodrefConstant *)_JavaClassFieldrefConstant_from_data(data);
-    return (JavaClassConstant *)new;
 }
 
 static void _JavaClassInterfaceMethodrefConstant_print(JavaClassInterfaceMethodrefConstant *this) {
@@ -161,20 +114,10 @@ static void _JavaClassInterfaceMethodrefConstant_print(JavaClassInterfaceMethodr
         this->tag, this->class_index, this->name_and_type_index);
 }
 
-
-static JavaClassConstant *_JavaClassNameAndTypeConstant_from_data(uint8_t *data) {
-    JavaClassNameAndTypeConstant *new = PyMem_Malloc(sizeof(*new));
-    new->tag = Constant_tag(data);
-    new->name_index = NameAndType_name_index(data);
-    new->descriptor_index = NameAndType_descriptor_index(data);
-    return (JavaClassConstant *)new;
-}
-
 static void _JavaClassNameAndTypeConstant_print(JavaClassNameAndTypeConstant *this) {
     printf("NameAndType=tag(%u), name_index(%u), descriptor_index(%u)\n",
         this->tag, this->name_index, this->descriptor_index);
 }
-
 
 void constant_pool_print(JavaClassConstantPool *this) {
     printf("Constant Pool Count: %d\n", this->constant_pool_count);
@@ -216,6 +159,63 @@ void constant_pool_print(JavaClassConstantPool *this) {
         }
     }
 }
+
+
+/* parser functions */
+
+static JavaClassConstant *_JavaClassUtf8Constant_from_reader(MemReader *reader) {
+    uint8_t tag = MemReader_next_uint8(reader);
+    uint16_t length = MemReader_next_uint16(reader);
+
+    JavaClassUtf8Constant *new = PyMem_Malloc(sizeof(*new) + length);
+    new->tag = tag;
+    new->length = length;
+    MemReader_copy_next(reader, length, new->bytes);
+
+    return (JavaClassConstant *)new;
+}
+
+
+static JavaClassConstant *_JavaClassClassConstant_from_data(uint8_t *data) {
+    JavaClassClassConstant *new = PyMem_Malloc(sizeof(*new));
+    new->tag = Constant_tag(data);
+    new->name_index = Class_name_index(data);
+    return (JavaClassConstant *)new;
+}
+
+static JavaClassConstant *_JavaClassStringConstant_from_data(uint8_t *data) {
+    JavaClassStringConstant *new = PyMem_Malloc(sizeof(*new));
+    new->tag = Constant_tag(data);
+    new->string_index = String_string_index(data);
+    return (JavaClassConstant *)new;
+}
+
+static JavaClassConstant *_JavaClassFieldrefConstant_from_data(uint8_t *data) {
+    JavaClassFieldrefConstant *new = PyMem_Malloc(sizeof(*new));
+    new->tag = Constant_tag(data);
+    new->class_index = Fieldref_class_index(data);
+    new->name_and_type_index = Fieldref_name_and_type_index(data);
+    return (JavaClassConstant *)new;
+}
+
+static JavaClassConstant *_JavaClassMethodrefConstant_from_data(uint8_t *data) {
+    JavaClassMethodrefConstant *new = (JavaClassMethodrefConstant *)_JavaClassFieldrefConstant_from_data(data);
+    return (JavaClassConstant *)new;
+}
+
+static JavaClassConstant *_JavaClassInterfaceMethodrefConstant_from_data(uint8_t *data) {
+    JavaClassInterfaceMethodrefConstant *new = (JavaClassInterfaceMethodrefConstant *)_JavaClassFieldrefConstant_from_data(data);
+    return (JavaClassConstant *)new;
+}
+
+static JavaClassConstant *_JavaClassNameAndTypeConstant_from_data(uint8_t *data) {
+    JavaClassNameAndTypeConstant *new = PyMem_Malloc(sizeof(*new));
+    new->tag = Constant_tag(data);
+    new->name_index = NameAndType_name_index(data);
+    new->descriptor_index = NameAndType_descriptor_index(data);
+    return (JavaClassConstant *)new;
+}
+
 
 void constant_pool_parse(MemReader *reader, JavaClassConstantPool **obj) {
     uint16_t count;

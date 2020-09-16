@@ -16,8 +16,8 @@ void attributes_parse(MemReader *reader, JavaClassAttributes **obj) {
 
         *attr = PyMem_Malloc(sizeof(JavaClassAttribute) + length);
 
-        (*attr)->attribute_name_index = name_index;
-        (*attr)->attribute_length = length;
+        (*attr)->name_index = name_index;
+        (*attr)->length = length;
 
         MemReader_copy_next(reader, length, (*attr)->info);
     }

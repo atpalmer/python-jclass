@@ -24,7 +24,6 @@ typedef struct {
 } JavaClass;
 
 JavaClass *JavaClass_from_MemReader(MemReader *r);
-void JavaClass_print(JavaClass *class);
 
 extern PyTypeObject JavaClass_Type;
 

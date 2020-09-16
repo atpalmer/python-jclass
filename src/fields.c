@@ -26,18 +26,6 @@ void fields_parse(MemReader *reader, JavaClassFields **obj) {
     }
 }
 
-void fields_print(JavaClassFields *this) {
-    printf("Fields count: %u\n", this->count);
-    for(uint16_t i = 0; i < this->count; ++i) {
-        JavaClassField *field = this->items[i];
-        printf("* Field access flags: %u\n", field->access_flags);
-        printf("* Field name index: %u\n", field->name_index);
-        printf("* Field descriptor index: %u\n", field->descriptor_index);
-        printf("* Field attributes:\n");
-        attributes_print(field->attributes);
-    }
-}
-
 void JavaClassField_free(JavaClassField *this) {
     JavaClassAttributes_free(this->attributes);
     PyMem_Free(this);

@@ -15,7 +15,6 @@ typedef struct {
 } JavaClassAttributes;
 
 void attributes_parse(MemReader *reader, JavaClassAttributes **obj);
-void attributes_print(JavaClassAttributes *this);
 void JavaClassAttributes_free(JavaClassAttributes *this);
 
 #endif

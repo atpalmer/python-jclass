@@ -15,7 +15,6 @@ setup(
         Extension('jclass', sources=[
             'src/jclass.c',
             'src/javaclassobj.c',
-            'src/access.c',
             'src/constant_pool.c',
             'src/interfaces.c',
             'src/fields.c',

@@ -12,13 +12,6 @@ void interfaces_parse(MemReader *reader, JavaClassInterfaces **obj) {
     }
 }
 
-void interfaces_print(JavaClassInterfaces *this) {
-    printf("Interfaces count: %d\n", this->count);
-    for(uint16_t i = 0; i < this->count; ++i) {
-        printf("  * interface: %u\n", this->indexes[i]);
-    }
-}
-
 void JavaClassInterfaces_free(JavaClassInterfaces *this) {
     PyMem_Free(this);
 }

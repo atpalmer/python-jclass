@@ -14,6 +14,4 @@ enum access_flag {
     ACC_ENUM        =0x4000,
 };
 
-void access_flags_print(uint16_t flags);
-
 #endif

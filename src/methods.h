@@ -17,7 +17,6 @@ typedef struct {
 } JavaClassMethods;
 
 void parse_methods(MemReader *reader, JavaClassMethods **obj);
-void methods_print(JavaClassMethods *this);
 void JavaClassMethod_free(JavaClassMethod *this);
 void JavaClassMethods_free(JavaClassMethods *this);
 

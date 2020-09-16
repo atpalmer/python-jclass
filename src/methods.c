@@ -26,17 +26,6 @@ void parse_methods(MemReader *reader, JavaClassMethods **obj) {
     }
 }
 
-void methods_print(JavaClassMethods *this) {
-    printf("Methods count: %d\n", this->count);
-    for(uint16_t i = 0; i < this->count; ++i) {
-        JavaClassMethod *m = this->items[i];
-        printf("* Method access_flags: %u\n", m->access_flags);
-        printf("* Method name_index: %u\n", m->name_index);
-        printf("* Method descriptor_index: %u\n", m->descriptor_index);
-        attributes_print(m->attributes);
-    }
-}
-
 void JavaClassMethod_free(JavaClassMethod *this) {
     JavaClassAttributes_free(this->attributes);
     PyMem_Free(this);

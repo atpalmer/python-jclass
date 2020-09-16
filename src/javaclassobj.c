@@ -73,20 +73,6 @@ JavaClass *JavaClass_from_MemReader(MemReader *r) {
     return class;
 }
 
-void JavaClass_print(JavaClass *class) {
-    printf("Magic Number: %X\n", class->magic);
-    printf("Version: %u.%u\n", class->major_version, class->minor_version);
-    constant_pool_print(class->constant_pool);
-    access_flags_print(class->access_flags);
-    printf("This Class Pool Index: %u\n", class->this_class);
-    printf("Super Class Pool Index: %u\n", class->super_class);
-    interfaces_print(class->interfaces);
-    fields_print(class->fields);
-    methods_print(class->methods);
-    printf("CLASS ATTRIBUTES:\n");
-    attributes_print(class->attributes);
-}
-
 static void _dealloc(PyObject *self) {
     JavaClass *class = (JavaClass *)self;
     JavaClassConstantPool_free(class->constant_pool);

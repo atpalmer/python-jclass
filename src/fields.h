@@ -17,7 +17,6 @@ typedef struct {
 } JavaClassFields;
 
 void fields_parse(MemReader *reader, JavaClassFields **obj);
-void fields_print(JavaClassFields *this);
 void JavaClassField_free(JavaClassField *this);
 void JavaClassFields_free(JavaClassFields *this);
 

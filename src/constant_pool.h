@@ -53,7 +53,6 @@ typedef struct {
     JavaClassConstant *constants[];
 } JavaClassConstantPool;
 
-void constant_pool_print(JavaClassConstantPool *this);
 void constant_pool_parse(MemReader *reader, JavaClassConstantPool **obj);
 void JavaClassConstantPool_free(JavaClassConstantPool *this);
 

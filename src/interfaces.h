@@ -9,7 +9,6 @@ typedef struct {
 } JavaClassInterfaces;
 
 void interfaces_parse(MemReader *reader, JavaClassInterfaces **obj);
-void interfaces_print(JavaClassInterfaces *this);
 void JavaClassInterfaces_free(JavaClassInterfaces *this);
 
 #endif

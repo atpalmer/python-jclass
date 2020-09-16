@@ -23,16 +23,6 @@ void attributes_parse(MemReader *reader, JavaClassAttributes **obj) {
     }
 }
 
-void attributes_print(JavaClassAttributes *this) {
-    printf("attr count: %u\n", this->attributes_count);
-    for(uint16_t i = 0; i < this->attributes_count; ++i) {
-        JavaClassAttribute *attr = this->attributes[i];
-        printf("** Attr name index: %u\n", attr->attribute_name_index);
-        printf("** Attr length: %u\n", attr->attribute_length);
-        printf("** Attr info: %.*s\n", attr->attribute_length, attr->info);
-    }
-}
-
 void JavaClassAttributes_free(JavaClassAttributes *this) {
     for(uint16_t i = 0; i < this->attributes_count; ++i)
         PyMem_Free(this->attributes[i]);

@@ -99,8 +99,18 @@ def test_JavaClass_fields():
 def test_JavaClass_methods():
     jcls = jclass.load('java/HelloWorld.class')
     assert jcls.methods() == [
-        ({'public'}, '()V', '<init>'),
-        ({'public'}, '([Ljava/lang/String;)V', 'main'),
+        ({'public'}, '()V', '<init>', {
+            'Code':
+                b'\x00\x01\x00\x01\x00\x00\x00\x05*\xb7\x00\x01\xb1'
+                b'\x00\x00\x00\x01\x00\x1b\x00\x00\x00\x06\x00\x01'
+                b'\x00\x00\x00\x03'
+        }),
+        ({'public'}, '([Ljava/lang/String;)V', 'main', {
+            'Code':
+                b'\x00\x02\x00\x01\x00\x00\x00\t\xb2\x00\x07\x12\x0f'
+                b'\xb6\x00\x11\xb1\x00\x00\x00\x01\x00\x1b\x00\x00\x00'
+                b'\n\x00\x02\x00\x00\x00\x07\x00\x08\x00\x08'
+        }),
     ]
 
 

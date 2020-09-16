@@ -145,15 +145,16 @@ static PyObject *_methods(PyObject *self, PyObject *arg) {
 
     PyObject *result = PyList_New(methods->methods_count);
     for(int i = 0; i < methods->methods_count; ++i) {
-        JavaClassMethod *method= methods->methods[i];
+        JavaClassMethod *method = methods->methods[i];
 
         JavaClassUtf8Constant *name = JavaClass_constant(self, method->name_index);
         JavaClassUtf8Constant *descriptor = JavaClass_constant(self, method->descriptor_index);
 
-        PyObject *t = PyTuple_New(3);
+        PyObject *t = PyTuple_New(4);
         PyTuple_SetItem(t, 0, _flags_to_PySet(method->access_flags));
         PyTuple_SetItem(t, 1, PyUnicode_FromStringAndSize(descriptor->bytes, descriptor->length));
         PyTuple_SetItem(t, 2, PyUnicode_FromStringAndSize(name->bytes, name->length));
+        PyTuple_SetItem(t, 3, _attributes_to_PyDict(method->attributes, JavaClass_cast(self)->constant_pool));
 
         PyList_SetItem(result, i, t);
     }

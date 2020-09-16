@@ -100,3 +100,8 @@ def test_JavaClass_methods():
         ({'public'}, '()V', '<init>'),
         ({'public'}, '([Ljava/lang/String;)V', 'main'),
     ]
+
+
+def test_JavaClass_attributes():
+    jcls = jclass.load('java/HelloWorld.class')
+    assert jcls.attributes() == {'SourceFile': b'\x00\x1f'}

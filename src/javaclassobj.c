@@ -140,6 +140,24 @@ static PyObject *_methods(PyObject *self, PyObject *arg) {
     return result;
 }
 
+static PyObject *_attributes(PyObject *self, PyObject *arg) {
+    JavaClassAttributes *attributes = JavaClass_cast(self)->attributes;
+
+    PyObject *dict = PyDict_New();
+
+    for(uint16_t i = 0; i < attributes->attributes_count; ++i) {
+        JavaClassAttribute *attr = attributes->attributes[i];
+
+        JavaClassUtf8Constant *name = JavaClass_constant(self, attr->attribute_name_index);
+        PyObject *key = PyUnicode_FromStringAndSize(name->bytes, name->length);
+        PyObject *value = PyBytes_FromStringAndSize(attr->info, attr->attribute_length);
+
+        PyDict_SetItem(dict, key, value);
+    }
+
+    return dict;
+}
+
 static PyObject *_access_set(PyObject *self, void *closure) {
     uint16_t flags = JavaClass_cast(self)->access_flags;
     return _flags_to_PySet(flags);
@@ -201,6 +219,7 @@ static PyMethodDef methods[] = {
     {"constant", _constant, METH_O, 0},
     {"fields", _fields, METH_NOARGS, 0},
     {"methods", _methods, METH_NOARGS, 0},
+    {"attributes", _attributes, METH_NOARGS, 0},
     {0},
 };
 

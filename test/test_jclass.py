@@ -34,11 +34,16 @@ def test_JavaClass_constant_ok():
     assert constant == None
 
 
-def test_JavaClass_this_class():
+def test_JavaClass_name():
     jcls = jclass.load('java/HelloWorld.class')
     assert jcls.name == 'HelloWorld'
 
 
-def test_JavaClass_this_class():
+def test_JavaClass_superclass_name():
     jcls = jclass.load('java/HelloWorld.class')
     assert jcls.superclass_name == 'java/lang/Object'
+
+
+def test_JavaClass_access_set():
+    jcls = jclass.load('java/HelloWorld.class')
+    assert jcls.access_set == {'public', 'super'}

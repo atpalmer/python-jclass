@@ -75,6 +75,31 @@ static PyObject *_constant(PyObject *self, PyObject *arg) {
     Py_RETURN_NONE;
 }
 
+static PyObject *_access_set(PyObject *self, void *closure) {
+    uint16_t flags = JavaClass_cast(self)->access_flags;
+
+    PyObject *set = PySet_New(NULL);
+
+    if(flags & ACC_PUBLIC)
+        PySet_Add(set, PyUnicode_FromString("public"));
+    if(flags & ACC_FINAL)
+        PySet_Add(set, PyUnicode_FromString("final"));
+    if(flags & ACC_SUPER)
+        PySet_Add(set, PyUnicode_FromString("super"));
+    if(flags & ACC_INTERFACE)
+        PySet_Add(set, PyUnicode_FromString("interface"));
+    if(flags & ACC_ABSTRACT)
+        PySet_Add(set, PyUnicode_FromString("abstract"));
+    if(flags & ACC_SYNTHETIC)
+        PySet_Add(set, PyUnicode_FromString("synthetic"));
+    if(flags & ACC_ANNOTATION)
+        PySet_Add(set, PyUnicode_FromString("annotation"));
+    if(flags & ACC_ENUM)
+        PySet_Add(set, PyUnicode_FromString("enum"));
+
+    return set;
+}
+
 static PyObject *_name(PyObject *self, void *closure) {
     JavaClassClassConstant *class = JavaClass_constant(self, JavaClass_cast(self)->this_class);
     JavaClassUtf8Constant *name = JavaClass_constant(self, class->name_index);
@@ -93,6 +118,7 @@ static PyMethodDef methods[] = {
 };
 
 static PyGetSetDef getset[] = {
+    {"access_set", _access_set, NULL, NULL, NULL},
     {"name", _name, NULL, NULL, NULL},
     {"superclass_name", _superclass_name, NULL, NULL, NULL},
     {0},

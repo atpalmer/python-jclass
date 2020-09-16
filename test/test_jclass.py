@@ -92,3 +92,11 @@ def test_JavaClass_is_enum():
 def test_JavaClass_fields():
     jcls = jclass.load('java/HelloWorld.class')
     assert jcls.fields() == [({'public'}, 'Ljava/lang/String;', '_message')]
+
+
+def test_JavaClass_methods():
+    jcls = jclass.load('java/HelloWorld.class')
+    assert jcls.methods() == [
+        ({'public'}, '()V', '<init>'),
+        ({'public'}, '([Ljava/lang/String;)V', 'main'),
+    ]

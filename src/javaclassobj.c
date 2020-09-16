@@ -119,6 +119,27 @@ static PyObject *_fields(PyObject *self, PyObject *arg) {
     return result;
 }
 
+static PyObject *_methods(PyObject *self, PyObject *arg) {
+    JavaClassMethods *methods = JavaClass_cast(self)->methods;
+
+    PyObject *result = PyList_New(methods->methods_count);
+    for(int i = 0; i < methods->methods_count; ++i) {
+        JavaClassMethod *method= methods->methods[i];
+
+        JavaClassUtf8Constant *name = JavaClass_constant(self, method->name_index);
+        JavaClassUtf8Constant *descriptor = JavaClass_constant(self, method->descriptor_index);
+
+        PyObject *t = PyTuple_New(3);
+        PyTuple_SetItem(t, 0, _flags_to_PySet(method->access_flags));
+        PyTuple_SetItem(t, 1, PyUnicode_FromStringAndSize(descriptor->bytes, descriptor->length));
+        PyTuple_SetItem(t, 2, PyUnicode_FromStringAndSize(name->bytes, name->length));
+
+        PyList_SetItem(result, i, t);
+    }
+
+    return result;
+}
+
 static PyObject *_access_set(PyObject *self, void *closure) {
     uint16_t flags = JavaClass_cast(self)->access_flags;
     return _flags_to_PySet(flags);
@@ -179,6 +200,7 @@ static PyObject *_superclass_name(PyObject *self, void *closure) {
 static PyMethodDef methods[] = {
     {"constant", _constant, METH_O, 0},
     {"fields", _fields, METH_NOARGS, 0},
+    {"methods", _methods, METH_NOARGS, 0},
     {0},
 };
 

@@ -158,9 +158,9 @@ static PyObject *_methods(PyObject *self, PyObject *arg) {
     JavaClassMethods *methods = class->methods;
     JavaClassConstantPool *pool = class->constant_pool;
 
-    PyObject *result = PyList_New(methods->methods_count);
-    for(int i = 0; i < methods->methods_count; ++i) {
-        JavaClassMethod *method = methods->methods[i];
+    PyObject *result = PyList_New(methods->count);
+    for(int i = 0; i < methods->count; ++i) {
+        JavaClassMethod *method = methods->items[i];
 
         JavaClassUtf8Constant *name = _JavaClassConstantPool_item(pool, method->name_index);
         JavaClassUtf8Constant *descriptor = _JavaClassConstantPool_item(pool, method->descriptor_index);

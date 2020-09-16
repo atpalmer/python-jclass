@@ -12,8 +12,8 @@ typedef struct {
 } JavaClassMethod;
 
 typedef struct {
-    uint16_t methods_count;
-    JavaClassMethod *methods[];
+    uint16_t count;
+    JavaClassMethod *items[];
 } JavaClassMethods;
 
 void parse_methods(MemReader *reader, JavaClassMethods **obj);

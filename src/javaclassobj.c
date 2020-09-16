@@ -72,6 +72,10 @@ static PyMethodDef methods[] = {
     {0},
 };
 
+static PyGetSetDef getset[] = {
+    {0},
+};
+
 static PyMemberDef members[] = {
     {"magic", T_UINT, offsetof(JavaClass, magic), READONLY, 0},
     {"minor_version", T_USHORT, offsetof(JavaClass, minor_version), READONLY, 0},
@@ -89,4 +93,5 @@ PyTypeObject JavaClass_Type = {
     .tp_dealloc = _dealloc,
     .tp_members = members,
     .tp_methods = methods,
+    .tp_getset = getset,
 };

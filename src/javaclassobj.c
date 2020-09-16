@@ -11,15 +11,22 @@
 
 
 static inline JavaClass *JavaClass_cast(PyObject *self) {
+    if(Py_TYPE(self) != &JavaClass_Type) {
+        PyErr_SetString(PyExc_SystemError, "Invalid cast");
+        return NULL;
+    }
     return (JavaClass *)self;
 }
 
-static inline void *JavaClassConstantPool_item(JavaClassConstantPool *this, uint16_t i) {
+static inline void *_JavaClassConstantPool_item(JavaClassConstantPool *this, uint16_t i) {
     return this->constant_pool[i - 1];
 }
 
-static inline void *JavaClass_constant(JavaClass *self, uint16_t i) {
-    return JavaClassConstantPool_item(self->constant_pool, i);
+static inline void *JavaClass_constant(PyObject *self, uint16_t i) {
+    JavaClass *class = JavaClass_cast(self);
+    if(!class)
+        return NULL;
+    return _JavaClassConstantPool_item(class->constant_pool, i);
 }
 
 static PyObject *_flags_to_PySet(uint16_t flags) {
@@ -108,7 +115,7 @@ static PyObject *_attributes_to_PyDict(JavaClassAttributes *attributes, JavaClas
     for(uint16_t i = 0; i < attributes->attributes_count; ++i) {
         JavaClassAttribute *attr = attributes->attributes[i];
 
-        JavaClassUtf8Constant *name = JavaClassConstantPool_item(pool, attr->attribute_name_index);
+        JavaClassUtf8Constant *name = _JavaClassConstantPool_item(pool, attr->attribute_name_index);
         PyObject *key = PyUnicode_FromStringAndSize(name->bytes, name->length);
         PyObject *value = PyBytes_FromStringAndSize(attr->info, attr->attribute_length);
 
@@ -119,14 +126,18 @@ static PyObject *_attributes_to_PyDict(JavaClassAttributes *attributes, JavaClas
 }
 
 static PyObject *_fields(PyObject *self, PyObject *arg) {
-    JavaClassFields *fields = JavaClass_cast(self)->fields;
+    JavaClass *class = JavaClass_cast(self);
+    if(!class)
+        return NULL;
+    JavaClassFields *fields = class->fields;
+    JavaClassConstantPool *pool = class->constant_pool;
 
     PyObject *result = PyList_New(fields->fields_count);
     for(int i = 0; i < fields->fields_count; ++i) {
         JavaClassField *field = fields->fields[i];
 
-        JavaClassUtf8Constant *name = JavaClass_constant(self, field->name_index);
-        JavaClassUtf8Constant *descriptor = JavaClass_constant(self, field->descriptor_index);
+        JavaClassUtf8Constant *name = _JavaClassConstantPool_item(pool, field->name_index);
+        JavaClassUtf8Constant *descriptor = _JavaClassConstantPool_item(pool, field->descriptor_index);
 
         PyObject *t = PyTuple_New(4);
         PyTuple_SetItem(t, 0, _flags_to_PySet(fields->fields_count));
@@ -141,14 +152,18 @@ static PyObject *_fields(PyObject *self, PyObject *arg) {
 }
 
 static PyObject *_methods(PyObject *self, PyObject *arg) {
-    JavaClassMethods *methods = JavaClass_cast(self)->methods;
+    JavaClass *class = JavaClass_cast(self);
+    if(!class)
+        return NULL;
+    JavaClassMethods *methods = class->methods;
+    JavaClassConstantPool *pool = class->constant_pool;
 
     PyObject *result = PyList_New(methods->methods_count);
     for(int i = 0; i < methods->methods_count; ++i) {
         JavaClassMethod *method = methods->methods[i];
 
-        JavaClassUtf8Constant *name = JavaClass_constant(self, method->name_index);
-        JavaClassUtf8Constant *descriptor = JavaClass_constant(self, method->descriptor_index);
+        JavaClassUtf8Constant *name = _JavaClassConstantPool_item(pool, method->name_index);
+        JavaClassUtf8Constant *descriptor = _JavaClassConstantPool_item(pool, method->descriptor_index);
 
         PyObject *t = PyTuple_New(4);
         PyTuple_SetItem(t, 0, _flags_to_PySet(method->access_flags));
@@ -164,7 +179,7 @@ static PyObject *_methods(PyObject *self, PyObject *arg) {
 
 static PyObject *_attributes(PyObject *self, PyObject *arg) {
     JavaClassAttributes *attributes = JavaClass_cast(self)->attributes;
-    JavaClassAttributes *pool = JavaClass_cast(self)->constant_pool;
+    JavaClassConstantPool *pool = JavaClass_cast(self)->constant_pool;
     return _attributes_to_PyDict(attributes, pool);
 }
 

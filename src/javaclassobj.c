@@ -14,8 +14,12 @@ static inline JavaClass *JavaClass_cast(PyObject *self) {
     return (JavaClass *)self;
 }
 
+static inline void *JavaClassConstantPool_item(JavaClassConstantPool *this, uint16_t i) {
+    return this->constant_pool[i - 1];
+}
+
 static inline void *JavaClass_constant(JavaClass *self, uint16_t i) {
-    return self->constant_pool->constant_pool[i - 1];
+    return JavaClassConstantPool_item(self->constant_pool, i);
 }
 
 static PyObject *_flags_to_PySet(uint16_t flags) {
@@ -140,15 +144,13 @@ static PyObject *_methods(PyObject *self, PyObject *arg) {
     return result;
 }
 
-static PyObject *_attributes(PyObject *self, PyObject *arg) {
-    JavaClassAttributes *attributes = JavaClass_cast(self)->attributes;
-
+static PyObject *_attributes_to_PyDict(JavaClassAttributes *attributes, JavaClassConstantPool *pool) {
     PyObject *dict = PyDict_New();
 
     for(uint16_t i = 0; i < attributes->attributes_count; ++i) {
         JavaClassAttribute *attr = attributes->attributes[i];
 
-        JavaClassUtf8Constant *name = JavaClass_constant(self, attr->attribute_name_index);
+        JavaClassUtf8Constant *name = JavaClassConstantPool_item(pool, attr->attribute_name_index);
         PyObject *key = PyUnicode_FromStringAndSize(name->bytes, name->length);
         PyObject *value = PyBytes_FromStringAndSize(attr->info, attr->attribute_length);
 
@@ -156,6 +158,12 @@ static PyObject *_attributes(PyObject *self, PyObject *arg) {
     }
 
     return dict;
+}
+
+static PyObject *_attributes(PyObject *self, PyObject *arg) {
+    JavaClassAttributes *attributes = JavaClass_cast(self)->attributes;
+    JavaClassAttributes *pool = JavaClass_cast(self)->constant_pool;
+    return _attributes_to_PyDict(attributes, pool);
 }
 
 static PyObject *_access_set(PyObject *self, void *closure) {

@@ -39,10 +39,10 @@ static void _JavaClassNameAndTypeConstant_print(JavaClassNameAndTypeConstant *th
 }
 
 void constant_pool_print(JavaClassConstantPool *this) {
-    printf("Constant Pool Count: %d\n", this->constant_pool_count);
+    printf("Constant Pool Count: %d\n", this->count);
 
-    for(int i = 1; i < this->constant_pool_count; ++i) {
-        void *c = this->constant_pool[i - 1];
+    for(int i = 1; i < this->count; ++i) {
+        void *c = this->constants[i - 1];
 
         printf("  **%4d.) ", i);
         if(!c) {
@@ -136,10 +136,10 @@ void constant_pool_parse(MemReader *reader, JavaClassConstantPool **obj) {
     uint16_t count = MemReader_next_uint16(reader);
 
     *obj = PyMem_Malloc(sizeof(JavaClassConstantPool) + (sizeof(JavaClassConstant *) * count));
-    (*obj)->constant_pool_count = count;
+    (*obj)->count = count;
 
     for(uint16_t i = 1; i < count; ++i) {
-        JavaClassConstant **c = &((*obj)->constant_pool[i - 1]);
+        JavaClassConstant **c = &((*obj)->constants[i - 1]);
         uint8_t constant_type = MemReader_peek_uint8(reader);
 
         switch(constant_type) {
@@ -172,8 +172,8 @@ void constant_pool_parse(MemReader *reader, JavaClassConstantPool **obj) {
 }
 
 void JavaClassConstantPool_free(JavaClassConstantPool *this) {
-    for(int i = 0; i < this->constant_pool_count - 1; ++i)
-        if(this->constant_pool[i])
-            PyMem_Free(this->constant_pool[i]);
+    for(int i = 0; i < this->count - 1; ++i)
+        if(this->constants[i])
+            PyMem_Free(this->constants[i]);
     PyMem_Free(this);
 }

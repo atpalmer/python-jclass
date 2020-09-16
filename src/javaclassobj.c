@@ -19,7 +19,7 @@ static inline JavaClass *JavaClass_cast(PyObject *self) {
 }
 
 static inline void *_JavaClassConstantPool_item(JavaClassConstantPool *this, uint16_t i) {
-    return this->constant_pool[i - 1];
+    return this->constants[i - 1];
 }
 
 static inline void *JavaClass_constant(PyObject *self, uint16_t i) {
@@ -102,7 +102,7 @@ static PyObject *_constant(PyObject *self, PyObject *arg) {
         return NULL;
     unsigned long index = PyLong_AsUnsignedLong(arg);
     JavaClassConstantPool *pool = ((JavaClass *)self)->constant_pool;
-    if(index < 1 || index > pool->constant_pool_count - 1) {
+    if(index < 1 || index > pool->count - 1) {
         PyErr_SetString(PyExc_IndexError, "Index out of range");
         return NULL;
     }

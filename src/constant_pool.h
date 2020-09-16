@@ -49,8 +49,8 @@ typedef struct {
 } JavaClassNameAndTypeConstant;
 
 typedef struct {
-    uint16_t constant_pool_count;
-    JavaClassConstant *constant_pool[];
+    uint16_t count;
+    JavaClassConstant *constants[];
 } JavaClassConstantPool;
 
 void constant_pool_print(JavaClassConstantPool *this);

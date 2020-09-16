@@ -10,8 +10,8 @@ typedef struct {
 } JavaClassAttribute;
 
 typedef struct {
-    uint16_t attributes_count;
-    JavaClassAttribute *attributes[];
+    uint16_t count;
+    JavaClassAttribute *items[];
 } JavaClassAttributes;
 
 void attributes_parse(MemReader *reader, JavaClassAttributes **obj);

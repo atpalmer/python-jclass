@@ -98,8 +98,8 @@ static PyObject *_constant(PyObject *self, PyObject *arg) {
 static PyObject *_attributes_to_PyDict(JavaClassAttributes *attributes, JavaClassConstantPool *pool) {
     PyObject *dict = PyDict_New();
 
-    for(uint16_t i = 0; i < attributes->attributes_count; ++i) {
-        JavaClassAttribute *attr = attributes->attributes[i];
+    for(uint16_t i = 0; i < attributes->count; ++i) {
+        JavaClassAttribute *attr = attributes->items[i];
 
         JavaClassUtf8Constant *name = _JavaClassConstantPool_item(pool, attr->attribute_name_index);
         PyObject *key = PyUnicode_FromStringAndSize(name->bytes, name->length);

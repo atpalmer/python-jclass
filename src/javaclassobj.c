@@ -10,6 +10,14 @@
 #include "javaclassobj.h"
 
 
+static inline JavaClass *JavaClass_cast(PyObject *self) {
+    return (JavaClass *)self;
+}
+
+static inline void *JavaClass_constant(JavaClass *self, uint16_t i) {
+    return self->constant_pool->constant_pool[i - 1];
+}
+
 JavaClass *JavaClass_from_MemReader(MemReader *r) {
     JavaClass *class = (JavaClass *)JavaClass_Type.tp_alloc(&JavaClass_Type, 0);
 
@@ -67,12 +75,19 @@ static PyObject *_constant(PyObject *self, PyObject *arg) {
     Py_RETURN_NONE;
 }
 
+static PyObject *_name(PyObject *self, void *closure) {
+    JavaClassClassConstant *class = JavaClass_constant(self, JavaClass_cast(self)->this_class);
+    JavaClassUtf8Constant *name = JavaClass_constant(self, class->name_index);
+    return PyUnicode_FromStringAndSize(name->bytes, name->length);
+}
+
 static PyMethodDef methods[] = {
     {"constant", _constant, METH_O, 0},
     {0},
 };
 
 static PyGetSetDef getset[] = {
+    {"name", _name, NULL, NULL, NULL},
     {0},
 };
 

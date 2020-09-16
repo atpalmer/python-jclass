@@ -7,12 +7,11 @@
 
 void fields_parse(MemReader *reader, JavaClassFields **obj) {
     uint16_t count = MemReader_next_uint16(reader);
-
     *obj = PyMem_Malloc(sizeof(JavaClassFields) + (sizeof(JavaClassField *) * count));
-    (*obj)->fields_count = count;
+    (*obj)->count = count;
 
     for(uint16_t i = 0; i < count; ++i) {
-        JavaClassField **field = &(*obj)->fields[i];
+        JavaClassField **field = &(*obj)->items[i];
 
         *field = PyMem_Malloc(sizeof(JavaClassField));
 
@@ -28,9 +27,9 @@ void fields_parse(MemReader *reader, JavaClassFields **obj) {
 }
 
 void fields_print(JavaClassFields *this) {
-    printf("Fields count: %u\n", this->fields_count);
-    for(uint16_t i = 0; i < this->fields_count; ++i) {
-        JavaClassField *field = this->fields[i];
+    printf("Fields count: %u\n", this->count);
+    for(uint16_t i = 0; i < this->count; ++i) {
+        JavaClassField *field = this->items[i];
         printf("* Field access flags: %u\n", field->access_flags);
         printf("* Field name index: %u\n", field->name_index);
         printf("* Field descriptor index: %u\n", field->descriptor_index);
@@ -45,8 +44,8 @@ void JavaClassField_free(JavaClassField *this) {
 }
 
 void JavaClassFields_free(JavaClassFields *this) {
-    for(uint16_t i = 0; i < this->fields_count; ++i) {
-        JavaClassField_free(this->fields[i]);
+    for(uint16_t i = 0; i < this->count; ++i) {
+        JavaClassField_free(this->items[i]);
     }
     PyMem_Free(this);
 }

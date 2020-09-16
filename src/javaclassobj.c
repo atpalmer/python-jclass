@@ -132,15 +132,15 @@ static PyObject *_fields(PyObject *self, PyObject *arg) {
     JavaClassFields *fields = class->fields;
     JavaClassConstantPool *pool = class->constant_pool;
 
-    PyObject *result = PyList_New(fields->fields_count);
-    for(int i = 0; i < fields->fields_count; ++i) {
-        JavaClassField *field = fields->fields[i];
+    PyObject *result = PyList_New(fields->count);
+    for(int i = 0; i < fields->count; ++i) {
+        JavaClassField *field = fields->items[i];
 
         JavaClassUtf8Constant *name = _JavaClassConstantPool_item(pool, field->name_index);
         JavaClassUtf8Constant *descriptor = _JavaClassConstantPool_item(pool, field->descriptor_index);
 
         PyObject *t = PyTuple_New(4);
-        PyTuple_SetItem(t, 0, _flags_to_PySet(fields->fields_count));
+        PyTuple_SetItem(t, 0, _flags_to_PySet(fields->count));
         PyTuple_SetItem(t, 1, PyUnicode_FromStringAndSize(descriptor->bytes, descriptor->length));
         PyTuple_SetItem(t, 2, PyUnicode_FromStringAndSize(name->bytes, name->length));
         PyTuple_SetItem(t, 3, _attributes_to_PyDict(field->attributes, JavaClass_cast(self)->constant_pool));

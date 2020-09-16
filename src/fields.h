@@ -12,8 +12,8 @@ typedef struct {
 } JavaClassField;
 
 typedef struct {
-    uint16_t fields_count;
-    JavaClassField *fields[];
+    uint16_t count;
+    JavaClassField *items[];
 } JavaClassFields;
 
 void fields_parse(MemReader *reader, JavaClassFields **obj);

@@ -4,8 +4,8 @@
 #include "membuff.h"
 
 typedef struct {
-    uint16_t interfaces_count;
-    uint16_t interfaces[];
+    uint16_t count;
+    uint16_t indexes[];
 } JavaClassInterfaces;
 
 void interfaces_parse(MemReader *reader, JavaClassInterfaces **obj);

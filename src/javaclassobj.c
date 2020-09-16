@@ -102,6 +102,22 @@ static PyObject *_constant(PyObject *self, PyObject *arg) {
     Py_RETURN_NONE;
 }
 
+static PyObject *_attributes_to_PyDict(JavaClassAttributes *attributes, JavaClassConstantPool *pool) {
+    PyObject *dict = PyDict_New();
+
+    for(uint16_t i = 0; i < attributes->attributes_count; ++i) {
+        JavaClassAttribute *attr = attributes->attributes[i];
+
+        JavaClassUtf8Constant *name = JavaClassConstantPool_item(pool, attr->attribute_name_index);
+        PyObject *key = PyUnicode_FromStringAndSize(name->bytes, name->length);
+        PyObject *value = PyBytes_FromStringAndSize(attr->info, attr->attribute_length);
+
+        PyDict_SetItem(dict, key, value);
+    }
+
+    return dict;
+}
+
 static PyObject *_fields(PyObject *self, PyObject *arg) {
     JavaClassFields *fields = JavaClass_cast(self)->fields;
 
@@ -112,10 +128,11 @@ static PyObject *_fields(PyObject *self, PyObject *arg) {
         JavaClassUtf8Constant *name = JavaClass_constant(self, field->name_index);
         JavaClassUtf8Constant *descriptor = JavaClass_constant(self, field->descriptor_index);
 
-        PyObject *t = PyTuple_New(3);
+        PyObject *t = PyTuple_New(4);
         PyTuple_SetItem(t, 0, _flags_to_PySet(fields->fields_count));
         PyTuple_SetItem(t, 1, PyUnicode_FromStringAndSize(descriptor->bytes, descriptor->length));
         PyTuple_SetItem(t, 2, PyUnicode_FromStringAndSize(name->bytes, name->length));
+        PyTuple_SetItem(t, 3, _attributes_to_PyDict(field->attributes, JavaClass_cast(self)->constant_pool));
 
         PyList_SetItem(result, i, t);
     }
@@ -142,22 +159,6 @@ static PyObject *_methods(PyObject *self, PyObject *arg) {
     }
 
     return result;
-}
-
-static PyObject *_attributes_to_PyDict(JavaClassAttributes *attributes, JavaClassConstantPool *pool) {
-    PyObject *dict = PyDict_New();
-
-    for(uint16_t i = 0; i < attributes->attributes_count; ++i) {
-        JavaClassAttribute *attr = attributes->attributes[i];
-
-        JavaClassUtf8Constant *name = JavaClassConstantPool_item(pool, attr->attribute_name_index);
-        PyObject *key = PyUnicode_FromStringAndSize(name->bytes, name->length);
-        PyObject *value = PyBytes_FromStringAndSize(attr->info, attr->attribute_length);
-
-        PyDict_SetItem(dict, key, value);
-    }
-
-    return dict;
 }
 
 static PyObject *_attributes(PyObject *self, PyObject *arg) {

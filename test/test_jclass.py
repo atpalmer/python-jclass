@@ -37,3 +37,8 @@ def test_JavaClass_constant_ok():
 def test_JavaClass_this_class():
     jcls = jclass.load('java/HelloWorld.class')
     assert jcls.name == 'HelloWorld'
+
+
+def test_JavaClass_this_class():
+    jcls = jclass.load('java/HelloWorld.class')
+    assert jcls.superclass_name == 'java/lang/Object'

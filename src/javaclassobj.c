@@ -81,6 +81,12 @@ static PyObject *_name(PyObject *self, void *closure) {
     return PyUnicode_FromStringAndSize(name->bytes, name->length);
 }
 
+static PyObject *_superclass_name(PyObject *self, void *closure) {
+    JavaClassClassConstant *class = JavaClass_constant(self, JavaClass_cast(self)->super_class);
+    JavaClassUtf8Constant *name = JavaClass_constant(self, class->name_index);
+    return PyUnicode_FromStringAndSize(name->bytes, name->length);
+}
+
 static PyMethodDef methods[] = {
     {"constant", _constant, METH_O, 0},
     {0},
@@ -88,6 +94,7 @@ static PyMethodDef methods[] = {
 
 static PyGetSetDef getset[] = {
     {"name", _name, NULL, NULL, NULL},
+    {"superclass_name", _superclass_name, NULL, NULL, NULL},
     {0},
 };
 

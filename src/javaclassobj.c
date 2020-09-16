@@ -18,6 +18,29 @@ static inline void *JavaClass_constant(JavaClass *self, uint16_t i) {
     return self->constant_pool->constant_pool[i - 1];
 }
 
+static PyObject *_flags_to_PySet(uint16_t flags) {
+    PyObject *set = PySet_New(NULL);
+
+    if(flags & ACC_PUBLIC)
+        PySet_Add(set, PyUnicode_FromString("public"));
+    if(flags & ACC_FINAL)
+        PySet_Add(set, PyUnicode_FromString("final"));
+    if(flags & ACC_SUPER)
+        PySet_Add(set, PyUnicode_FromString("super"));
+    if(flags & ACC_INTERFACE)
+        PySet_Add(set, PyUnicode_FromString("interface"));
+    if(flags & ACC_ABSTRACT)
+        PySet_Add(set, PyUnicode_FromString("abstract"));
+    if(flags & ACC_SYNTHETIC)
+        PySet_Add(set, PyUnicode_FromString("synthetic"));
+    if(flags & ACC_ANNOTATION)
+        PySet_Add(set, PyUnicode_FromString("annotation"));
+    if(flags & ACC_ENUM)
+        PySet_Add(set, PyUnicode_FromString("enum"));
+
+    return set;
+}
+
 JavaClass *JavaClass_from_MemReader(MemReader *r) {
     JavaClass *class = (JavaClass *)JavaClass_Type.tp_alloc(&JavaClass_Type, 0);
 
@@ -75,29 +98,30 @@ static PyObject *_constant(PyObject *self, PyObject *arg) {
     Py_RETURN_NONE;
 }
 
+static PyObject *_fields(PyObject *self, PyObject *arg) {
+    JavaClassFields *fields = JavaClass_cast(self)->fields;
+
+    PyObject *result = PyList_New(fields->fields_count);
+    for(int i = 0; i < fields->fields_count; ++i) {
+        JavaClassField *field = fields->fields[i];
+
+        JavaClassUtf8Constant *name = JavaClass_constant(self, field->name_index);
+        JavaClassUtf8Constant *descriptor = JavaClass_constant(self, field->descriptor_index);
+
+        PyObject *t = PyTuple_New(3);
+        PyTuple_SetItem(t, 0, _flags_to_PySet(fields->fields_count));
+        PyTuple_SetItem(t, 1, PyUnicode_FromStringAndSize(descriptor->bytes, descriptor->length));
+        PyTuple_SetItem(t, 2, PyUnicode_FromStringAndSize(name->bytes, name->length));
+
+        PyList_SetItem(result, i, t);
+    }
+
+    return result;
+}
+
 static PyObject *_access_set(PyObject *self, void *closure) {
     uint16_t flags = JavaClass_cast(self)->access_flags;
-
-    PyObject *set = PySet_New(NULL);
-
-    if(flags & ACC_PUBLIC)
-        PySet_Add(set, PyUnicode_FromString("public"));
-    if(flags & ACC_FINAL)
-        PySet_Add(set, PyUnicode_FromString("final"));
-    if(flags & ACC_SUPER)
-        PySet_Add(set, PyUnicode_FromString("super"));
-    if(flags & ACC_INTERFACE)
-        PySet_Add(set, PyUnicode_FromString("interface"));
-    if(flags & ACC_ABSTRACT)
-        PySet_Add(set, PyUnicode_FromString("abstract"));
-    if(flags & ACC_SYNTHETIC)
-        PySet_Add(set, PyUnicode_FromString("synthetic"));
-    if(flags & ACC_ANNOTATION)
-        PySet_Add(set, PyUnicode_FromString("annotation"));
-    if(flags & ACC_ENUM)
-        PySet_Add(set, PyUnicode_FromString("enum"));
-
-    return set;
+    return _flags_to_PySet(flags);
 }
 
 static PyObject *_is_public(PyObject *self, void *closure) {
@@ -154,6 +178,7 @@ static PyObject *_superclass_name(PyObject *self, void *closure) {
 
 static PyMethodDef methods[] = {
     {"constant", _constant, METH_O, 0},
+    {"fields", _fields, METH_NOARGS, 0},
     {0},
 };
 

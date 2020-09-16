@@ -87,3 +87,8 @@ def test_JavaClass_is_annotation():
 def test_JavaClass_is_enum():
     jcls = jclass.load('java/HelloWorld.class')
     assert jcls.is_enum is False
+
+
+def test_JavaClass_fields():
+    jcls = jclass.load('java/HelloWorld.class')
+    assert jcls.fields() == [({'public'}, 'Ljava/lang/String;', '_message')]

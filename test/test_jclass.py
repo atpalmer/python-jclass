@@ -47,3 +47,43 @@ def test_JavaClass_superclass_name():
 def test_JavaClass_access_set():
     jcls = jclass.load('java/HelloWorld.class')
     assert jcls.access_set == {'public', 'super'}
+
+
+def test_JavaClass_is_public():
+    jcls = jclass.load('java/HelloWorld.class')
+    assert jcls.is_public is True
+
+
+def test_JavaClass_is_final():
+    jcls = jclass.load('java/HelloWorld.class')
+    assert jcls.is_final is False
+
+
+def test_JavaClass_is_super():
+    jcls = jclass.load('java/HelloWorld.class')
+    assert jcls.is_super is True
+
+
+def test_JavaClass_is_interface():
+    jcls = jclass.load('java/HelloWorld.class')
+    assert jcls.is_interface is False
+
+
+def test_JavaClass_is_abstract():
+    jcls = jclass.load('java/HelloWorld.class')
+    assert jcls.is_abstract is False
+
+
+def test_JavaClass_is_synthetic():
+    jcls = jclass.load('java/HelloWorld.class')
+    assert jcls.is_synthetic is False
+
+
+def test_JavaClass_is_annotation():
+    jcls = jclass.load('java/HelloWorld.class')
+    assert jcls.is_annotation is False
+
+
+def test_JavaClass_is_enum():
+    jcls = jclass.load('java/HelloWorld.class')
+    assert jcls.is_enum is False

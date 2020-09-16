@@ -100,6 +100,46 @@ static PyObject *_access_set(PyObject *self, void *closure) {
     return set;
 }
 
+static PyObject *_is_public(PyObject *self, void *closure) {
+    uint16_t flags = JavaClass_cast(self)->access_flags;
+    return PyBool_FromLong(flags & ACC_PUBLIC);
+}
+
+static PyObject *_is_final(PyObject *self, void *closure) {
+    uint16_t flags = JavaClass_cast(self)->access_flags;
+    return PyBool_FromLong(flags & ACC_FINAL);
+}
+
+static PyObject *_is_super(PyObject *self, void *closure) {
+    uint16_t flags = JavaClass_cast(self)->access_flags;
+    return PyBool_FromLong(flags & ACC_SUPER);
+}
+
+static PyObject *_is_interface(PyObject *self, void *closure) {
+    uint16_t flags = JavaClass_cast(self)->access_flags;
+    return PyBool_FromLong(flags & ACC_INTERFACE);
+}
+
+static PyObject *_is_abstract(PyObject *self, void *closure) {
+    uint16_t flags = JavaClass_cast(self)->access_flags;
+    return PyBool_FromLong(flags & ACC_ABSTRACT);
+}
+
+static PyObject *_is_synthetic(PyObject *self, void *closure) {
+    uint16_t flags = JavaClass_cast(self)->access_flags;
+    return PyBool_FromLong(flags & ACC_SYNTHETIC);
+}
+
+static PyObject *_is_annotation(PyObject *self, void *closure) {
+    uint16_t flags = JavaClass_cast(self)->access_flags;
+    return PyBool_FromLong(flags & ACC_ANNOTATION);
+}
+
+static PyObject *_is_enum(PyObject *self, void *closure) {
+    uint16_t flags = JavaClass_cast(self)->access_flags;
+    return PyBool_FromLong(flags & ACC_ENUM);
+}
+
 static PyObject *_name(PyObject *self, void *closure) {
     JavaClassClassConstant *class = JavaClass_constant(self, JavaClass_cast(self)->this_class);
     JavaClassUtf8Constant *name = JavaClass_constant(self, class->name_index);
@@ -119,6 +159,14 @@ static PyMethodDef methods[] = {
 
 static PyGetSetDef getset[] = {
     {"access_set", _access_set, NULL, NULL, NULL},
+    {"is_public", _is_public, NULL, NULL, NULL},
+    {"is_final", _is_final, NULL, NULL, NULL},
+    {"is_super", _is_super, NULL, NULL, NULL},
+    {"is_interface", _is_interface, NULL, NULL, NULL},
+    {"is_abstract", _is_abstract, NULL, NULL, NULL},
+    {"is_synthetic", _is_synthetic, NULL, NULL, NULL},
+    {"is_annotation", _is_annotation, NULL, NULL, NULL},
+    {"is_enum", _is_enum, NULL, NULL, NULL},
     {"name", _name, NULL, NULL, NULL},
     {"superclass_name", _superclass_name, NULL, NULL, NULL},
     {0},

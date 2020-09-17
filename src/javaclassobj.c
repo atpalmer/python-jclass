@@ -55,7 +55,7 @@ JavaClass *JavaClass_from_MemReader(MemReader *r) {
 
     interfaces_parse(r, &class->interfaces);
     fields_parse(r, &class->fields);
-    parse_methods(r, &class->methods);
+    methods_parse(r, &class->methods);
     attributes_parse(r, &class->attributes);
 
     return class;
@@ -75,7 +75,7 @@ static void _dealloc(PyObject *self) {
     constant_pool_free(class->pool);
     interfaces_free(class->interfaces);
     fields_free(class->fields);
-    JavaClassMethods_free(class->methods);
+    methods_free(class->methods);
     JavaClassAttributes_free(class->attributes);
     Py_TYPE(self)->tp_free(self);
 }
@@ -122,12 +122,12 @@ static PyObject *_fields(PyObject *self, PyObject *arg) {
 
 static PyObject *_methods(PyObject *self, PyObject *arg) {
     JavaClass *class = (JavaClass *)self;
-    JavaClassMethods *methods = class->methods;
+    struct method_items *methods = class->methods;
     struct constant_pool *pool = class->pool;
 
     PyObject *result = PyList_New(methods->count);
     for(int i = 0; i < methods->count; ++i) {
-        JavaClassMethod *method = methods->items[i];
+        struct method *method = methods->items[i];
 
         struct pool_Utf8 *name = constant_pool_item(pool, method->name_index);
         struct pool_Utf8 *descriptor = constant_pool_item(pool, method->descriptor_index);

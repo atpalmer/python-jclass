@@ -7,6 +7,11 @@ def test_jclass():
     assert isinstance(jcls, jclass.JavaClass)
 
 
+def test_jclass_badfile():
+    with pytest.raises(ValueError):
+        jcls = jclass.load('java/badfile.txt')
+
+
 def test_JavaClass_magic():
     jcls = jclass.load('java/HelloWorld.class')
     assert jcls.magic == 0xCAFEBABE

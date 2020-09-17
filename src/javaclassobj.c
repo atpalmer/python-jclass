@@ -17,6 +17,11 @@ JavaClass *JavaClass_from_MemReader(MemReader *r) {
         return NULL;
 
     class->magic = MemReader_next_uint32(r);
+    if(class->magic != 0xCAFEBABE) {
+        PyErr_SetString(PyExc_ValueError, "File is not a class file");
+        goto fail;
+    }
+
     class->minor_version = MemReader_next_uint16(r);
     class->major_version = MemReader_next_uint16(r);
 
@@ -31,14 +36,15 @@ JavaClass *JavaClass_from_MemReader(MemReader *r) {
     class->methods = methods_parse(r);
     class->attributes = attributes_parse(r);
 
-    if(MemReader_has_error(r))
+    if(MemReader_has_error(r)) {
+        PyErr_SetString(PyExc_ValueError, "Parse error");
         goto fail;
+    }
 
     return class;
 
 fail:
     Py_DECREF(class);
-    PyErr_SetString(PyExc_ValueError, "Parse error");
     return NULL;
 }
 

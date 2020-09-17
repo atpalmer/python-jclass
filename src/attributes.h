@@ -14,7 +14,7 @@ struct attribute_items {
     struct attribute *items[];
 };
 
-void attributes_parse(MemReader *reader, struct attribute_items **obj);
+struct attribute_items *attributes_parse(MemReader *reader);
 void attributes_free(struct attribute_items *this);
 
 #endif

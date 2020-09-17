@@ -14,14 +14,11 @@ struct method_items *methods_parse(MemReader *reader) {
         struct method **method = &obj->items[i];
 
         *method = PyMem_Malloc(sizeof(struct method));
+
         (*method)->access_flags = MemReader_next_uint16(reader);
         (*method)->name_index = MemReader_next_uint16(reader);
         (*method)->descriptor_index = MemReader_next_uint16(reader);
-
-        struct attribute_items *attributes;
-        attributes_parse(reader, &attributes);
-
-        (*method)->attributes = attributes;
+        (*method)->attributes = attributes_parse(reader);
     }
 
     return obj;

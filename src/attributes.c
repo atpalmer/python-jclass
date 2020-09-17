@@ -3,13 +3,13 @@
 #include "membuff.h"
 
 
-void attributes_parse(MemReader *reader, struct attribute_items **obj) {
+struct attribute_items *attributes_parse(MemReader *reader) {
     uint16_t count = MemReader_next_uint16(reader);
-    *obj = PyMem_Malloc(sizeof(struct attribute_items) + (sizeof(struct attribute *) * count));
-    (*obj)->count = count;
+    struct attribute_items *obj = PyMem_Malloc(sizeof(struct attribute_items) + (sizeof(struct attribute *) * count));
+    obj->count = count;
 
     for(uint16_t i = 0; i < count; ++i) {
-        struct attribute **attr = &(*obj)->items[i];
+        struct attribute **attr = &obj->items[i];
 
         uint16_t name_index = MemReader_next_uint16(reader);
         uint32_t length = MemReader_next_uint32(reader);
@@ -21,6 +21,8 @@ void attributes_parse(MemReader *reader, struct attribute_items **obj) {
 
         MemReader_copy_next(reader, length, (*attr)->info);
     }
+
+    return obj;
 }
 
 void attributes_free(struct attribute_items *this) {

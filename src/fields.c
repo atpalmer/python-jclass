@@ -18,11 +18,7 @@ struct field_items *fields_parse(MemReader *reader) {
         (*field)->access_flags = MemReader_next_uint16(reader);
         (*field)->name_index = MemReader_next_uint16(reader);
         (*field)->descriptor_index = MemReader_next_uint16(reader);
-
-        struct attribute_items *attributes;
-        attributes_parse(reader, &attributes);
-
-        (*field)->attributes = attributes;
+        (*field)->attributes = attributes_parse(reader);
     }
 
     return obj;

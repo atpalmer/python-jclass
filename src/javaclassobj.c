@@ -61,6 +61,15 @@ JavaClass *JavaClass_from_MemReader(MemReader *r) {
     return class;
 }
 
+JavaClass *JavaClass_from_filename(const char *filename) {
+    MemReader *r = MemReader_from_filename(filename);
+    if(!r)
+        return NULL;
+    JavaClass *new = JavaClass_from_MemReader(r);
+    MemReader_free(r);
+    return new;
+}
+
 static void _dealloc(PyObject *self) {
     JavaClass *class = (JavaClass *)self;
     JavaClassConstantPool_free(class->pool);

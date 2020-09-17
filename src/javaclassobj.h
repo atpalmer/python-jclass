@@ -23,7 +23,7 @@ typedef struct {
     JavaClassAttributes *attributes;
 } JavaClass;
 
-JavaClass *JavaClass_from_MemReader(MemReader *r);
+JavaClass *JavaClass_from_filename(const char *filename);
 
 extern PyTypeObject JavaClass_Type;
 

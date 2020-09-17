@@ -1,5 +1,4 @@
 #include <Python.h>
-#include "membuff.h"
 #include "javaclassobj.h"
 
 
@@ -8,9 +7,9 @@ static PyObject *jclass_load(PyObject *self, PyObject *args) {
     if(!PyArg_ParseTuple(args, "s", &fname))
         return NULL;
 
-    MemReader *r = MemReader_from_filename(fname);
-    JavaClass *new = JavaClass_from_MemReader(r);
-    MemReader_free(r);
+    JavaClass *new = JavaClass_from_filename(fname);
+    if(!new)
+        return NULL;
 
     return (PyObject *)new;
 }

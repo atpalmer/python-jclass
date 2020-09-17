@@ -8,7 +8,7 @@ struct interfaces {
     uint16_t indexes[];
 };
 
-void interfaces_parse(MemReader *reader, struct interfaces **obj);
+struct interfaces *interfaces_parse(MemReader *reader);
 void interfaces_free(struct interfaces *this);
 
 #endif

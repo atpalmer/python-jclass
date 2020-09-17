@@ -55,7 +55,7 @@ JavaClass *JavaClass_from_MemReader(MemReader *r) {
     class->this_class = MemReader_next_uint16(r);
     class->super_class = MemReader_next_uint16(r);
 
-    interfaces_parse(r, &class->interfaces);
+    class->interfaces = interfaces_parse(r);
     fields_parse(r, &class->fields);
     methods_parse(r, &class->methods);
     attributes_parse(r, &class->attributes);

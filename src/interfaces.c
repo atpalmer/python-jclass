@@ -2,14 +2,16 @@
 #include "interfaces.h"
 #include "membuff.h"
 
-void interfaces_parse(MemReader *reader, struct interfaces **obj) {
+struct interfaces *interfaces_parse(MemReader *reader) {
     uint16_t count = MemReader_next_uint16(reader);
-    *obj = PyMem_Malloc(sizeof(struct interfaces) + (sizeof(uint16_t) * count));
-    (*obj)->count = count;
+    struct interfaces *obj = PyMem_Malloc(sizeof(struct interfaces) + (sizeof(uint16_t) * count));
+    obj->count = count;
 
     for(uint16_t i = 0; i < count; ++i) {
-        (*obj)->indexes[i] = MemReader_next_uint16(reader);
+        obj->indexes[i] = MemReader_next_uint16(reader);
     }
+
+    return obj;
 }
 
 void interfaces_free(struct interfaces *this) {

@@ -25,13 +25,16 @@ struct method_items *methods_parse(MemReader *reader) {
 }
 
 static void method_free(struct method *this) {
+    if(!this)
+        return;
     attributes_free(this->attributes);
     PyMem_Free(this);
 }
 
 void methods_free(struct method_items *this) {
-    for(uint16_t i = 0; i < this->count; ++i) {
+    if(!this)
+        return;
+    for(uint16_t i = 0; i < this->count; ++i)
         method_free(this->items[i]);
-    }
     PyMem_Free(this);
 }

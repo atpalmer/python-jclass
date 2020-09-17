@@ -25,13 +25,16 @@ struct field_items *fields_parse(MemReader *reader) {
 }
 
 static void field_free(struct field *this) {
+    if(!this)
+        return
     attributes_free(this->attributes);
     PyMem_Free(this);
 }
 
 void fields_free(struct field_items *this) {
-    for(uint16_t i = 0; i < this->count; ++i) {
+    if(!this)
+        return;
+    for(uint16_t i = 0; i < this->count; ++i)
         field_free(this->items[i]);
-    }
     PyMem_Free(this);
 }

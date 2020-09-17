@@ -101,6 +101,8 @@ struct constant_pool *constant_pool_parse(MemReader *reader) {
 }
 
 void constant_pool_free(struct constant_pool *this) {
+    if(!this)
+        return;
     for(int i = 0; i < this->count - 1; ++i)
         if(this->items[i])
             PyMem_Free(this->items[i]);

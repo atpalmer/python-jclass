@@ -15,5 +15,7 @@ struct interfaces *interfaces_parse(MemReader *reader) {
 }
 
 void interfaces_free(struct interfaces *this) {
+    if(!this)
+        return;
     PyMem_Free(this);
 }

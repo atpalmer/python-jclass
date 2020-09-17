@@ -26,7 +26,10 @@ struct attribute_items *attributes_parse(MemReader *reader) {
 }
 
 void attributes_free(struct attribute_items *this) {
+    if(!this)
+        return;
     for(uint16_t i = 0; i < this->count; ++i)
-        PyMem_Free(this->items[i]);
+        if(this->items[i])
+            PyMem_Free(this->items[i]);
     PyMem_Free(this);
 }

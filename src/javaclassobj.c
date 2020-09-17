@@ -109,7 +109,7 @@ static PyObject *_fields(PyObject *self, PyObject *arg) {
         struct pool_Utf8 *descriptor = _pool_item(pool, field->descriptor_index);
 
         PyObject *t = PyTuple_New(4);
-        PyTuple_SetItem(t, 0, _flags_to_PySet(fields->count));
+        PyTuple_SetItem(t, 0, _flags_to_PySet(field->access_flags));
         PyTuple_SetItem(t, 1, PyUnicode_FromStringAndSize(descriptor->bytes, descriptor->length));
         PyTuple_SetItem(t, 2, PyUnicode_FromStringAndSize(name->bytes, name->length));
         PyTuple_SetItem(t, 3, _attributes_to_PyDict(field->attributes, pool));

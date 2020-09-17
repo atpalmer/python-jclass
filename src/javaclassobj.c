@@ -80,18 +80,6 @@ static void _dealloc(PyObject *self) {
     Py_TYPE(self)->tp_free(self);
 }
 
-static PyObject *_constant(PyObject *self, PyObject *arg) {
-    if(!PyLong_Check(arg))
-        return NULL;
-    unsigned long index = PyLong_AsUnsignedLong(arg);
-    JavaClassConstantPool *pool = ((JavaClass *)self)->pool;
-    if(index < 1 || index > pool->count - 1) {
-        PyErr_SetString(PyExc_IndexError, "Index out of range");
-        return NULL;
-    }
-    Py_RETURN_NONE;
-}
-
 static PyObject *_attributes_to_PyDict(JavaClassAttributes *attributes, JavaClassConstantPool *pool) {
     PyObject *dict = PyDict_New();
 
@@ -221,7 +209,6 @@ static PyObject *_superclass_name(PyObject *self, void *closure) {
 }
 
 static PyMethodDef methods[] = {
-    {"constant", _constant, METH_O, 0},
     {"fields", _fields, METH_NOARGS, 0},
     {"methods", _methods, METH_NOARGS, 0},
     {"attributes", _attributes, METH_NOARGS, 0},

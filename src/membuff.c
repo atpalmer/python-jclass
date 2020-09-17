@@ -54,7 +54,10 @@ void MemReader_copy_next(MemReader *this, size_t size, void *target) {
 }
 
 MemReader *MemReader_from_filename(const char *filename) {
-    MemReader *new = PyMem_Malloc(sizeof(MemReader) + 4096);
+    MemReader *new = MALLOC(sizeof(MemReader) + 4096);
+    if(!new)
+        return NULL;
+
     new->pos = 0;
 
     FILE *fp = fopen(filename, "rb");
@@ -65,7 +68,7 @@ MemReader *MemReader_from_filename(const char *filename) {
 }
 
 void MemReader_free(MemReader *this) {
-    PyMem_Free(this);
+    FREE(this);
 }
 
 void MemReader_print(MemReader *this) {

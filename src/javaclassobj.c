@@ -49,7 +49,7 @@ JavaClass *JavaClass_from_MemReader(MemReader *r) {
     class->minor_version = MemReader_next_uint16(r);
     class->major_version = MemReader_next_uint16(r);
 
-    constant_pool_parse(r, &class->pool);
+    class->pool = constant_pool_parse(r);
 
     class->access_flags = MemReader_next_uint16(r);
     class->this_class = MemReader_next_uint16(r);

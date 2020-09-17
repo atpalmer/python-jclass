@@ -3,14 +3,14 @@
 
 #include "membuff.h"
 
-enum constant_type {
-    CONSTANT_TYPE_Utf8= 1,
-    CONSTANT_TYPE_Class = 7,
-    CONSTANT_TYPE_String = 8,
-    CONSTANT_TYPE_Fieldref = 9,
-    CONSTANT_TYPE_Methodref = 10,
-    CONSTANT_TYPE_InterfaceMethodref = 11,
-    CONSTANT_TYPE_NameAndType = 12,
+enum constant_tag {
+    CONSTANT_TAG_Utf8= 1,
+    CONSTANT_TAG_Class = 7,
+    CONSTANT_TAG_String = 8,
+    CONSTANT_TAG_Fieldref = 9,
+    CONSTANT_TAG_Methodref = 10,
+    CONSTANT_TAG_InterfaceMethodref = 11,
+    CONSTANT_TAG_NameAndType = 12,
 };
 
 struct pool_constant {

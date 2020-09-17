@@ -63,25 +63,25 @@ void constant_pool_parse(MemReader *reader, JavaClassConstantPool **obj) {
         uint8_t constant_type = MemReader_peek_uint8(reader);
 
         switch(constant_type) {
-        case CONSTANT_TYPE_Utf8:
+        case CONSTANT_TAG_Utf8:
             *c = _read_Utf8(reader);
             break;
-        case CONSTANT_TYPE_Class:
+        case CONSTANT_TAG_Class:
             *c = _read_Class(reader);
             break;
-        case CONSTANT_TYPE_String:
+        case CONSTANT_TAG_String:
             *c = _read_String(reader);
             break;
-        case CONSTANT_TYPE_Fieldref:
+        case CONSTANT_TAG_Fieldref:
             *c = _read_Fieldref(reader);
             break;
-        case CONSTANT_TYPE_Methodref:
+        case CONSTANT_TAG_Methodref:
             *c = _read_Methodref(reader);
             break;
-        case CONSTANT_TYPE_InterfaceMethodref:
+        case CONSTANT_TAG_InterfaceMethodref:
             *c = _read_InterfaceMethodref(reader);
             break;
-        case CONSTANT_TYPE_NameAndType:
+        case CONSTANT_TAG_NameAndType:
             *c = _read_NameAndType(reader);
             break;
         default:

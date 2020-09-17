@@ -73,7 +73,7 @@ JavaClass *JavaClass_from_filename(const char *filename) {
 static void _dealloc(PyObject *self) {
     JavaClass *class = (JavaClass *)self;
     constant_pool_free(class->pool);
-    JavaClassInterfaces_free(class->interfaces);
+    interfaces_free(class->interfaces);
     JavaClassFields_free(class->fields);
     JavaClassMethods_free(class->methods);
     JavaClassAttributes_free(class->attributes);

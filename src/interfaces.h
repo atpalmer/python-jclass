@@ -3,12 +3,12 @@
 
 #include "membuff.h"
 
-typedef struct {
+struct interfaces {
     uint16_t count;
     uint16_t indexes[];
-} JavaClassInterfaces;
+};
 
-void interfaces_parse(MemReader *reader, JavaClassInterfaces **obj);
-void JavaClassInterfaces_free(JavaClassInterfaces *this);
+void interfaces_parse(MemReader *reader, struct interfaces **obj);
+void interfaces_free(struct interfaces *this);
 
 #endif

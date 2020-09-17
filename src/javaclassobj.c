@@ -74,7 +74,7 @@ static void _dealloc(PyObject *self) {
     JavaClass *class = (JavaClass *)self;
     constant_pool_free(class->pool);
     interfaces_free(class->interfaces);
-    JavaClassFields_free(class->fields);
+    fields_free(class->fields);
     JavaClassMethods_free(class->methods);
     JavaClassAttributes_free(class->attributes);
     Py_TYPE(self)->tp_free(self);
@@ -98,12 +98,12 @@ static PyObject *_attributes_to_PyDict(JavaClassAttributes *attributes, struct c
 
 static PyObject *_fields(PyObject *self, PyObject *arg) {
     JavaClass *class = (JavaClass *)self;
-    JavaClassFields *fields = class->fields;
+    struct field_items *fields = class->fields;
     struct constant_pool *pool = class->pool;
 
     PyObject *result = PyList_New(fields->count);
     for(int i = 0; i < fields->count; ++i) {
-        JavaClassField *field = fields->items[i];
+        struct field *field = fields->items[i];
 
         struct pool_Utf8 *name = constant_pool_item(pool, field->name_index);
         struct pool_Utf8 *descriptor = constant_pool_item(pool, field->descriptor_index);

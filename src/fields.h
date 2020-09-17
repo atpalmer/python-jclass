@@ -4,20 +4,19 @@
 #include "attributes.h"
 #include "membuff.h"
 
-typedef struct {
+struct field {
     uint16_t access_flags;
     uint16_t name_index;
     uint16_t descriptor_index;
     JavaClassAttributes *attributes;
-} JavaClassField;
+};
 
-typedef struct {
+struct field_items {
     uint16_t count;
-    JavaClassField *items[];
-} JavaClassFields;
+    struct field *items[];
+};
 
-void fields_parse(MemReader *reader, JavaClassFields **obj);
-void JavaClassField_free(JavaClassField *this);
-void JavaClassFields_free(JavaClassFields *this);
+void fields_parse(MemReader *reader, struct field_items **obj);
+void fields_free(struct field_items *this);
 
 #endif

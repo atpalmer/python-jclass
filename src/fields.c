@@ -5,15 +5,15 @@
 #include "membuff.h"
 
 
-void fields_parse(MemReader *reader, JavaClassFields **obj) {
+void fields_parse(MemReader *reader, struct field_items **obj) {
     uint16_t count = MemReader_next_uint16(reader);
-    *obj = PyMem_Malloc(sizeof(JavaClassFields) + (sizeof(JavaClassField *) * count));
+    *obj = PyMem_Malloc(sizeof(struct field_items) + (sizeof(struct field *) * count));
     (*obj)->count = count;
 
     for(uint16_t i = 0; i < count; ++i) {
-        JavaClassField **field = &(*obj)->items[i];
+        struct field **field = &(*obj)->items[i];
 
-        *field = PyMem_Malloc(sizeof(JavaClassField));
+        *field = PyMem_Malloc(sizeof(struct field));
 
         (*field)->access_flags = MemReader_next_uint16(reader);
         (*field)->name_index = MemReader_next_uint16(reader);
@@ -26,14 +26,14 @@ void fields_parse(MemReader *reader, JavaClassFields **obj) {
     }
 }
 
-void JavaClassField_free(JavaClassField *this) {
+static void field_free(struct field *this) {
     JavaClassAttributes_free(this->attributes);
     PyMem_Free(this);
 }
 
-void JavaClassFields_free(JavaClassFields *this) {
+void fields_free(struct field_items *this) {
     for(uint16_t i = 0; i < this->count; ++i) {
-        JavaClassField_free(this->items[i]);
+        field_free(this->items[i]);
     }
     PyMem_Free(this);
 }

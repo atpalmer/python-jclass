@@ -18,7 +18,7 @@ typedef struct {
     uint16_t this_class;
     uint16_t super_class;
     struct interfaces *interfaces;
-    JavaClassFields *fields;
+    struct field_items *fields;
     JavaClassMethods *methods;
     JavaClassAttributes *attributes;
 } JavaClass;

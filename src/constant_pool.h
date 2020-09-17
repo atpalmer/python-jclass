@@ -13,44 +13,53 @@ enum constant_type {
     CONSTANT_TYPE_NameAndType = 12,
 };
 
-typedef struct {
+struct pool_constant {
     uint8_t tag;
-} JavaClassConstant;
+};
 
-typedef struct {
+struct pool_utf8 {
     uint8_t tag;
     uint16_t length;
     char bytes[];
-} JavaClassUtf8Constant;
+};
 
-typedef struct {
+struct pool_class {
     uint8_t tag;
     uint16_t name_index;
-} JavaClassClassConstant;
+};
 
-typedef struct {
+struct pool_string {
     uint8_t tag;
     uint16_t string_index;
-} JavaClassStringConstant;
+};
 
-typedef struct {
+struct pool_fieldref {
     uint8_t tag;
     uint16_t class_index;
     uint16_t name_and_type_index;
-} JavaClassFieldrefConstant;
+};
 
-typedef JavaClassFieldrefConstant JavaClassMethodrefConstant;
-typedef JavaClassFieldrefConstant JavaClassInterfaceMethodrefConstant;
+struct pool_methodref {
+    uint8_t tag;
+    uint16_t class_index;
+    uint16_t name_and_type_index;
+};
 
-typedef struct {
+struct pool_interface_methodref {
+    uint8_t tag;
+    uint16_t class_index;
+    uint16_t name_and_type_index;
+};
+
+struct pool_name_and_type {
     uint8_t tag;
     uint16_t name_index;
     uint16_t descriptor_index;
-} JavaClassNameAndTypeConstant;
+};
 
 typedef struct {
     uint16_t count;
-    JavaClassConstant *constants[];
+    struct pool_constant *constants[];
 } JavaClassConstantPool;
 
 void constant_pool_parse(MemReader *reader, JavaClassConstantPool **obj);

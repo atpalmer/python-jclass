@@ -47,7 +47,7 @@ JavaClass *JavaClass_from_MemReader(MemReader *r) {
     class->minor_version = MemReader_next_uint16(r);
     class->major_version = MemReader_next_uint16(r);
 
-    constant_pool_parse(r, &class->constant_pool);
+    constant_pool_parse(r, &class->pool);
 
     class->access_flags = MemReader_next_uint16(r);
     class->this_class = MemReader_next_uint16(r);
@@ -63,7 +63,7 @@ JavaClass *JavaClass_from_MemReader(MemReader *r) {
 
 static void _dealloc(PyObject *self) {
     JavaClass *class = (JavaClass *)self;
-    JavaClassConstantPool_free(class->constant_pool);
+    JavaClassConstantPool_free(class->pool);
     JavaClassInterfaces_free(class->interfaces);
     JavaClassFields_free(class->fields);
     JavaClassMethods_free(class->methods);
@@ -75,7 +75,7 @@ static PyObject *_constant(PyObject *self, PyObject *arg) {
     if(!PyLong_Check(arg))
         return NULL;
     unsigned long index = PyLong_AsUnsignedLong(arg);
-    JavaClassConstantPool *pool = ((JavaClass *)self)->constant_pool;
+    JavaClassConstantPool *pool = ((JavaClass *)self)->pool;
     if(index < 1 || index > pool->count - 1) {
         PyErr_SetString(PyExc_IndexError, "Index out of range");
         return NULL;
@@ -102,7 +102,7 @@ static PyObject *_attributes_to_PyDict(JavaClassAttributes *attributes, JavaClas
 static PyObject *_fields(PyObject *self, PyObject *arg) {
     JavaClass *class = (JavaClass *)self;
     JavaClassFields *fields = class->fields;
-    JavaClassConstantPool *pool = class->constant_pool;
+    JavaClassConstantPool *pool = class->pool;
 
     PyObject *result = PyList_New(fields->count);
     for(int i = 0; i < fields->count; ++i) {
@@ -126,7 +126,7 @@ static PyObject *_fields(PyObject *self, PyObject *arg) {
 static PyObject *_methods(PyObject *self, PyObject *arg) {
     JavaClass *class = (JavaClass *)self;
     JavaClassMethods *methods = class->methods;
-    JavaClassConstantPool *pool = class->constant_pool;
+    JavaClassConstantPool *pool = class->pool;
 
     PyObject *result = PyList_New(methods->count);
     for(int i = 0; i < methods->count; ++i) {
@@ -149,9 +149,7 @@ static PyObject *_methods(PyObject *self, PyObject *arg) {
 
 static PyObject *_attributes(PyObject *self, PyObject *arg) {
     JavaClass *class = (JavaClass *)self;
-    JavaClassAttributes *attributes = class->attributes;
-    JavaClassConstantPool *pool = class->constant_pool;
-    return _attributes_to_PyDict(attributes, pool);
+    return _attributes_to_PyDict(class->attributes, class->pool);
 }
 
 static PyObject *_access_set(PyObject *self, void *closure) {
@@ -201,17 +199,15 @@ static PyObject *_is_enum(PyObject *self, void *closure) {
 
 static PyObject *_name(PyObject *self, void *closure) {
     JavaClass *class = (JavaClass *)self;
-    JavaClassConstantPool *pool = class->constant_pool;
-    JavaClassClassConstant *this_class = _JavaClassConstantPool_item(pool, class->this_class);
-    JavaClassUtf8Constant *name = _JavaClassConstantPool_item(pool, this_class->name_index);
+    JavaClassClassConstant *this_class = _JavaClassConstantPool_item(class->pool, class->this_class);
+    JavaClassUtf8Constant *name = _JavaClassConstantPool_item(class->pool, this_class->name_index);
     return PyUnicode_FromStringAndSize(name->bytes, name->length);
 }
 
 static PyObject *_superclass_name(PyObject *self, void *closure) {
     JavaClass *class = (JavaClass *)self;
-    JavaClassConstantPool *pool = class->constant_pool;
-    JavaClassClassConstant *super_class = _JavaClassConstantPool_item(pool, class->super_class);
-    JavaClassUtf8Constant *name = _JavaClassConstantPool_item(pool, super_class->name_index);
+    JavaClassClassConstant *super_class = _JavaClassConstantPool_item(class->pool, class->super_class);
+    JavaClassUtf8Constant *name = _JavaClassConstantPool_item(class->pool, super_class->name_index);
     return PyUnicode_FromStringAndSize(name->bytes, name->length);
 }
 

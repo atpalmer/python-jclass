@@ -63,22 +63,6 @@ static void _dealloc(PyObject *self) {
     Py_TYPE(self)->tp_free(self);
 }
 
-static PyObject *_attributes_to_PyDict(struct attribute_items *attributes, struct constant_pool *pool) {
-    PyObject *dict = PyDict_New();
-
-    for(uint16_t i = 0; i < attributes->count; ++i) {
-        struct attribute *attr = attributes->items[i];
-
-        struct pool_Utf8 *name = constant_pool_item(pool, attr->name_index);
-        PyObject *key = PyUnicode_FromStringAndSize(name->bytes, name->length);
-        PyObject *value = PyBytes_FromStringAndSize((void *)attr->info, attr->length);
-
-        PyDict_SetItem(dict, key, value);
-    }
-
-    return dict;
-}
-
 static PyObject *_fields(PyObject *self, PyObject *arg) {
     JavaClass *class = (JavaClass *)self;
     struct field_items *fields = class->fields;
@@ -95,7 +79,7 @@ static PyObject *_fields(PyObject *self, PyObject *arg) {
         PyTuple_SetItem(t, 0, conv_flags_to_PySet(field->access_flags));
         PyTuple_SetItem(t, 1, PyUnicode_FromStringAndSize(descriptor->bytes, descriptor->length));
         PyTuple_SetItem(t, 2, PyUnicode_FromStringAndSize(name->bytes, name->length));
-        PyTuple_SetItem(t, 3, _attributes_to_PyDict(field->attributes, pool));
+        PyTuple_SetItem(t, 3, conv_attributes_to_PyDict(field->attributes, pool));
 
         PyList_SetItem(result, i, t);
     }
@@ -119,7 +103,7 @@ static PyObject *_methods(PyObject *self, PyObject *arg) {
         PyTuple_SetItem(t, 0, conv_flags_to_PySet(method->access_flags));
         PyTuple_SetItem(t, 1, PyUnicode_FromStringAndSize(descriptor->bytes, descriptor->length));
         PyTuple_SetItem(t, 2, PyUnicode_FromStringAndSize(name->bytes, name->length));
-        PyTuple_SetItem(t, 3, _attributes_to_PyDict(method->attributes, pool));
+        PyTuple_SetItem(t, 3, conv_attributes_to_PyDict(method->attributes, pool));
 
         PyList_SetItem(result, i, t);
     }
@@ -129,7 +113,7 @@ static PyObject *_methods(PyObject *self, PyObject *arg) {
 
 static PyObject *_attributes(PyObject *self, PyObject *arg) {
     JavaClass *class = (JavaClass *)self;
-    return _attributes_to_PyDict(class->attributes, class->pool);
+    return conv_attributes_to_PyDict(class->attributes, class->pool);
 }
 
 static PyObject *_access_set(PyObject *self, void *closure) {

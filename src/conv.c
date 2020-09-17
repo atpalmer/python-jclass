@@ -1,5 +1,7 @@
 #include <Python.h>
 #include "access.h"
+#include "attributes.h"
+#include "constant_pool.h"
 #include "conv.h"
 
 PyObject *conv_flags_to_PySet(uint16_t flags) {
@@ -23,4 +25,20 @@ PyObject *conv_flags_to_PySet(uint16_t flags) {
         PySet_Add(set, PyUnicode_FromString("enum"));
 
     return set;
+}
+
+PyObject *conv_attributes_to_PyDict(struct attribute_items *attributes, struct constant_pool *pool) {
+    PyObject *dict = PyDict_New();
+
+    for(uint16_t i = 0; i < attributes->count; ++i) {
+        struct attribute *attr = attributes->items[i];
+
+        struct pool_Utf8 *name = constant_pool_item(pool, attr->name_index);
+        PyObject *key = PyUnicode_FromStringAndSize(name->bytes, name->length);
+        PyObject *value = PyBytes_FromStringAndSize((void *)attr->info, attr->length);
+
+        PyDict_SetItem(dict, key, value);
+    }
+
+    return dict;
 }

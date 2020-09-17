@@ -9,24 +9,12 @@
 #include "attributes.h"
 #include "javaclassobj.h"
 
-
-static inline JavaClass *JavaClass_cast(PyObject *self) {
-    if(Py_TYPE(self) != &JavaClass_Type) {
-        PyErr_SetString(PyExc_SystemError, "Invalid cast");
+static inline void *_JavaClassConstantPool_item(JavaClassConstantPool *this, uint16_t i) {
+    if(i < 1 || i > this->count - 1) {
+        PyErr_SetString(PyExc_IndexError, "Invalid index");
         return NULL;
     }
-    return (JavaClass *)self;
-}
-
-static inline void *_JavaClassConstantPool_item(JavaClassConstantPool *this, uint16_t i) {
     return this->constants[i - 1];
-}
-
-static inline void *JavaClass_constant(PyObject *self, uint16_t i) {
-    JavaClass *class = JavaClass_cast(self);
-    if(!class)
-        return NULL;
-    return _JavaClassConstantPool_item(class->constant_pool, i);
 }
 
 static PyObject *_flags_to_PySet(uint16_t flags) {
@@ -112,9 +100,7 @@ static PyObject *_attributes_to_PyDict(JavaClassAttributes *attributes, JavaClas
 }
 
 static PyObject *_fields(PyObject *self, PyObject *arg) {
-    JavaClass *class = JavaClass_cast(self);
-    if(!class)
-        return NULL;
+    JavaClass *class = (JavaClass *)self;
     JavaClassFields *fields = class->fields;
     JavaClassConstantPool *pool = class->constant_pool;
 
@@ -129,7 +115,7 @@ static PyObject *_fields(PyObject *self, PyObject *arg) {
         PyTuple_SetItem(t, 0, _flags_to_PySet(fields->count));
         PyTuple_SetItem(t, 1, PyUnicode_FromStringAndSize(descriptor->bytes, descriptor->length));
         PyTuple_SetItem(t, 2, PyUnicode_FromStringAndSize(name->bytes, name->length));
-        PyTuple_SetItem(t, 3, _attributes_to_PyDict(field->attributes, JavaClass_cast(self)->constant_pool));
+        PyTuple_SetItem(t, 3, _attributes_to_PyDict(field->attributes, pool));
 
         PyList_SetItem(result, i, t);
     }
@@ -138,9 +124,7 @@ static PyObject *_fields(PyObject *self, PyObject *arg) {
 }
 
 static PyObject *_methods(PyObject *self, PyObject *arg) {
-    JavaClass *class = JavaClass_cast(self);
-    if(!class)
-        return NULL;
+    JavaClass *class = (JavaClass *)self;
     JavaClassMethods *methods = class->methods;
     JavaClassConstantPool *pool = class->constant_pool;
 
@@ -155,7 +139,7 @@ static PyObject *_methods(PyObject *self, PyObject *arg) {
         PyTuple_SetItem(t, 0, _flags_to_PySet(method->access_flags));
         PyTuple_SetItem(t, 1, PyUnicode_FromStringAndSize(descriptor->bytes, descriptor->length));
         PyTuple_SetItem(t, 2, PyUnicode_FromStringAndSize(name->bytes, name->length));
-        PyTuple_SetItem(t, 3, _attributes_to_PyDict(method->attributes, JavaClass_cast(self)->constant_pool));
+        PyTuple_SetItem(t, 3, _attributes_to_PyDict(method->attributes, pool));
 
         PyList_SetItem(result, i, t);
     }
@@ -164,65 +148,70 @@ static PyObject *_methods(PyObject *self, PyObject *arg) {
 }
 
 static PyObject *_attributes(PyObject *self, PyObject *arg) {
-    JavaClassAttributes *attributes = JavaClass_cast(self)->attributes;
-    JavaClassConstantPool *pool = JavaClass_cast(self)->constant_pool;
+    JavaClass *class = (JavaClass *)self;
+    JavaClassAttributes *attributes = class->attributes;
+    JavaClassConstantPool *pool = class->constant_pool;
     return _attributes_to_PyDict(attributes, pool);
 }
 
 static PyObject *_access_set(PyObject *self, void *closure) {
-    uint16_t flags = JavaClass_cast(self)->access_flags;
-    return _flags_to_PySet(flags);
+    JavaClass *class = (JavaClass *)self;
+    return _flags_to_PySet(class->access_flags);
 }
 
 static PyObject *_is_public(PyObject *self, void *closure) {
-    uint16_t flags = JavaClass_cast(self)->access_flags;
-    return PyBool_FromLong(flags & ACC_PUBLIC);
+    JavaClass *class = (JavaClass *)self;
+    return PyBool_FromLong(class->access_flags & ACC_PUBLIC);
 }
 
 static PyObject *_is_final(PyObject *self, void *closure) {
-    uint16_t flags = JavaClass_cast(self)->access_flags;
-    return PyBool_FromLong(flags & ACC_FINAL);
+    JavaClass *class = (JavaClass *)self;
+    return PyBool_FromLong(class->access_flags & ACC_FINAL);
 }
 
 static PyObject *_is_super(PyObject *self, void *closure) {
-    uint16_t flags = JavaClass_cast(self)->access_flags;
-    return PyBool_FromLong(flags & ACC_SUPER);
+    JavaClass *class = (JavaClass *)self;
+    return PyBool_FromLong(class->access_flags & ACC_SUPER);
 }
 
 static PyObject *_is_interface(PyObject *self, void *closure) {
-    uint16_t flags = JavaClass_cast(self)->access_flags;
-    return PyBool_FromLong(flags & ACC_INTERFACE);
+    JavaClass *class = (JavaClass *)self;
+    return PyBool_FromLong(class->access_flags & ACC_INTERFACE);
 }
 
 static PyObject *_is_abstract(PyObject *self, void *closure) {
-    uint16_t flags = JavaClass_cast(self)->access_flags;
-    return PyBool_FromLong(flags & ACC_ABSTRACT);
+    JavaClass *class = (JavaClass *)self;
+    return PyBool_FromLong(class->access_flags & ACC_ABSTRACT);
 }
 
 static PyObject *_is_synthetic(PyObject *self, void *closure) {
-    uint16_t flags = JavaClass_cast(self)->access_flags;
-    return PyBool_FromLong(flags & ACC_SYNTHETIC);
+    JavaClass *class = (JavaClass *)self;
+    return PyBool_FromLong(class->access_flags & ACC_SYNTHETIC);
 }
 
 static PyObject *_is_annotation(PyObject *self, void *closure) {
-    uint16_t flags = JavaClass_cast(self)->access_flags;
-    return PyBool_FromLong(flags & ACC_ANNOTATION);
+    JavaClass *class = (JavaClass *)self;
+    return PyBool_FromLong(class->access_flags & ACC_ANNOTATION);
 }
 
 static PyObject *_is_enum(PyObject *self, void *closure) {
-    uint16_t flags = JavaClass_cast(self)->access_flags;
-    return PyBool_FromLong(flags & ACC_ENUM);
+    JavaClass *class = (JavaClass *)self;
+    return PyBool_FromLong(class->access_flags & ACC_ENUM);
 }
 
 static PyObject *_name(PyObject *self, void *closure) {
-    JavaClassClassConstant *class = JavaClass_constant(self, JavaClass_cast(self)->this_class);
-    JavaClassUtf8Constant *name = JavaClass_constant(self, class->name_index);
+    JavaClass *class = (JavaClass *)self;
+    JavaClassConstantPool *pool = class->constant_pool;
+    JavaClassClassConstant *this_class = _JavaClassConstantPool_item(pool, class->this_class);
+    JavaClassUtf8Constant *name = _JavaClassConstantPool_item(pool, this_class->name_index);
     return PyUnicode_FromStringAndSize(name->bytes, name->length);
 }
 
 static PyObject *_superclass_name(PyObject *self, void *closure) {
-    JavaClassClassConstant *class = JavaClass_constant(self, JavaClass_cast(self)->super_class);
-    JavaClassUtf8Constant *name = JavaClass_constant(self, class->name_index);
+    JavaClass *class = (JavaClass *)self;
+    JavaClassConstantPool *pool = class->constant_pool;
+    JavaClassClassConstant *super_class = _JavaClassConstantPool_item(pool, class->super_class);
+    JavaClassUtf8Constant *name = _JavaClassConstantPool_item(pool, super_class->name_index);
     return PyUnicode_FromStringAndSize(name->bytes, name->length);
 }
 

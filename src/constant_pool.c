@@ -2,6 +2,13 @@
 #include "membuff.h"
 #include "constant_pool.h"
 
+void *constant_pool_item(struct constant_pool *this, uint16_t i) {
+    if(i < 1 || i > this->count - 1) {
+        PyErr_SetString(PyExc_IndexError, "Invalid index");
+        return NULL;
+    }
+    return this->items[i - 1];
+}
 
 static struct pool_CONSTANT *_read_Utf8(MemReader *reader) {
     uint8_t tag = MemReader_next_uint8(reader);

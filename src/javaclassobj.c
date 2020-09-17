@@ -9,13 +9,6 @@
 #include "attributes.h"
 #include "javaclassobj.h"
 
-static inline void *constant_pool_item(struct constant_pool *this, uint16_t i) {
-    if(i < 1 || i > this->count - 1) {
-        PyErr_SetString(PyExc_IndexError, "Invalid index");
-        return NULL;
-    }
-    return this->items[i - 1];
-}
 
 static PyObject *_flags_to_PySet(uint16_t flags) {
     PyObject *set = PySet_New(NULL);

@@ -13,7 +13,7 @@ typedef struct {
     uint32_t magic;
     uint16_t minor_version;
     uint16_t major_version;
-    JavaClassConstantPool *pool;
+    struct constant_pool *pool;
     uint16_t access_flags;
     uint16_t this_class;
     uint16_t super_class;

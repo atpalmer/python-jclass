@@ -53,13 +53,13 @@ static struct pool_CONSTANT *_read_NameAndType(MemReader *reader) {
     return (struct pool_CONSTANT *)new;
 }
 
-void constant_pool_parse(MemReader *reader, JavaClassConstantPool **obj) {
+void constant_pool_parse(MemReader *reader, struct constant_pool **obj) {
     uint16_t count = MemReader_next_uint16(reader);
-    *obj = PyMem_Malloc(sizeof(JavaClassConstantPool) + (sizeof(struct pool_CONSTANT *) * count));
+    *obj = PyMem_Malloc(sizeof(struct constant_pool) + (sizeof(struct pool_CONSTANT *) * count));
     (*obj)->count = count;
 
     for(uint16_t i = 1; i < count; ++i) {
-        struct pool_CONSTANT **c = &((*obj)->constants[i - 1]);
+        struct pool_CONSTANT **c = &((*obj)->items[i - 1]);
         uint8_t constant_type = MemReader_peek_uint8(reader);
 
         switch(constant_type) {
@@ -91,9 +91,9 @@ void constant_pool_parse(MemReader *reader, JavaClassConstantPool **obj) {
     }
 }
 
-void JavaClassConstantPool_free(JavaClassConstantPool *this) {
+void constant_pool_free(struct constant_pool *this) {
     for(int i = 0; i < this->count - 1; ++i)
-        if(this->constants[i])
-            PyMem_Free(this->constants[i]);
+        if(this->items[i])
+            PyMem_Free(this->items[i]);
     PyMem_Free(this);
 }

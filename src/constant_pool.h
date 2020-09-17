@@ -57,12 +57,12 @@ struct pool_NameAndType {
     uint16_t descriptor_index;
 };
 
-typedef struct {
+struct constant_pool {
     uint16_t count;
-    struct pool_CONSTANT *constants[];
-} JavaClassConstantPool;
+    struct pool_CONSTANT *items[];
+};
 
-void constant_pool_parse(MemReader *reader, JavaClassConstantPool **obj);
-void JavaClassConstantPool_free(JavaClassConstantPool *this);
+void constant_pool_parse(MemReader *reader, struct constant_pool **obj);
+void constant_pool_free(struct constant_pool *this);
 
 #endif

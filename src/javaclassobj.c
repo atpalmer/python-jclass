@@ -42,6 +42,8 @@ static PyObject *_flags_to_PySet(uint16_t flags) {
 
 JavaClass *JavaClass_from_MemReader(MemReader *r) {
     JavaClass *class = (JavaClass *)JavaClass_Type.tp_alloc(&JavaClass_Type, 0);
+    if(!class)
+        return NULL;
 
     class->magic = MemReader_next_uint32(r);
     class->minor_version = MemReader_next_uint16(r);
@@ -58,7 +60,15 @@ JavaClass *JavaClass_from_MemReader(MemReader *r) {
     methods_parse(r, &class->methods);
     attributes_parse(r, &class->attributes);
 
+    if(MemReader_has_error(r))
+        goto fail;
+
     return class;
+
+fail:
+    Py_DECREF(class);
+    PyErr_SetString(PyExc_ValueError, "Parse error");
+    return NULL;
 }
 
 JavaClass *JavaClass_from_filename(const char *filename) {

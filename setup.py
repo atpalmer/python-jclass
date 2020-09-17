@@ -14,6 +14,7 @@ setup(
     ext_modules=[
         Extension('jclass', sources=[
             'src/jclass.c',
+            'src/membuff.c',
             'src/javaclassobj.c',
             'src/constant_pool.c',
             'src/interfaces.c',

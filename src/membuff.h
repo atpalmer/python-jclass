@@ -20,53 +20,14 @@ typedef struct {
 
 #define MEMREADER_CURR(r)   (&(r)->data[(r)->pos])
 
-/* TODO: bounds-checking and error handling... */
-
-static inline uint32_t MemReader_next_uint32(MemReader *this) {
-    uint32_t result = UINT32(MEMREADER_CURR(this));
-    this->pos += sizeof(result);
-    return result;
-}
-
-static inline uint16_t MemReader_next_uint16(MemReader *this) {
-    uint16_t result = UINT16(MEMREADER_CURR(this));
-    this->pos += sizeof(result);
-    return result;
-}
-
-static inline uint8_t MemReader_next_uint8(MemReader *this) {
-    uint8_t result = UINT8(MEMREADER_CURR(this));
-    this->pos += sizeof(result);
-    return result;
-}
-
-static inline uint8_t MemReader_peek_uint8(MemReader *this) {
-    return UINT8(MEMREADER_CURR(this));
-}
-
-static inline void MemReader_copy_next(MemReader *this, size_t size, void *target) {
-    memcpy(target, MEMREADER_CURR(this), size);
-    this->pos += size;
-}
-
-static inline MemReader *MemReader_from_filename(const char *filename) {
-    MemReader *new = PyMem_Malloc(sizeof(MemReader) + 4096);
-    new->pos = 0;
-
-    FILE *fp = fopen(filename, "rb");
-    new->size = fread(new->data, 1, 4096, fp);
-    fclose(fp);
-
-    return new;
-}
-
-static inline void MemReader_free(MemReader *this) {
-    PyMem_Free(this);
-}
-
-static inline void MemReader_print(MemReader *this) {
-    printf("Bytes Read: %lu\n", this->pos);
-    printf("Total Bytes: %lu\n", this->size);
-}
+int MemReader_has_error(MemReader *this);
+uint32_t MemReader_next_uint32(MemReader *this);
+uint16_t MemReader_next_uint16(MemReader *this);
+uint8_t MemReader_next_uint8(MemReader *this);
+uint8_t MemReader_peek_uint8(MemReader *this);
+void MemReader_copy_next(MemReader *this, size_t size, void *target);
+MemReader *MemReader_from_filename(const char *filename);
+void MemReader_free(MemReader *this);
+void MemReader_print(MemReader *this);
 
 #endif

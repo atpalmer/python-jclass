@@ -57,7 +57,7 @@ JavaClass *JavaClass_from_MemReader(MemReader *r) {
 
     class->interfaces = interfaces_parse(r);
     class->fields = fields_parse(r);
-    methods_parse(r, &class->methods);
+    class->methods = methods_parse(r);
     attributes_parse(r, &class->attributes);
 
     if(MemReader_has_error(r))

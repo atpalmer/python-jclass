@@ -16,7 +16,7 @@ struct method_items {
     struct method *items[];
 };
 
-void methods_parse(MemReader *reader, struct method_items **obj);
+struct method_items *methods_parse(MemReader *reader);
 void methods_free(struct method_items *this);
 
 #endif

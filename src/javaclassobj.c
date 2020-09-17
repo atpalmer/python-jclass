@@ -1,5 +1,6 @@
 #include <Python.h>
 #include "structmember.h"
+#include "conv.h"
 #include "membuff.h"
 #include "access.h"
 #include "constant_pool.h"
@@ -9,29 +10,6 @@
 #include "attributes.h"
 #include "javaclassobj.h"
 
-
-static PyObject *_flags_to_PySet(uint16_t flags) {
-    PyObject *set = PySet_New(NULL);
-
-    if(flags & ACC_PUBLIC)
-        PySet_Add(set, PyUnicode_FromString("public"));
-    if(flags & ACC_FINAL)
-        PySet_Add(set, PyUnicode_FromString("final"));
-    if(flags & ACC_SUPER)
-        PySet_Add(set, PyUnicode_FromString("super"));
-    if(flags & ACC_INTERFACE)
-        PySet_Add(set, PyUnicode_FromString("interface"));
-    if(flags & ACC_ABSTRACT)
-        PySet_Add(set, PyUnicode_FromString("abstract"));
-    if(flags & ACC_SYNTHETIC)
-        PySet_Add(set, PyUnicode_FromString("synthetic"));
-    if(flags & ACC_ANNOTATION)
-        PySet_Add(set, PyUnicode_FromString("annotation"));
-    if(flags & ACC_ENUM)
-        PySet_Add(set, PyUnicode_FromString("enum"));
-
-    return set;
-}
 
 JavaClass *JavaClass_from_MemReader(MemReader *r) {
     JavaClass *class = (JavaClass *)JavaClass_Type.tp_alloc(&JavaClass_Type, 0);
@@ -114,7 +92,7 @@ static PyObject *_fields(PyObject *self, PyObject *arg) {
         struct pool_Utf8 *descriptor = constant_pool_item(pool, field->descriptor_index);
 
         PyObject *t = PyTuple_New(4);
-        PyTuple_SetItem(t, 0, _flags_to_PySet(field->access_flags));
+        PyTuple_SetItem(t, 0, conv_flags_to_PySet(field->access_flags));
         PyTuple_SetItem(t, 1, PyUnicode_FromStringAndSize(descriptor->bytes, descriptor->length));
         PyTuple_SetItem(t, 2, PyUnicode_FromStringAndSize(name->bytes, name->length));
         PyTuple_SetItem(t, 3, _attributes_to_PyDict(field->attributes, pool));
@@ -138,7 +116,7 @@ static PyObject *_methods(PyObject *self, PyObject *arg) {
         struct pool_Utf8 *descriptor = constant_pool_item(pool, method->descriptor_index);
 
         PyObject *t = PyTuple_New(4);
-        PyTuple_SetItem(t, 0, _flags_to_PySet(method->access_flags));
+        PyTuple_SetItem(t, 0, conv_flags_to_PySet(method->access_flags));
         PyTuple_SetItem(t, 1, PyUnicode_FromStringAndSize(descriptor->bytes, descriptor->length));
         PyTuple_SetItem(t, 2, PyUnicode_FromStringAndSize(name->bytes, name->length));
         PyTuple_SetItem(t, 3, _attributes_to_PyDict(method->attributes, pool));
@@ -156,7 +134,7 @@ static PyObject *_attributes(PyObject *self, PyObject *arg) {
 
 static PyObject *_access_set(PyObject *self, void *closure) {
     JavaClass *class = (JavaClass *)self;
-    return _flags_to_PySet(class->access_flags);
+    return conv_flags_to_PySet(class->access_flags);
 }
 
 static PyObject *_is_public(PyObject *self, void *closure) {

@@ -16,7 +16,7 @@ struct field_items {
     struct field *items[];
 };
 
-void fields_parse(MemReader *reader, struct field_items **obj);
+struct field_items *fields_parse(MemReader *reader);
 void fields_free(struct field_items *this);
 
 #endif

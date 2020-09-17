@@ -5,13 +5,13 @@
 #include "membuff.h"
 
 
-void fields_parse(MemReader *reader, struct field_items **obj) {
+struct field_items *fields_parse(MemReader *reader) {
     uint16_t count = MemReader_next_uint16(reader);
-    *obj = PyMem_Malloc(sizeof(struct field_items) + (sizeof(struct field *) * count));
-    (*obj)->count = count;
+    struct field_items *obj = PyMem_Malloc(sizeof(struct field_items) + (sizeof(struct field *) * count));
+    obj->count = count;
 
     for(uint16_t i = 0; i < count; ++i) {
-        struct field **field = &(*obj)->items[i];
+        struct field **field = &obj->items[i];
 
         *field = PyMem_Malloc(sizeof(struct field));
 
@@ -24,6 +24,8 @@ void fields_parse(MemReader *reader, struct field_items **obj) {
 
         (*field)->attributes = attributes;
     }
+
+    return obj;
 }
 
 static void field_free(struct field *this) {

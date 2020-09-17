@@ -77,8 +77,8 @@ static PyObject *_fields(PyObject *self, PyObject *arg) {
 
         PyObject *t = PyTuple_New(4);
         PyTuple_SetItem(t, 0, conv_flags_to_PySet(field->access_flags));
-        PyTuple_SetItem(t, 1, PyUnicode_FromStringAndSize(descriptor->bytes, descriptor->length));
-        PyTuple_SetItem(t, 2, PyUnicode_FromStringAndSize(name->bytes, name->length));
+        PyTuple_SetItem(t, 1, conv_utf8_to_PyUnicode(descriptor));
+        PyTuple_SetItem(t, 2, conv_utf8_to_PyUnicode(name));
         PyTuple_SetItem(t, 3, conv_attributes_to_PyDict(field->attributes, pool));
 
         PyList_SetItem(result, i, t);
@@ -101,8 +101,8 @@ static PyObject *_methods(PyObject *self, PyObject *arg) {
 
         PyObject *t = PyTuple_New(4);
         PyTuple_SetItem(t, 0, conv_flags_to_PySet(method->access_flags));
-        PyTuple_SetItem(t, 1, PyUnicode_FromStringAndSize(descriptor->bytes, descriptor->length));
-        PyTuple_SetItem(t, 2, PyUnicode_FromStringAndSize(name->bytes, name->length));
+        PyTuple_SetItem(t, 1, conv_utf8_to_PyUnicode(descriptor));
+        PyTuple_SetItem(t, 2, conv_utf8_to_PyUnicode(name));
         PyTuple_SetItem(t, 3, conv_attributes_to_PyDict(method->attributes, pool));
 
         PyList_SetItem(result, i, t);
@@ -165,14 +165,14 @@ static PyObject *_name(PyObject *self, void *closure) {
     JavaClass *class = (JavaClass *)self;
     struct pool_Class *this_class = constant_pool_item(class->pool, class->this_class);
     struct pool_Utf8 *name = constant_pool_item(class->pool, this_class->name_index);
-    return PyUnicode_FromStringAndSize(name->bytes, name->length);
+    return conv_utf8_to_PyUnicode(name);
 }
 
 static PyObject *_superclass_name(PyObject *self, void *closure) {
     JavaClass *class = (JavaClass *)self;
     struct pool_Class *super_class = constant_pool_item(class->pool, class->super_class);
     struct pool_Utf8 *name = constant_pool_item(class->pool, super_class->name_index);
-    return PyUnicode_FromStringAndSize(name->bytes, name->length);
+    return conv_utf8_to_PyUnicode(name);
 }
 
 static PyMethodDef methods[] = {

@@ -9,10 +9,10 @@ static PyObject *jclass_load(PyObject *self, PyObject *args) {
         return NULL;
 
     MemReader *r = MemReader_from_filename(fname);
-    JavaClass *class = JavaClass_from_MemReader(r);
+    JavaClass *new = JavaClass_from_MemReader(r);
     MemReader_free(r);
 
-    return class;
+    return (PyObject *)new;
 }
 
 static PyMethodDef module_methods[] = {

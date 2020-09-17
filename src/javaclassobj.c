@@ -103,7 +103,7 @@ static PyObject *_attributes_to_PyDict(JavaClassAttributes *attributes, JavaClas
 
         JavaClassUtf8Constant *name = _JavaClassConstantPool_item(pool, attr->name_index);
         PyObject *key = PyUnicode_FromStringAndSize(name->bytes, name->length);
-        PyObject *value = PyBytes_FromStringAndSize(attr->info, attr->length);
+        PyObject *value = PyBytes_FromStringAndSize((void *)attr->info, attr->length);
 
         PyDict_SetItem(dict, key, value);
     }

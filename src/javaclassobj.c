@@ -89,7 +89,7 @@ static PyObject *_attributes_to_PyDict(JavaClassAttributes *attributes, JavaClas
     for(uint16_t i = 0; i < attributes->count; ++i) {
         JavaClassAttribute *attr = attributes->items[i];
 
-        struct pool_utf8 *name = _JavaClassConstantPool_item(pool, attr->name_index);
+        struct pool_Utf8 *name = _JavaClassConstantPool_item(pool, attr->name_index);
         PyObject *key = PyUnicode_FromStringAndSize(name->bytes, name->length);
         PyObject *value = PyBytes_FromStringAndSize((void *)attr->info, attr->length);
 
@@ -108,8 +108,8 @@ static PyObject *_fields(PyObject *self, PyObject *arg) {
     for(int i = 0; i < fields->count; ++i) {
         JavaClassField *field = fields->items[i];
 
-        struct pool_utf8 *name = _JavaClassConstantPool_item(pool, field->name_index);
-        struct pool_utf8 *descriptor = _JavaClassConstantPool_item(pool, field->descriptor_index);
+        struct pool_Utf8 *name = _JavaClassConstantPool_item(pool, field->name_index);
+        struct pool_Utf8 *descriptor = _JavaClassConstantPool_item(pool, field->descriptor_index);
 
         PyObject *t = PyTuple_New(4);
         PyTuple_SetItem(t, 0, _flags_to_PySet(fields->count));
@@ -132,8 +132,8 @@ static PyObject *_methods(PyObject *self, PyObject *arg) {
     for(int i = 0; i < methods->count; ++i) {
         JavaClassMethod *method = methods->items[i];
 
-        struct pool_utf8 *name = _JavaClassConstantPool_item(pool, method->name_index);
-        struct pool_utf8 *descriptor = _JavaClassConstantPool_item(pool, method->descriptor_index);
+        struct pool_Utf8 *name = _JavaClassConstantPool_item(pool, method->name_index);
+        struct pool_Utf8 *descriptor = _JavaClassConstantPool_item(pool, method->descriptor_index);
 
         PyObject *t = PyTuple_New(4);
         PyTuple_SetItem(t, 0, _flags_to_PySet(method->access_flags));
@@ -199,15 +199,15 @@ static PyObject *_is_enum(PyObject *self, void *closure) {
 
 static PyObject *_name(PyObject *self, void *closure) {
     JavaClass *class = (JavaClass *)self;
-    struct pool_class *this_class = _JavaClassConstantPool_item(class->pool, class->this_class);
-    struct pool_utf8 *name = _JavaClassConstantPool_item(class->pool, this_class->name_index);
+    struct pool_Class *this_class = _JavaClassConstantPool_item(class->pool, class->this_class);
+    struct pool_Utf8 *name = _JavaClassConstantPool_item(class->pool, this_class->name_index);
     return PyUnicode_FromStringAndSize(name->bytes, name->length);
 }
 
 static PyObject *_superclass_name(PyObject *self, void *closure) {
     JavaClass *class = (JavaClass *)self;
-    struct pool_class *super_class = _JavaClassConstantPool_item(class->pool, class->super_class);
-    struct pool_utf8 *name = _JavaClassConstantPool_item(class->pool, super_class->name_index);
+    struct pool_Class *super_class = _JavaClassConstantPool_item(class->pool, class->super_class);
+    struct pool_Utf8 *name = _JavaClassConstantPool_item(class->pool, super_class->name_index);
     return PyUnicode_FromStringAndSize(name->bytes, name->length);
 }
 

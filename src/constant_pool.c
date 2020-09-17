@@ -3,63 +3,63 @@
 #include "constant_pool.h"
 
 
-static struct pool_constant *_read_Utf8(MemReader *reader) {
+static struct pool_CONSTANT *_read_Utf8(MemReader *reader) {
     uint8_t tag = MemReader_next_uint8(reader);
     uint16_t length = MemReader_next_uint16(reader);
 
-    struct pool_utf8 *new = PyMem_Malloc(sizeof(*new) + length);
+    struct pool_Utf8 *new = PyMem_Malloc(sizeof(*new) + length);
     new->tag = tag;
     new->length = length;
     MemReader_copy_next(reader, length, new->bytes);
 
-    return (struct pool_constant *)new;
+    return (struct pool_CONSTANT *)new;
 }
 
-static struct pool_constant *_read_Class(MemReader *reader) {
-    struct pool_class *new = PyMem_Malloc(sizeof(*new));
+static struct pool_CONSTANT *_read_Class(MemReader *reader) {
+    struct pool_Class *new = PyMem_Malloc(sizeof(*new));
     new->tag = MemReader_next_uint8(reader);
     new->name_index = MemReader_next_uint16(reader);
-    return (struct pool_constant *)new;
+    return (struct pool_CONSTANT *)new;
 }
 
-static struct pool_constant *_read_String(MemReader *reader) {
-    struct pool_string *new = PyMem_Malloc(sizeof(*new));
+static struct pool_CONSTANT *_read_String(MemReader *reader) {
+    struct pool_String *new = PyMem_Malloc(sizeof(*new));
     new->tag = MemReader_next_uint8(reader);
     new->string_index = MemReader_next_uint16(reader);
-    return (struct pool_constant *)new;
+    return (struct pool_CONSTANT *)new;
 }
 
-static struct pool_constant *_read_Fieldref(MemReader *reader) {
-    struct pool_fieldref *new = PyMem_Malloc(sizeof(*new));
+static struct pool_CONSTANT *_read_Fieldref(MemReader *reader) {
+    struct pool_Fieldref *new = PyMem_Malloc(sizeof(*new));
     new->tag = MemReader_next_uint8(reader);
     new->class_index = MemReader_next_uint16(reader);
     new->name_and_type_index = MemReader_next_uint16(reader);
-    return (struct pool_constant *)new;
+    return (struct pool_CONSTANT *)new;
 }
 
-static struct pool_constant *_read_Methodref(MemReader *reader) {
+static struct pool_CONSTANT *_read_Methodref(MemReader *reader) {
     return _read_Fieldref(reader);
 }
 
-static struct pool_constant *_read_InterfaceMethodref(MemReader *reader) {
+static struct pool_CONSTANT *_read_InterfaceMethodref(MemReader *reader) {
     return _read_Fieldref(reader);
 }
 
-static struct pool_constant *_read_NameAndType(MemReader *reader) {
-    struct pool_name_and_type *new = PyMem_Malloc(sizeof(*new));
+static struct pool_CONSTANT *_read_NameAndType(MemReader *reader) {
+    struct pool_NameAndType *new = PyMem_Malloc(sizeof(*new));
     new->tag = MemReader_next_uint8(reader);
     new->name_index = MemReader_next_uint16(reader);
     new->descriptor_index = MemReader_next_uint16(reader);
-    return (struct pool_constant *)new;
+    return (struct pool_CONSTANT *)new;
 }
 
 void constant_pool_parse(MemReader *reader, JavaClassConstantPool **obj) {
     uint16_t count = MemReader_next_uint16(reader);
-    *obj = PyMem_Malloc(sizeof(JavaClassConstantPool) + (sizeof(struct pool_constant *) * count));
+    *obj = PyMem_Malloc(sizeof(JavaClassConstantPool) + (sizeof(struct pool_CONSTANT *) * count));
     (*obj)->count = count;
 
     for(uint16_t i = 1; i < count; ++i) {
-        struct pool_constant **c = &((*obj)->constants[i - 1]);
+        struct pool_CONSTANT **c = &((*obj)->constants[i - 1]);
         uint8_t constant_type = MemReader_peek_uint8(reader);
 
         switch(constant_type) {

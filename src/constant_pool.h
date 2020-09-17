@@ -13,45 +13,45 @@ enum constant_tag {
     CONSTANT_TAG_NameAndType = 12,
 };
 
-struct pool_constant {
+struct pool_CONSTANT {
     uint8_t tag;
 };
 
-struct pool_utf8 {
+struct pool_Utf8 {
     uint8_t tag;
     uint16_t length;
     char bytes[];
 };
 
-struct pool_class {
+struct pool_Class {
     uint8_t tag;
     uint16_t name_index;
 };
 
-struct pool_string {
+struct pool_String {
     uint8_t tag;
     uint16_t string_index;
 };
 
-struct pool_fieldref {
+struct pool_Fieldref {
     uint8_t tag;
     uint16_t class_index;
     uint16_t name_and_type_index;
 };
 
-struct pool_methodref {
+struct pool_Methodref {
     uint8_t tag;
     uint16_t class_index;
     uint16_t name_and_type_index;
 };
 
-struct pool_interface_methodref {
+struct pool_InterfaceMethodref {
     uint8_t tag;
     uint16_t class_index;
     uint16_t name_and_type_index;
 };
 
-struct pool_name_and_type {
+struct pool_NameAndType {
     uint8_t tag;
     uint16_t name_index;
     uint16_t descriptor_index;
@@ -59,7 +59,7 @@ struct pool_name_and_type {
 
 typedef struct {
     uint16_t count;
-    struct pool_constant *constants[];
+    struct pool_CONSTANT *constants[];
 } JavaClassConstantPool;
 
 void constant_pool_parse(MemReader *reader, JavaClassConstantPool **obj);

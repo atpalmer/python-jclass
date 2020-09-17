@@ -18,7 +18,7 @@ void methods_parse(MemReader *reader, struct method_items **obj) {
         (*method)->name_index = MemReader_next_uint16(reader);
         (*method)->descriptor_index = MemReader_next_uint16(reader);
 
-        JavaClassAttributes *attributes;
+        struct attribute_items *attributes;
         attributes_parse(reader, &attributes);
 
         (*method)->attributes = attributes;
@@ -26,7 +26,7 @@ void methods_parse(MemReader *reader, struct method_items **obj) {
 }
 
 static void method_free(struct method *this) {
-    JavaClassAttributes_free(this->attributes);
+    attributes_free(this->attributes);
     PyMem_Free(this);
 }
 

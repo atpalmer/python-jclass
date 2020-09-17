@@ -20,7 +20,7 @@ typedef struct {
     struct interfaces *interfaces;
     struct field_items *fields;
     struct method_items *methods;
-    JavaClassAttributes *attributes;
+    struct attribute_items *attributes;
 } JavaClass;
 
 JavaClass *JavaClass_from_filename(const char *filename);

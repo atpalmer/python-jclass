@@ -3,18 +3,18 @@
 
 #include "membuff.h"
 
-typedef struct {
+struct attribute {
     uint16_t name_index;
     uint32_t length;
     uint8_t info[];
-} JavaClassAttribute;
+};
 
-typedef struct {
+struct attribute_items {
     uint16_t count;
-    JavaClassAttribute *items[];
-} JavaClassAttributes;
+    struct attribute *items[];
+};
 
-void attributes_parse(MemReader *reader, JavaClassAttributes **obj);
-void JavaClassAttributes_free(JavaClassAttributes *this);
+void attributes_parse(MemReader *reader, struct attribute_items **obj);
+void attributes_free(struct attribute_items *this);
 
 #endif

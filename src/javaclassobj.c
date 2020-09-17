@@ -72,19 +72,21 @@ JavaClass *JavaClass_from_filename(const char *filename) {
 
 static void _dealloc(PyObject *self) {
     JavaClass *class = (JavaClass *)self;
+
     constant_pool_free(class->pool);
     interfaces_free(class->interfaces);
     fields_free(class->fields);
     methods_free(class->methods);
-    JavaClassAttributes_free(class->attributes);
+    attributes_free(class->attributes);
+
     Py_TYPE(self)->tp_free(self);
 }
 
-static PyObject *_attributes_to_PyDict(JavaClassAttributes *attributes, struct constant_pool *pool) {
+static PyObject *_attributes_to_PyDict(struct attribute_items *attributes, struct constant_pool *pool) {
     PyObject *dict = PyDict_New();
 
     for(uint16_t i = 0; i < attributes->count; ++i) {
-        JavaClassAttribute *attr = attributes->items[i];
+        struct attribute *attr = attributes->items[i];
 
         struct pool_Utf8 *name = constant_pool_item(pool, attr->name_index);
         PyObject *key = PyUnicode_FromStringAndSize(name->bytes, name->length);

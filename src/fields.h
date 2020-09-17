@@ -8,7 +8,7 @@ struct field {
     uint16_t access_flags;
     uint16_t name_index;
     uint16_t descriptor_index;
-    JavaClassAttributes *attributes;
+    struct attribute_items *attributes;
 };
 
 struct field_items {

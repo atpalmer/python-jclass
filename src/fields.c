@@ -19,7 +19,7 @@ void fields_parse(MemReader *reader, struct field_items **obj) {
         (*field)->name_index = MemReader_next_uint16(reader);
         (*field)->descriptor_index = MemReader_next_uint16(reader);
 
-        JavaClassAttributes *attributes;
+        struct attribute_items *attributes;
         attributes_parse(reader, &attributes);
 
         (*field)->attributes = attributes;
@@ -27,7 +27,7 @@ void fields_parse(MemReader *reader, struct field_items **obj) {
 }
 
 static void field_free(struct field *this) {
-    JavaClassAttributes_free(this->attributes);
+    attributes_free(this->attributes);
     PyMem_Free(this);
 }
 

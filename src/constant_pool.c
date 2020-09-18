@@ -1,12 +1,10 @@
-#include <Python.h>
+#include <stdlib.h>
 #include "membuff.h"
 #include "constant_pool.h"
 
 void *constant_pool_item(struct constant_pool *this, uint16_t i) {
-    if(i < 1 || i > this->count - 1) {
-        PyErr_SetString(PyExc_IndexError, "Invalid index");
+    if(i < 1 || i > this->count - 1)
         return NULL;
-    }
     return this->items[i - 1];
 }
 
@@ -14,7 +12,7 @@ static struct pool_CONSTANT *_read_Utf8(MemReader *reader) {
     uint8_t tag = MemReader_next_uint8(reader);
     uint16_t length = MemReader_next_uint16(reader);
 
-    struct pool_Utf8 *new = PyMem_Malloc(sizeof(*new) + length);
+    struct pool_Utf8 *new = malloc(sizeof(*new) + length);
     new->tag = tag;
     new->length = length;
     MemReader_copy_next(reader, length, new->bytes);
@@ -23,21 +21,21 @@ static struct pool_CONSTANT *_read_Utf8(MemReader *reader) {
 }
 
 static struct pool_CONSTANT *_read_Class(MemReader *reader) {
-    struct pool_Class *new = PyMem_Malloc(sizeof(*new));
+    struct pool_Class *new = malloc(sizeof(*new));
     new->tag = MemReader_next_uint8(reader);
     new->name_index = MemReader_next_uint16(reader);
     return (struct pool_CONSTANT *)new;
 }
 
 static struct pool_CONSTANT *_read_String(MemReader *reader) {
-    struct pool_String *new = PyMem_Malloc(sizeof(*new));
+    struct pool_String *new = malloc(sizeof(*new));
     new->tag = MemReader_next_uint8(reader);
     new->string_index = MemReader_next_uint16(reader);
     return (struct pool_CONSTANT *)new;
 }
 
 static struct pool_CONSTANT *_read_Fieldref(MemReader *reader) {
-    struct pool_Fieldref *new = PyMem_Malloc(sizeof(*new));
+    struct pool_Fieldref *new = malloc(sizeof(*new));
     new->tag = MemReader_next_uint8(reader);
     new->class_index = MemReader_next_uint16(reader);
     new->name_and_type_index = MemReader_next_uint16(reader);
@@ -53,7 +51,7 @@ static struct pool_CONSTANT *_read_InterfaceMethodref(MemReader *reader) {
 }
 
 static struct pool_CONSTANT *_read_NameAndType(MemReader *reader) {
-    struct pool_NameAndType *new = PyMem_Malloc(sizeof(*new));
+    struct pool_NameAndType *new = malloc(sizeof(*new));
     new->tag = MemReader_next_uint8(reader);
     new->name_index = MemReader_next_uint16(reader);
     new->descriptor_index = MemReader_next_uint16(reader);
@@ -62,7 +60,7 @@ static struct pool_CONSTANT *_read_NameAndType(MemReader *reader) {
 
 struct constant_pool *constant_pool_parse(MemReader *reader) {
     uint16_t count = MemReader_next_uint16(reader);
-    struct constant_pool *obj = PyMem_Malloc(sizeof(struct constant_pool) + (sizeof(struct pool_CONSTANT *) * count));
+    struct constant_pool *obj = malloc(sizeof(struct constant_pool) + (sizeof(struct pool_CONSTANT *) * count));
     obj->count = count;
 
     for(uint16_t i = 1; i < count; ++i) {
@@ -105,6 +103,6 @@ void constant_pool_free(struct constant_pool *this) {
         return;
     for(int i = 0; i < this->count - 1; ++i)
         if(this->items[i])
-            PyMem_Free(this->items[i]);
-    PyMem_Free(this);
+            free(this->items[i]);
+    free(this);
 }

@@ -1,11 +1,11 @@
-#include <Python.h>
+#include <stdlib.h>
 #include "attributes.h"
 #include "membuff.h"
 
 
 struct attribute_items *attributes_parse(MemReader *reader) {
     uint16_t count = MemReader_next_uint16(reader);
-    struct attribute_items *obj = PyMem_Malloc(sizeof(struct attribute_items) + (sizeof(struct attribute *) * count));
+    struct attribute_items *obj = calloc(1, sizeof(struct attribute_items) + (sizeof(struct attribute *) * count));
     obj->count = count;
 
     for(uint16_t i = 0; i < count; ++i) {
@@ -14,7 +14,7 @@ struct attribute_items *attributes_parse(MemReader *reader) {
         uint16_t name_index = MemReader_next_uint16(reader);
         uint32_t length = MemReader_next_uint32(reader);
 
-        *attr = PyMem_Malloc(sizeof(struct attribute) + length);
+        *attr = malloc(sizeof(struct attribute) + length);
 
         (*attr)->name_index = name_index;
         (*attr)->length = length;
@@ -30,6 +30,6 @@ void attributes_free(struct attribute_items *this) {
         return;
     for(uint16_t i = 0; i < this->count; ++i)
         if(this->items[i])
-            PyMem_Free(this->items[i]);
-    PyMem_Free(this);
+            free(this->items[i]);
+    free(this);
 }

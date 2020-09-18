@@ -1,6 +1,8 @@
-#include <Python.h>
 #include <errno.h>
 #include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include "membuff.h"
 
 static int _ensure_can_read(MemReader *this, size_t size) {
@@ -52,30 +54,28 @@ void MemReader_copy_next(MemReader *this, size_t size, void *target) {
     this->pos += size;
 }
 
-MemReader *MemReader_from_filename(const char *filename) {
-    MemReader *new = MALLOC(sizeof(MemReader) + 4096);
-    if(!new)
-        return NULL;
+int MemReader_from_filename(const char *filename, MemReader **r) {
+    *r = malloc(sizeof(MemReader) + 4096);
+    if(!*r)
+        return errno;
 
-    new->pos = 0;
+    (*r)->pos = 0;
 
     FILE *fp = fopen(filename, "rb");
     if(!fp) {
-        PyErr_SetString(PyExc_OSError, strerror(errno));
-        goto fail;
+        int errno_ = errno;
+        MemReader_free(*r);
+        *r = NULL;
+        return errno_;
     }
-    new->size = fread(new->data, 1, 4096, fp);
+    (*r)->size = fread((*r)->data, 1, 4096, fp);
     fclose(fp);
 
-    return new;
-
-fail:
-    MemReader_free(new);
-    return NULL;
+    return 0;
 }
 
 void MemReader_free(MemReader *this) {
-    FREE(this);
+    free(this);
 }
 
 void MemReader_print(MemReader *this) {

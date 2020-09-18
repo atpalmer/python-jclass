@@ -55,9 +55,12 @@ fail:
 }
 
 JavaClass *JavaClass_from_filename(const char *filename) {
-    MemReader *r = MemReader_from_filename(filename);
-    if(!r)
+    MemReader *r;
+    int errno_ = MemReader_from_filename(filename, &r);
+    if(errno_) {
+        PyErr_SetString(PyExc_OSError, strerror(errno_));
         return NULL;
+    }
     JavaClass *new = JavaClass_from_MemReader(r);
     MemReader_free(r);
     return new;

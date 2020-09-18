@@ -1,4 +1,5 @@
 #include <Python.h>
+#include <errno.h>
 #include <stdint.h>
 #include "membuff.h"
 
@@ -59,10 +60,18 @@ MemReader *MemReader_from_filename(const char *filename) {
     new->pos = 0;
 
     FILE *fp = fopen(filename, "rb");
+    if(!fp) {
+        PyErr_SetString(PyExc_OSError, strerror(errno));
+        goto fail;
+    }
     new->size = fread(new->data, 1, 4096, fp);
     fclose(fp);
 
     return new;
+
+fail:
+    MemReader_free(new);
+    return NULL;
 }
 
 void MemReader_free(MemReader *this) {

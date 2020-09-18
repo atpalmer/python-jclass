@@ -12,6 +12,11 @@ def test_jclass_badfile():
         jcls = jclass.load('java/badfile.txt')
 
 
+def test_jclass_bad_path():
+    with pytest.raises(OSError):
+        jcls = jclass.load('java/bad-path')
+
+
 def test_JavaClass_magic():
     jcls = jclass.load('java/HelloWorld.class')
     assert jcls.magic == 0xCAFEBABE

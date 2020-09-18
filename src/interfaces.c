@@ -5,6 +5,8 @@
 struct interfaces *interfaces_parse(MemReader *reader) {
     uint16_t count = MemReader_next_uint16(reader);
     struct interfaces *obj = malloc(sizeof(struct interfaces) + (sizeof(uint16_t) * count));
+    if(!obj)
+        return NULL;
     obj->count = count;
 
     for(uint16_t i = 0; i < count; ++i)

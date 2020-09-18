@@ -17,6 +17,7 @@ JavaClass *JavaClass_from_MemReader(MemReader *r) {
         return NULL;
 
     class->magic = MemReader_next_uint32(r);
+
     if(class->magic != 0xCAFEBABE) {
         PyErr_SetString(PyExc_ValueError, "File is not a class file");
         goto fail;
@@ -24,6 +25,11 @@ JavaClass *JavaClass_from_MemReader(MemReader *r) {
 
     class->minor_version = MemReader_next_uint16(r);
     class->major_version = MemReader_next_uint16(r);
+
+    if(!(class->major_version == 58 && class->minor_version == 0)) {
+        PyErr_SetString(PyExc_ValueError, "Unsupported version");
+        goto fail;
+    }
 
     class->pool = constant_pool_parse(r);
 

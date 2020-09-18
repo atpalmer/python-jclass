@@ -9,7 +9,7 @@ def test_jclass():
 
 def test_jclass_badfile():
     with pytest.raises(ValueError):
-        jcls = jclass.load('java/badfile.txt')
+        jcls = jclass.load('java/DeadBeef.class')
 
 
 def test_jclass_bad_path():

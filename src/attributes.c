@@ -6,6 +6,8 @@
 struct attribute_items *attributes_parse(MemReader *reader) {
     uint16_t count = MemReader_next_uint16(reader);
     struct attribute_items *obj = calloc(1, sizeof(struct attribute_items) + (sizeof(struct attribute *) * count));
+    if(!obj)
+        return NULL;
     obj->count = count;
 
     for(uint16_t i = 0; i < count; ++i) {
@@ -15,6 +17,8 @@ struct attribute_items *attributes_parse(MemReader *reader) {
         uint32_t length = MemReader_next_uint32(reader);
 
         *attr = malloc(sizeof(struct attribute) + length);
+        if(!*attr)
+            goto fail;
 
         (*attr)->name_index = name_index;
         (*attr)->length = length;
@@ -23,6 +27,10 @@ struct attribute_items *attributes_parse(MemReader *reader) {
     }
 
     return obj;
+
+fail:
+    attributes_free(obj);
+    return NULL;
 }
 
 void attributes_free(struct attribute_items *this) {

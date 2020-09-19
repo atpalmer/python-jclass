@@ -8,6 +8,7 @@
 #include "methods.h"
 #include "attributes.h"
 #include "javaclass.h"
+#include "mem.h"
 
 static struct attribute_items *_attributes_ensure_integrity(struct attribute_items *this, struct constant_pool *pool) {
     if(!this)
@@ -90,7 +91,7 @@ static struct javaclass *_javaclass_ensure_integrity(struct javaclass *this) {
 }
 
 struct javaclass *javaclass_from_membuff(struct membuff *r) {
-    struct javaclass *new = calloc(1, sizeof(*new));
+    struct javaclass *new = mem_calloc(1, sizeof(*new));
     if(!new)
         return NULL;
 
@@ -162,5 +163,5 @@ void javaclass_free(struct javaclass *this) {
     fields_free(this->fields);
     methods_free(this->methods);
     attributes_free(this->attributes);
-    free(this);
+    mem_free(this);
 }

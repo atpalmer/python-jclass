@@ -2,11 +2,11 @@
 #define JAVACLASSOBJ_H
 
 #include <Python.h>
-#include "constant_pool.h"
-#include "interfaces.h"
-#include "fields.h"
-#include "methods.h"
-#include "attributes.h"
+#include "core/constant_pool.h"
+#include "core/interfaces.h"
+#include "core/fields.h"
+#include "core/methods.h"
+#include "core/attributes.h"
 
 typedef struct {
     PyObject_HEAD

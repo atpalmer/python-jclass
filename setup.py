@@ -14,14 +14,14 @@ setup(
     ext_modules=[
         Extension('jclass', sources=[
             'src/jclass.c',
-            'src/conv.c',
-            'src/membuff.c',
             'src/javaclassobj.c',
-            'src/constant_pool.c',
-            'src/interfaces.c',
-            'src/fields.c',
-            'src/methods.c',
-            'src/attributes.c',
+            'src/conv.c',
+            'src/core/membuff.c',
+            'src/core/constant_pool.c',
+            'src/core/interfaces.c',
+            'src/core/fields.c',
+            'src/core/methods.c',
+            'src/core/attributes.c',
         ])
     ],
 

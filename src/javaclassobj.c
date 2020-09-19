@@ -1,13 +1,13 @@
 #include <Python.h>
 #include "structmember.h"
 #include "conv.h"
-#include "membuff.h"
-#include "access.h"
-#include "constant_pool.h"
-#include "interfaces.h"
-#include "fields.h"
-#include "methods.h"
-#include "attributes.h"
+#include "core/membuff.h"
+#include "core/access.h"
+#include "core/constant_pool.h"
+#include "core/interfaces.h"
+#include "core/fields.h"
+#include "core/methods.h"
+#include "core/attributes.h"
 #include "javaclassobj.h"
 
 static struct attribute_items *_attributes_ensure_integrity(struct attribute_items *this, struct constant_pool *pool) {

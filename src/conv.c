@@ -1,7 +1,7 @@
 #include <Python.h>
-#include "access.h"
-#include "attributes.h"
-#include "constant_pool.h"
+#include "core/access.h"
+#include "core/attributes.h"
+#include "core/constant_pool.h"
 #include "conv.h"
 
 PyObject *conv_flags_to_PySet(uint16_t flags) {

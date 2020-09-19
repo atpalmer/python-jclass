@@ -10,6 +10,85 @@
 #include "attributes.h"
 #include "javaclassobj.h"
 
+static struct attribute_items *_attributes_ensure_integrity(struct attribute_items *this, struct constant_pool *pool) {
+    if(!this)
+        return NULL;
+    for(uint16_t i = 0; i < this->count; ++i) {
+        struct attribute *attr = this->items[i];
+        if(!attr)
+            return NULL;
+        if(!constant_pool_item(pool, attr->name_index))
+            return NULL;
+    }
+    return this;
+}
+
+static struct field_items *_fields_ensure_integrity(struct field_items *this, struct constant_pool *pool) {
+    if(!this)
+        return NULL;
+    for(uint16_t i = 0; i < this->count; ++i) {
+        struct field *field = this->items[i];
+        if(!field)
+            return NULL;
+        if(!constant_pool_item(pool, field->name_index))
+            return NULL;
+        if(!constant_pool_item(pool, field->descriptor_index))
+            return NULL;
+        if(!_attributes_ensure_integrity(field->attributes, pool))
+            return NULL;
+    }
+    return this;
+}
+
+static struct method_items *_methods_ensure_integrity(struct method_items *this, struct constant_pool *pool) {
+    if(!this)
+        return NULL;
+    for(uint16_t i = 0; i < this->count; ++i) {
+        struct method *method = this->items[i];
+        if(!method)
+            return NULL;
+        if(!constant_pool_item(pool, method->name_index))
+            return NULL;
+        if(!constant_pool_item(pool, method->descriptor_index))
+            return NULL;
+        if(!_attributes_ensure_integrity(method->attributes, pool))
+            return NULL;
+    }
+    return this;
+}
+
+static struct interfaces *_interfaces_ensure_integrity(struct interfaces *this, struct constant_pool *pool) {
+    if(!this)
+        return NULL;
+    for(uint16_t i = 0; i < this->count; ++i) {
+        if(!constant_pool_item(pool, this->indexes[i]))
+            return NULL;
+    }
+    return this;
+}
+
+static JavaClass *_JavaClass_ensure_integrity(JavaClass *this) {
+    if(!this)
+        return NULL;
+    if(!this->pool)
+        return NULL;
+
+    if(!constant_pool_item(this->pool, this->this_class))
+        return NULL;
+    if(!constant_pool_item(this->pool, this->super_class))
+        return NULL;
+
+    if(!_interfaces_ensure_integrity(this->interfaces, this->pool))
+        return NULL;
+    if(!_fields_ensure_integrity(this->fields, this->pool))
+        return NULL;
+    if(!_methods_ensure_integrity(this->methods, this->pool))
+        return NULL;
+    if(!_attributes_ensure_integrity(this->attributes, this->pool))
+        return NULL;
+
+    return this;
+}
 
 JavaClass *JavaClass_from_MemReader(MemReader *r) {
     JavaClass *class = (JavaClass *)JavaClass_Type.tp_alloc(&JavaClass_Type, 0);
@@ -47,7 +126,12 @@ JavaClass *JavaClass_from_MemReader(MemReader *r) {
         goto fail;
     }
 
-    return class;
+    JavaClass *result = _JavaClass_ensure_integrity(class);
+    if(!result) {
+        PyErr_SetString(PyExc_ValueError, "Parse error");
+        goto fail;
+    }
+    return result;
 
 fail:
     Py_DECREF(class);

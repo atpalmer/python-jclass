@@ -1,13 +1,13 @@
-#include <stdlib.h>
 #include "access.h"
 #include "attributes.h"
 #include "fields.h"
 #include "membuff.h"
+#include "mem.h"
 
 
 struct field_items *fields_parse(struct membuff *reader) {
     uint16_t count = membuff_next_uint16(reader);
-    struct field_items *obj = calloc(1, sizeof(struct field_items) + (sizeof(struct field *) * count));
+    struct field_items *obj = mem_calloc(1, sizeof(struct field_items) + (sizeof(struct field *) * count));
     if(!obj)
         return NULL;
     obj->count = count;
@@ -15,7 +15,7 @@ struct field_items *fields_parse(struct membuff *reader) {
     for(uint16_t i = 0; i < count; ++i) {
         struct field **field = &obj->items[i];
 
-        *field = malloc(sizeof(struct field));
+        *field = mem_malloc(sizeof(struct field));
         if(!*field)
             goto fail;
 
@@ -36,7 +36,7 @@ static void field_free(struct field *this) {
     if(!this)
         return
     attributes_free(this->attributes);
-    free(this);
+    mem_free(this);
 }
 
 void fields_free(struct field_items *this) {
@@ -44,5 +44,5 @@ void fields_free(struct field_items *this) {
         return;
     for(uint16_t i = 0; i < this->count; ++i)
         field_free(this->items[i]);
-    free(this);
+    mem_free(this);
 }

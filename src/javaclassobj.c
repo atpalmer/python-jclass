@@ -1,169 +1,36 @@
 #include <Python.h>
 #include "structmember.h"
+#include "core/javaclass.h"
 #include "conv.h"
-#include "core/membuff.h"
-#include "core/access.h"
-#include "core/constant_pool.h"
-#include "core/interfaces.h"
-#include "core/fields.h"
-#include "core/methods.h"
-#include "core/attributes.h"
 #include "javaclassobj.h"
 
-static struct attribute_items *_attributes_ensure_integrity(struct attribute_items *this, struct constant_pool *pool) {
-    if(!this)
-        return NULL;
-    for(uint16_t i = 0; i < this->count; ++i) {
-        struct attribute *attr = this->items[i];
-        if(!attr)
-            return NULL;
-        if(!constant_pool_item(pool, attr->name_index))
-            return NULL;
-    }
-    return this;
-}
+typedef struct {
+    PyObject_HEAD
+    struct javaclass *javaclass;
+} JavaClass;
 
-static struct field_items *_fields_ensure_integrity(struct field_items *this, struct constant_pool *pool) {
-    if(!this)
+PyObject *JavaClass_from_filename(const char *filename) {
+    JavaClass *new = (JavaClass *)JavaClass_Type.tp_alloc(&JavaClass_Type, 0);
+    if(!new)
         return NULL;
-    for(uint16_t i = 0; i < this->count; ++i) {
-        struct field *field = this->items[i];
-        if(!field)
-            return NULL;
-        if(!constant_pool_item(pool, field->name_index))
-            return NULL;
-        if(!constant_pool_item(pool, field->descriptor_index))
-            return NULL;
-        if(!_attributes_ensure_integrity(field->attributes, pool))
-            return NULL;
-    }
-    return this;
-}
-
-static struct method_items *_methods_ensure_integrity(struct method_items *this, struct constant_pool *pool) {
-    if(!this)
-        return NULL;
-    for(uint16_t i = 0; i < this->count; ++i) {
-        struct method *method = this->items[i];
-        if(!method)
-            return NULL;
-        if(!constant_pool_item(pool, method->name_index))
-            return NULL;
-        if(!constant_pool_item(pool, method->descriptor_index))
-            return NULL;
-        if(!_attributes_ensure_integrity(method->attributes, pool))
-            return NULL;
-    }
-    return this;
-}
-
-static struct interfaces *_interfaces_ensure_integrity(struct interfaces *this, struct constant_pool *pool) {
-    if(!this)
-        return NULL;
-    for(uint16_t i = 0; i < this->count; ++i) {
-        if(!constant_pool_item(pool, this->indexes[i]))
-            return NULL;
-    }
-    return this;
-}
-
-static JavaClass *_JavaClass_ensure_integrity(JavaClass *this) {
-    if(!this)
-        return NULL;
-    if(!this->pool)
-        return NULL;
-
-    if(!constant_pool_item(this->pool, this->this_class))
-        return NULL;
-    if(!constant_pool_item(this->pool, this->super_class))
-        return NULL;
-
-    if(!_interfaces_ensure_integrity(this->interfaces, this->pool))
-        return NULL;
-    if(!_fields_ensure_integrity(this->fields, this->pool))
-        return NULL;
-    if(!_methods_ensure_integrity(this->methods, this->pool))
-        return NULL;
-    if(!_attributes_ensure_integrity(this->attributes, this->pool))
-        return NULL;
-
-    return this;
-}
-
-JavaClass *JavaClass_from_MemReader(MemReader *r) {
-    JavaClass *class = (JavaClass *)JavaClass_Type.tp_alloc(&JavaClass_Type, 0);
-    if(!class)
-        return NULL;
-
-    class->magic = MemReader_next_uint32(r);
-
-    if(class->magic != 0xCAFEBABE) {
-        PyErr_SetString(PyExc_ValueError, "File is not a class file");
+    new->javaclass = javaclass_from_filename(filename);
+    if(!new->javaclass)
         goto fail;
-    }
-
-    class->minor_version = MemReader_next_uint16(r);
-    class->major_version = MemReader_next_uint16(r);
-
-    if(!(class->major_version == 58 && class->minor_version == 0)) {
-        PyErr_SetString(PyExc_ValueError, "Unsupported version");
-        goto fail;
-    }
-
-    class->pool = constant_pool_parse(r);
-
-    class->access_flags = MemReader_next_uint16(r);
-    class->this_class = MemReader_next_uint16(r);
-    class->super_class = MemReader_next_uint16(r);
-
-    class->interfaces = interfaces_parse(r);
-    class->fields = fields_parse(r);
-    class->methods = methods_parse(r);
-    class->attributes = attributes_parse(r);
-
-    if(MemReader_has_error(r)) {
-        PyErr_SetString(PyExc_ValueError, "Parse error");
-        goto fail;
-    }
-
-    JavaClass *result = _JavaClass_ensure_integrity(class);
-    if(!result) {
-        PyErr_SetString(PyExc_ValueError, "Parse error");
-        goto fail;
-    }
-    return result;
+    return (PyObject *)new;
 
 fail:
-    Py_DECREF(class);
+    Py_DECREF(new);
     return NULL;
 }
 
-JavaClass *JavaClass_from_filename(const char *filename) {
-    MemReader *r;
-    int errno_ = MemReader_from_filename(filename, &r);
-    if(errno_) {
-        PyErr_SetString(PyExc_OSError, strerror(errno_));
-        return NULL;
-    }
-    JavaClass *new = JavaClass_from_MemReader(r);
-    MemReader_free(r);
-    return new;
-}
-
 static void _dealloc(PyObject *self) {
-    JavaClass *class = (JavaClass *)self;
-
-    constant_pool_free(class->pool);
-    interfaces_free(class->interfaces);
-    fields_free(class->fields);
-    methods_free(class->methods);
-    attributes_free(class->attributes);
-
+    JavaClass *obj = (JavaClass *)self;
+    javaclass_free(obj->javaclass);
     Py_TYPE(self)->tp_free(self);
 }
 
 static PyObject *_fields(PyObject *self, PyObject *arg) {
-    JavaClass *class = (JavaClass *)self;
+    struct javaclass *class = ((JavaClass *)self)->javaclass;
     struct field_items *fields = class->fields;
     struct constant_pool *pool = class->pool;
 
@@ -187,7 +54,7 @@ static PyObject *_fields(PyObject *self, PyObject *arg) {
 }
 
 static PyObject *_methods(PyObject *self, PyObject *arg) {
-    JavaClass *class = (JavaClass *)self;
+    struct javaclass *class = ((JavaClass *)self)->javaclass;
     struct method_items *methods = class->methods;
     struct constant_pool *pool = class->pool;
 
@@ -211,64 +78,80 @@ static PyObject *_methods(PyObject *self, PyObject *arg) {
 }
 
 static PyObject *_attributes(PyObject *self, PyObject *arg) {
-    JavaClass *class = (JavaClass *)self;
+    struct javaclass *class = ((JavaClass *)self)->javaclass;
     return conv_attributes_to_PyDict(class->attributes, class->pool);
 }
 
+static PyObject *_magic(PyObject *self, void *closure) {
+    struct javaclass *class = ((JavaClass *)self)->javaclass;
+    return PyLong_FromUnsignedLong(class->magic);
+}
+
+static PyObject *_minor_version(PyObject *self, void *closure) {
+    struct javaclass *class = ((JavaClass *)self)->javaclass;
+    return PyLong_FromUnsignedLong(class->minor_version);
+}
+
+static PyObject *_major_version(PyObject *self, void *closure) {
+    struct javaclass *class = ((JavaClass *)self)->javaclass;
+    return PyLong_FromUnsignedLong(class->major_version);
+}
+
 static PyObject *_access_set(PyObject *self, void *closure) {
-    JavaClass *class = (JavaClass *)self;
+    struct javaclass *class = ((JavaClass *)self)->javaclass;
     return conv_flags_to_PySet(class->access_flags);
 }
 
 static PyObject *_is_public(PyObject *self, void *closure) {
-    JavaClass *class = (JavaClass *)self;
+    struct javaclass *class = ((JavaClass *)self)->javaclass;
     return PyBool_FromLong(class->access_flags & ACC_PUBLIC);
 }
 
 static PyObject *_is_final(PyObject *self, void *closure) {
-    JavaClass *class = (JavaClass *)self;
+    struct javaclass *class = ((JavaClass *)self)->javaclass;
     return PyBool_FromLong(class->access_flags & ACC_FINAL);
 }
 
 static PyObject *_is_super(PyObject *self, void *closure) {
-    JavaClass *class = (JavaClass *)self;
+    struct javaclass *class = ((JavaClass *)self)->javaclass;
     return PyBool_FromLong(class->access_flags & ACC_SUPER);
 }
 
 static PyObject *_is_interface(PyObject *self, void *closure) {
-    JavaClass *class = (JavaClass *)self;
+    struct javaclass *class = ((JavaClass *)self)->javaclass;
     return PyBool_FromLong(class->access_flags & ACC_INTERFACE);
 }
 
 static PyObject *_is_abstract(PyObject *self, void *closure) {
-    JavaClass *class = (JavaClass *)self;
+    struct javaclass *class = ((JavaClass *)self)->javaclass;
     return PyBool_FromLong(class->access_flags & ACC_ABSTRACT);
 }
 
 static PyObject *_is_synthetic(PyObject *self, void *closure) {
-    JavaClass *class = (JavaClass *)self;
+    struct javaclass *class = ((JavaClass *)self)->javaclass;
     return PyBool_FromLong(class->access_flags & ACC_SYNTHETIC);
 }
 
 static PyObject *_is_annotation(PyObject *self, void *closure) {
-    JavaClass *class = (JavaClass *)self;
+    struct javaclass *class = ((JavaClass *)self)->javaclass;
+    return PyBool_FromLong(class->access_flags & ACC_SYNTHETIC);
     return PyBool_FromLong(class->access_flags & ACC_ANNOTATION);
 }
 
 static PyObject *_is_enum(PyObject *self, void *closure) {
-    JavaClass *class = (JavaClass *)self;
+    struct javaclass *class = ((JavaClass *)self)->javaclass;
     return PyBool_FromLong(class->access_flags & ACC_ENUM);
 }
 
 static PyObject *_name(PyObject *self, void *closure) {
-    JavaClass *class = (JavaClass *)self;
+    struct javaclass *class = ((JavaClass *)self)->javaclass;
     struct pool_Class *this_class = constant_pool_item(class->pool, class->this_class);
     struct pool_Utf8 *name = constant_pool_item(class->pool, this_class->name_index);
     return conv_utf8_to_PyUnicode(name);
 }
 
 static PyObject *_superclass_name(PyObject *self, void *closure) {
-    JavaClass *class = (JavaClass *)self;
+    struct javaclass *class = ((JavaClass *)self)->javaclass;
     struct pool_Class *super_class = constant_pool_item(class->pool, class->super_class);
     struct pool_Utf8 *name = constant_pool_item(class->pool, super_class->name_index);
     return conv_utf8_to_PyUnicode(name);
@@ -282,6 +165,9 @@ static PyMethodDef methods[] = {
 };
 
 static PyGetSetDef getset[] = {
+    {"magic", _magic, NULL, NULL, NULL},
+    {"minor_version", _minor_version, NULL, NULL, NULL},
+    {"major_version", _major_version, NULL, NULL, NULL},
     {"access_set", _access_set, NULL, NULL, NULL},
     {"is_public", _is_public, NULL, NULL, NULL},
     {"is_final", _is_final, NULL, NULL, NULL},
@@ -296,13 +182,6 @@ static PyGetSetDef getset[] = {
     {0},
 };
 
-static PyMemberDef members[] = {
-    {"magic", T_UINT, offsetof(JavaClass, magic), READONLY, 0},
-    {"minor_version", T_USHORT, offsetof(JavaClass, minor_version), READONLY, 0},
-    {"major_version", T_USHORT, offsetof(JavaClass, major_version), READONLY, 0},
-    {0},
-};
-
 PyTypeObject JavaClass_Type = {
     PyVarObject_HEAD_INIT(NULL, 0)
     .tp_name = "JavaClass",
@@ -311,7 +190,6 @@ PyTypeObject JavaClass_Type = {
     .tp_flags = Py_TPFLAGS_DEFAULT,
     .tp_new = NULL,
     .tp_dealloc = _dealloc,
-    .tp_members = members,
     .tp_methods = methods,
     .tp_getset = getset,
 };

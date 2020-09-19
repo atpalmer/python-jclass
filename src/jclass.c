@@ -8,11 +8,11 @@ static PyObject *jclass_load(PyObject *self, PyObject *args) {
     if(!PyArg_ParseTuple(args, "s", &fname))
         return NULL;
 
-    JavaClass *new = JavaClass_from_filename(fname);
+    PyObject *new = JavaClass_from_filename(fname);
     if(!new)
         return NULL;
 
-    return (PyObject *)new;
+    return new;
 }
 
 static PyMethodDef module_methods[] = {

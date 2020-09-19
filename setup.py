@@ -16,6 +16,7 @@ setup(
             'src/jclass.c',
             'src/javaclassobj.c',
             'src/conv.c',
+            'src/core/javaclass.c',
             'src/core/membuff.c',
             'src/core/constant_pool.c',
             'src/core/interfaces.c',

@@ -1,10 +1,10 @@
-#include <stdlib.h>
 #include "interfaces.h"
 #include "membuff.h"
+#include "mem.h"
 
 struct interfaces *interfaces_parse(struct membuff *reader) {
     uint16_t count = membuff_next_uint16(reader);
-    struct interfaces *obj = malloc(sizeof(struct interfaces) + (sizeof(uint16_t) * count));
+    struct interfaces *obj = mem_malloc(sizeof(struct interfaces) + (sizeof(uint16_t) * count));
     if(!obj)
         return NULL;
     obj->count = count;
@@ -16,7 +16,5 @@ struct interfaces *interfaces_parse(struct membuff *reader) {
 }
 
 void interfaces_free(struct interfaces *this) {
-    if(!this)
-        return;
-    free(this);
+    mem_free(this);
 }

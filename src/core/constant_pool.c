@@ -1,6 +1,6 @@
-#include <stdlib.h>
 #include "membuff.h"
 #include "constant_pool.h"
+#include "mem.h"
 
 void *constant_pool_item(struct constant_pool *this, uint16_t i) {
     if(i < 1 || i > this->count - 1)
@@ -12,7 +12,7 @@ static struct pool_CONSTANT *_read_Utf8(struct membuff *reader) {
     uint8_t tag = membuff_next_uint8(reader);
     uint16_t length = membuff_next_uint16(reader);
 
-    struct pool_Utf8 *new = malloc(sizeof(*new) + length);
+    struct pool_Utf8 *new = mem_malloc(sizeof(*new) + length);
     if(!new)
         return NULL;
 
@@ -24,7 +24,7 @@ static struct pool_CONSTANT *_read_Utf8(struct membuff *reader) {
 }
 
 static struct pool_CONSTANT *_read_Class(struct membuff *reader) {
-    struct pool_Class *new = malloc(sizeof(*new));
+    struct pool_Class *new = mem_malloc(sizeof(*new));
     if(!new)
         return NULL;
 
@@ -35,7 +35,7 @@ static struct pool_CONSTANT *_read_Class(struct membuff *reader) {
 }
 
 static struct pool_CONSTANT *_read_String(struct membuff *reader) {
-    struct pool_String *new = malloc(sizeof(*new));
+    struct pool_String *new = mem_malloc(sizeof(*new));
     if(!new)
         return NULL;
 
@@ -46,7 +46,7 @@ static struct pool_CONSTANT *_read_String(struct membuff *reader) {
 }
 
 static struct pool_CONSTANT *_read_Fieldref(struct membuff *reader) {
-    struct pool_Fieldref *new = malloc(sizeof(*new));
+    struct pool_Fieldref *new = mem_malloc(sizeof(*new));
     if(!new)
         return NULL;
 
@@ -66,7 +66,7 @@ static struct pool_CONSTANT *_read_InterfaceMethodref(struct membuff *reader) {
 }
 
 static struct pool_CONSTANT *_read_NameAndType(struct membuff *reader) {
-    struct pool_NameAndType *new = malloc(sizeof(*new));
+    struct pool_NameAndType *new = mem_malloc(sizeof(*new));
     if(!new)
         return NULL;
 
@@ -102,7 +102,7 @@ static struct pool_CONSTANT *_read_CONSTANT(struct membuff *reader) {
 
 struct constant_pool *constant_pool_parse(struct membuff *reader) {
     uint16_t count = membuff_next_uint16(reader);
-    struct constant_pool *obj = malloc(sizeof(struct constant_pool) + (sizeof(struct pool_CONSTANT *) * count));
+    struct constant_pool *obj = mem_malloc(sizeof(struct constant_pool) + (sizeof(struct pool_CONSTANT *) * count));
     if(!obj)
         return NULL;
 
@@ -126,7 +126,6 @@ void constant_pool_free(struct constant_pool *this) {
     if(!this)
         return;
     for(int i = 0; i < this->count - 1; ++i)
-        if(this->items[i])
-            free(this->items[i]);
-    free(this);
+        mem_free(this->items[i]);
+    mem_free(this);
 }

@@ -12,6 +12,11 @@ def test_jclass_badfile():
         jcls = jclass.load('java/DeadBeef.class')
 
 
+def test_jclass_corrupt():
+    with pytest.raises(ValueError):
+        jcls = jclass.load('java/Corrupt.class')
+
+
 def test_jclass_bad_path():
     with pytest.raises(OSError):
         jcls = jclass.load('java/bad-path')

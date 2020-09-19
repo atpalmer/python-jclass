@@ -62,7 +62,7 @@ struct constant_pool {
     struct pool_CONSTANT *items[];
 };
 
-struct constant_pool *constant_pool_parse(MemReader *reader);
+struct constant_pool *constant_pool_parse(struct membuff *reader);
 void constant_pool_free(struct constant_pool *this);
 void *constant_pool_item(struct constant_pool *this, uint16_t i);
 

@@ -2,15 +2,15 @@
 #include "interfaces.h"
 #include "membuff.h"
 
-struct interfaces *interfaces_parse(MemReader *reader) {
-    uint16_t count = MemReader_next_uint16(reader);
+struct interfaces *interfaces_parse(struct membuff *reader) {
+    uint16_t count = membuff_next_uint16(reader);
     struct interfaces *obj = malloc(sizeof(struct interfaces) + (sizeof(uint16_t) * count));
     if(!obj)
         return NULL;
     obj->count = count;
 
     for(uint16_t i = 0; i < count; ++i)
-        obj->indexes[i] = MemReader_next_uint16(reader);
+        obj->indexes[i] = membuff_next_uint16(reader);
 
     return obj;
 }

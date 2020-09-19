@@ -5,8 +5,8 @@
 #include "membuff.h"
 
 
-struct method_items *methods_parse(MemReader *reader) {
-    uint16_t count = MemReader_next_uint16(reader);
+struct method_items *methods_parse(struct membuff *reader) {
+    uint16_t count = membuff_next_uint16(reader);
     struct method_items *obj = malloc(sizeof(struct method_items) + (sizeof(struct method *) * count));
     if(!obj)
         return NULL;
@@ -19,9 +19,9 @@ struct method_items *methods_parse(MemReader *reader) {
         if(!*method)
             goto fail;
 
-        (*method)->access_flags = MemReader_next_uint16(reader);
-        (*method)->name_index = MemReader_next_uint16(reader);
-        (*method)->descriptor_index = MemReader_next_uint16(reader);
+        (*method)->access_flags = membuff_next_uint16(reader);
+        (*method)->name_index = membuff_next_uint16(reader);
+        (*method)->descriptor_index = membuff_next_uint16(reader);
         (*method)->attributes = attributes_parse(reader);
     }
 

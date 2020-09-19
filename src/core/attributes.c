@@ -3,8 +3,8 @@
 #include "membuff.h"
 
 
-struct attribute_items *attributes_parse(MemReader *reader) {
-    uint16_t count = MemReader_next_uint16(reader);
+struct attribute_items *attributes_parse(struct membuff *reader) {
+    uint16_t count = membuff_next_uint16(reader);
     struct attribute_items *obj = calloc(1, sizeof(struct attribute_items) + (sizeof(struct attribute *) * count));
     if(!obj)
         return NULL;
@@ -13,8 +13,8 @@ struct attribute_items *attributes_parse(MemReader *reader) {
     for(uint16_t i = 0; i < count; ++i) {
         struct attribute **attr = &obj->items[i];
 
-        uint16_t name_index = MemReader_next_uint16(reader);
-        uint32_t length = MemReader_next_uint32(reader);
+        uint16_t name_index = membuff_next_uint16(reader);
+        uint32_t length = membuff_next_uint32(reader);
 
         *attr = malloc(sizeof(struct attribute) + length);
         if(!*attr)
@@ -23,7 +23,7 @@ struct attribute_items *attributes_parse(MemReader *reader) {
         (*attr)->name_index = name_index;
         (*attr)->length = length;
 
-        MemReader_copy_next(reader, length, (*attr)->info);
+        membuff_copy_next(reader, length, (*attr)->info);
     }
 
     return obj;

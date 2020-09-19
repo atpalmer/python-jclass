@@ -89,12 +89,12 @@ static struct javaclass *_javaclass_ensure_integrity(struct javaclass *this) {
     return this;
 }
 
-struct javaclass *javaclass_from_MemReader(MemReader *r) {
+struct javaclass *javaclass_from_membuff(struct membuff *r) {
     struct javaclass *new = calloc(1, sizeof(*new));
     if(!new)
         return NULL;
 
-    new->magic = MemReader_next_uint32(r);
+    new->magic = membuff_next_uint32(r);
 
     if(new->magic != 0xCAFEBABE) {
         /* TODO: remove Python */
@@ -102,8 +102,8 @@ struct javaclass *javaclass_from_MemReader(MemReader *r) {
         goto fail;
     }
 
-    new->minor_version = MemReader_next_uint16(r);
-    new->major_version = MemReader_next_uint16(r);
+    new->minor_version = membuff_next_uint16(r);
+    new->major_version = membuff_next_uint16(r);
 
     if(!(new->major_version == 58 && new->minor_version == 0)) {
         /* TODO: remove Python */
@@ -113,16 +113,16 @@ struct javaclass *javaclass_from_MemReader(MemReader *r) {
 
     new->pool = constant_pool_parse(r);
 
-    new->access_flags = MemReader_next_uint16(r);
-    new->this_class = MemReader_next_uint16(r);
-    new->super_class = MemReader_next_uint16(r);
+    new->access_flags = membuff_next_uint16(r);
+    new->this_class = membuff_next_uint16(r);
+    new->super_class = membuff_next_uint16(r);
 
     new->interfaces = interfaces_parse(r);
     new->fields = fields_parse(r);
     new->methods = methods_parse(r);
     new->attributes = attributes_parse(r);
 
-    if(MemReader_has_error(r)) {
+    if(membuff_has_error(r)) {
         /* TODO: remove Python */
         PyErr_SetString(PyExc_ValueError, "Parse error");
         goto fail;
@@ -142,15 +142,15 @@ fail:
 }
 
 struct javaclass *javaclass_from_filename(const char *filename) {
-    MemReader *r;
-    int errno_ = MemReader_from_filename(filename, &r);
+    struct membuff *r;
+    int errno_ = membuff_from_filename(filename, &r);
     if(errno_) {
         /* TODO: remove Python. Return error codes? */
         PyErr_SetString(PyExc_OSError, strerror(errno_));
         return NULL;
     }
-    struct javaclass *new = javaclass_from_MemReader(r);
-    MemReader_free(r);
+    struct javaclass *new = javaclass_from_membuff(r);
+    membuff_free(r);
     return new;
 }
 

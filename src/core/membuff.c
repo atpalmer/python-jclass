@@ -5,7 +5,7 @@
 #include <string.h>
 #include "membuff.h"
 
-static int _ensure_can_read(MemReader *this, size_t size) {
+static int _ensure_can_read(struct membuff *this, size_t size) {
     if(this->pos + size > this->size) {
         this->pos = SIZE_MAX;
         return 0;
@@ -13,49 +13,49 @@ static int _ensure_can_read(MemReader *this, size_t size) {
     return 1;
 }
 
-int MemReader_has_error(MemReader *this) {
+int membuff_has_error(struct membuff *this) {
     return this->pos > this->size;
 }
 
-uint32_t MemReader_next_uint32(MemReader *this) {
+uint32_t membuff_next_uint32(struct membuff *this) {
     if(!_ensure_can_read(this, sizeof(uint32_t)))
         return 0;
-    uint32_t result = UINT32(MEMREADER_CURR(this));
+    uint32_t result = UINT32(MEMBUFF_CURR(this));
     this->pos += sizeof(result);
     return result;
 }
 
-uint16_t MemReader_next_uint16(MemReader *this) {
+uint16_t membuff_next_uint16(struct membuff *this) {
     if(!_ensure_can_read(this, sizeof(uint16_t)))
         return 0;
-    uint16_t result = UINT16(MEMREADER_CURR(this));
+    uint16_t result = UINT16(MEMBUFF_CURR(this));
     this->pos += sizeof(result);
     return result;
 }
 
-uint8_t MemReader_next_uint8(MemReader *this) {
+uint8_t membuff_next_uint8(struct membuff *this) {
     if(!_ensure_can_read(this, sizeof(uint8_t)))
         return 0;
-    uint8_t result = UINT8(MEMREADER_CURR(this));
+    uint8_t result = UINT8(MEMBUFF_CURR(this));
     this->pos += sizeof(result);
     return result;
 }
 
-uint8_t MemReader_peek_uint8(MemReader *this) {
+uint8_t membuff_peek_uint8(struct membuff *this) {
     if(!_ensure_can_read(this, sizeof(uint8_t)))
         return 0;
-    return UINT8(MEMREADER_CURR(this));
+    return UINT8(MEMBUFF_CURR(this));
 }
 
-void MemReader_copy_next(MemReader *this, size_t size, void *target) {
+void membuff_copy_next(struct membuff *this, size_t size, void *target) {
     if(!_ensure_can_read(this, size))
         return;
-    memcpy(target, MEMREADER_CURR(this), size);
+    memcpy(target, MEMBUFF_CURR(this), size);
     this->pos += size;
 }
 
-int MemReader_from_filename(const char *filename, MemReader **r) {
-    *r = malloc(sizeof(MemReader) + 4096);
+int membuff_from_filename(const char *filename, struct membuff **r) {
+    *r = malloc(sizeof(struct membuff) + 4096);
     if(!*r)
         return errno;
 
@@ -64,7 +64,7 @@ int MemReader_from_filename(const char *filename, MemReader **r) {
     FILE *fp = fopen(filename, "rb");
     if(!fp) {
         int errno_ = errno;
-        MemReader_free(*r);
+        membuff_free(*r);
         *r = NULL;
         return errno_;
     }
@@ -74,11 +74,11 @@ int MemReader_from_filename(const char *filename, MemReader **r) {
     return 0;
 }
 
-void MemReader_free(MemReader *this) {
+void membuff_free(struct membuff *this) {
     free(this);
 }
 
-void MemReader_print(MemReader *this) {
+void membuff_print(struct membuff *this) {
     printf("Bytes Read: %lu\n", this->pos);
     printf("Total Bytes: %lu\n", this->size);
 }

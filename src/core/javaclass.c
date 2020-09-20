@@ -20,8 +20,8 @@ static struct javaclass *_javaclass_ensure_integrity(struct javaclass *this) {
     if(!constant_pool_item(this->pool, this->super_class))
         return NULL;
 
-    if(!interfaces_ensure_integrity(this->interfaces, this->pool))
-        return NULL;
+    /* interfaces already validated */
+
     if(!fields_ensure_integrity(this->fields, this->pool))
         return NULL;
     if(!methods_ensure_integrity(this->methods, this->pool))
@@ -60,7 +60,10 @@ struct javaclass *javaclass_from_membuff(struct membuff *r) {
     new->this_class = membuff_next_uint16(r);
     new->super_class = membuff_next_uint16(r);
 
-    new->interfaces = interfaces_parse(r);
+    new->interfaces = interfaces_parse(r, new->pool);
+    if(!new->interfaces)
+        goto fail;
+
     new->fields = fields_parse(r);
     new->methods = methods_parse(r);
     new->attributes = attributes_parse(r);

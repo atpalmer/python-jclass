@@ -12,9 +12,9 @@ def test_jclass_badfile():
         jcls = jclass.load('java/Fail/DeadBeef.class')
 
 
-def test_jclass_corrupt():
+def test_jclass_corrupt_pool():
     with pytest.raises(ValueError):
-        jcls = jclass.load('java/Fail/Corrupt.class')
+        jcls = jclass.load('java/Fail/CorruptPool.class')
 
 
 def test_jclass_bad_path():

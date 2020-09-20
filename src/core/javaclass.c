@@ -26,16 +26,6 @@ static struct method_items *_methods_ensure_integrity(struct method_items *this,
     return this;
 }
 
-static struct interfaces *_interfaces_ensure_integrity(struct interfaces *this, struct constant_pool *pool) {
-    if(!this)
-        return NULL;
-    for(uint16_t i = 0; i < this->count; ++i) {
-        if(!constant_pool_item(pool, this->indexes[i]))
-            return NULL;
-    }
-    return this;
-}
-
 static struct javaclass *_javaclass_ensure_integrity(struct javaclass *this) {
     if(!this)
         return NULL;
@@ -47,7 +37,7 @@ static struct javaclass *_javaclass_ensure_integrity(struct javaclass *this) {
     if(!constant_pool_item(this->pool, this->super_class))
         return NULL;
 
-    if(!_interfaces_ensure_integrity(this->interfaces, this->pool))
+    if(!interfaces_ensure_integrity(this->interfaces, this->pool))
         return NULL;
     if(!fields_ensure_integrity(this->fields, this->pool))
         return NULL;

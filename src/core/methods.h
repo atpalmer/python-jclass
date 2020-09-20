@@ -16,6 +16,7 @@ struct method_items {
     struct method *items[];
 };
 
+struct method_items *methods_ensure_integrity(struct method_items *this, struct constant_pool *pool);
 struct method_items *methods_parse(struct membuff *reader);
 void methods_free(struct method_items *this);
 

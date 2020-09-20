@@ -9,23 +9,6 @@
 #include "mem.h"
 #include "error.h"
 
-static struct method_items *_methods_ensure_integrity(struct method_items *this, struct constant_pool *pool) {
-    if(!this)
-        return NULL;
-    for(uint16_t i = 0; i < this->count; ++i) {
-        struct method *method = this->items[i];
-        if(!method)
-            return NULL;
-        if(!constant_pool_item(pool, method->name_index))
-            return NULL;
-        if(!constant_pool_item(pool, method->descriptor_index))
-            return NULL;
-        if(!attributes_ensure_integrity(method->attributes, pool))
-            return NULL;
-    }
-    return this;
-}
-
 static struct javaclass *_javaclass_ensure_integrity(struct javaclass *this) {
     if(!this)
         return NULL;
@@ -41,7 +24,7 @@ static struct javaclass *_javaclass_ensure_integrity(struct javaclass *this) {
         return NULL;
     if(!fields_ensure_integrity(this->fields, this->pool))
         return NULL;
-    if(!_methods_ensure_integrity(this->methods, this->pool))
+    if(!methods_ensure_integrity(this->methods, this->pool))
         return NULL;
     if(!attributes_ensure_integrity(this->attributes, this->pool))
         return NULL;

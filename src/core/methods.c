@@ -4,6 +4,22 @@
 #include "membuff.h"
 #include "mem.h"
 
+struct method_items *methods_ensure_integrity(struct method_items *this, struct constant_pool *pool) {
+    if(!this)
+        return NULL;
+    for(uint16_t i = 0; i < this->count; ++i) {
+        struct method *method = this->items[i];
+        if(!method)
+            return NULL;
+        if(!constant_pool_item(pool, method->name_index))
+            return NULL;
+        if(!constant_pool_item(pool, method->descriptor_index))
+            return NULL;
+        if(!attributes_ensure_integrity(method->attributes, pool))
+            return NULL;
+    }
+    return this;
+}
 
 struct method_items *methods_parse(struct membuff *reader) {
     uint16_t count = membuff_next_uint16(reader);

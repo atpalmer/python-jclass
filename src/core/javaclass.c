@@ -9,6 +9,7 @@
 #include "attributes.h"
 #include "javaclass.h"
 #include "mem.h"
+#include "error.h"
 
 static struct attribute_items *_attributes_ensure_integrity(struct attribute_items *this, struct constant_pool *pool) {
     if(!this)
@@ -146,13 +147,19 @@ struct javaclass *javaclass_from_filename(const char *filename) {
     struct membuff *r;
     int errno_ = membuff_from_filename(filename, &r);
     if(errno_) {
-        /* TODO: remove Python. Return error codes? */
-        PyErr_SetString(PyExc_OSError, strerror(errno_));
-        return NULL;
+        javaclass_error_set(JAVACLASS_ERR_OS, strerror(errno_));
+        goto fail;
     }
     struct javaclass *new = javaclass_from_membuff(r);
     membuff_free(r);
     return new;
+
+fail:
+    /* TODO: remove Python. */
+    if(javaclass_errcode == JAVACLASS_ERR_OS)
+        PyErr_SetString(PyExc_OSError, strerror(errno_));
+    membuff_free(r);
+    return NULL;
 }
 
 void javaclass_free(struct javaclass *this) {

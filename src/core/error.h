@@ -7,6 +7,7 @@
 enum javaclass_errcode {
     JAVACLASS_ERR_OK = 0,
     JAVACLASS_ERR_MEMORY,
+    JAVACLASS_ERR_OS,
 };
 
 extern enum javaclass_errcode javaclass_errcode;

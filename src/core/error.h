@@ -9,6 +9,7 @@ enum javaclass_errcode {
     JAVACLASS_ERR_MEMORY,
     JAVACLASS_ERR_OS,
     JAVACLASS_ERR_CAFEBABE,
+    JAVACLASS_ERR_BADVER,
 };
 
 void javaclass_error_clear(void);

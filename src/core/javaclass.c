@@ -107,8 +107,7 @@ struct javaclass *javaclass_from_membuff(struct membuff *r) {
     new->major_version = membuff_next_uint16(r);
 
     if(!(new->major_version == 58 && new->minor_version == 0)) {
-        /* TODO: remove Python */
-        PyErr_SetString(PyExc_ValueError, "Unsupported version");
+        javaclass_error_set(JAVACLASS_ERR_BADVER, "Unsupported version");
         goto fail;
     }
 
@@ -149,6 +148,8 @@ enum javaclass_errcode _set_pyerr(void) {
     if(code == JAVACLASS_ERR_OS)
         PyErr_SetString(PyExc_OSError, msg);
     if(code == JAVACLASS_ERR_CAFEBABE)
+        PyErr_SetString(PyExc_ValueError, msg);
+    if(code == JAVACLASS_ERR_BADVER)
         PyErr_SetString(PyExc_ValueError, msg);
     return code;
 }

@@ -53,6 +53,8 @@ struct javaclass *javaclass_from_membuff(struct membuff *r) {
     }
 
     new->pool = constant_pool_parse(r);
+    if(!new->pool)
+        goto fail;
 
     new->access_flags = membuff_next_uint16(r);
     new->this_class = membuff_next_uint16(r);

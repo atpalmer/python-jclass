@@ -102,7 +102,7 @@ static struct pool_CONSTANT *_read_CONSTANT(struct membuff *reader) {
 
 struct constant_pool *constant_pool_parse(struct membuff *reader) {
     uint16_t count = membuff_next_uint16(reader);
-    struct constant_pool *obj = mem_malloc(sizeof(struct constant_pool) + (sizeof(struct pool_CONSTANT *) * count));
+    struct constant_pool *obj = mem_calloc(1, sizeof(struct constant_pool) + (sizeof(struct pool_CONSTANT *) * count));
     if(!obj)
         return NULL;
 

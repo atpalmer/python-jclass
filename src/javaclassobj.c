@@ -28,11 +28,12 @@ PyObject *JavaClass_from_filename(const char *filename) {
     if(!new)
         return NULL;
     new->javaclass = javaclass_from_filename(filename);
-    if(_set_pyerr() != JAVACLASS_ERR_OK)
+    if(!new->javaclass)
         goto fail;
     return (PyObject *)new;
 
 fail:
+    _set_pyerr();
     Py_DECREF(new);
     return NULL;
 }

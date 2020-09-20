@@ -22,8 +22,8 @@ static struct javaclass *_javaclass_ensure_integrity(struct javaclass *this) {
 
     /* interfaces already validated */
 
-    if(!fields_ensure_integrity(this->fields, this->pool))
-        return NULL;
+    /* fields already validated */
+
     if(!methods_ensure_integrity(this->methods, this->pool))
         return NULL;
     if(!attributes_ensure_integrity(this->attributes, this->pool))
@@ -64,7 +64,10 @@ struct javaclass *javaclass_from_membuff(struct membuff *r) {
     if(!new->interfaces)
         goto fail;
 
-    new->fields = fields_parse(r);
+    new->fields = fields_parse(r, new->pool);
+    if(!new->fields)
+        goto fail;
+
     new->methods = methods_parse(r);
     new->attributes = attributes_parse(r);
 

@@ -4,6 +4,22 @@
 #include "membuff.h"
 #include "mem.h"
 
+struct field_items *fields_ensure_integrity(struct field_items *this, struct constant_pool *pool) {
+    if(!this)
+        return NULL;
+    for(uint16_t i = 0; i < this->count; ++i) {
+        struct field *field = this->items[i];
+        if(!field)
+            return NULL;
+        if(!constant_pool_item(pool, field->name_index))
+            return NULL;
+        if(!constant_pool_item(pool, field->descriptor_index))
+            return NULL;
+        if(!attributes_ensure_integrity(field->attributes, pool))
+            return NULL;
+    }
+    return this;
+}
 
 struct field_items *fields_parse(struct membuff *reader) {
     uint16_t count = membuff_next_uint16(reader);

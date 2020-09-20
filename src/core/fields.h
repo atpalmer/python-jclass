@@ -16,6 +16,7 @@ struct field_items {
     struct field *items[];
 };
 
+struct field_items *fields_ensure_integrity(struct field_items *this, struct constant_pool *pool);
 struct field_items *fields_parse(struct membuff *reader);
 void fields_free(struct field_items *this);
 

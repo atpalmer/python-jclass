@@ -17,6 +17,11 @@ def test_jclass_corrupt_pool():
         jcls = jclass.load('java/Fail/CorruptPool.class')
 
 
+def test_jclass_corrupt_length():
+    with pytest.raises(ValueError):
+        jcls = jclass.load('java/Fail/CorruptLength.class')
+
+
 def test_jclass_bad_path():
     with pytest.raises(OSError):
         jcls = jclass.load('java/Fail/bad-path')

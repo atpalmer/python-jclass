@@ -33,8 +33,8 @@ struct field_items *fields_parse(struct membuff *reader, struct constant_pool *p
             goto fail;
         }
 
-        (*field)->attributes = attributes_parse(reader);
-        if(!attributes_ensure_integrity((*field)->attributes, pool))
+        (*field)->attributes = attributes_parse(reader, pool);
+        if(!(*field)->attributes)
             goto fail;
     }
 

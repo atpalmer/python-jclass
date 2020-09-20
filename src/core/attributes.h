@@ -15,8 +15,7 @@ struct attribute_items {
     struct attribute *items[];
 };
 
-struct attribute_items *attributes_ensure_integrity(struct attribute_items *this, struct constant_pool *pool);
-struct attribute_items *attributes_parse(struct membuff *reader);
+struct attribute_items *attributes_parse(struct membuff *reader, struct constant_pool *pool);
 void attributes_free(struct attribute_items *this);
 
 #endif

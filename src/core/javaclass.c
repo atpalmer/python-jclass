@@ -16,7 +16,6 @@ struct javaclass *javaclass_from_membuff(struct membuff *r) {
         return NULL;
 
     new->magic = membuff_next_uint32(r);
-
     if(new->magic != 0xCAFEBABE) {
         javaclass_error_set(JAVACLASS_ERR_CAFEBABE, "File is not a class file");
         goto fail;
@@ -24,7 +23,6 @@ struct javaclass *javaclass_from_membuff(struct membuff *r) {
 
     new->minor_version = membuff_next_uint16(r);
     new->major_version = membuff_next_uint16(r);
-
     if(!(new->major_version == 58 && new->minor_version == 0)) {
         javaclass_error_set(JAVACLASS_ERR_BADVER, "Unsupported version");
         goto fail;
@@ -60,11 +58,9 @@ struct javaclass *javaclass_from_membuff(struct membuff *r) {
     if(!new->methods)
         goto fail;
 
-    new->attributes = attributes_parse(r);
-    if(!attributes_ensure_integrity(new->attributes, new->pool)) {
-        javaclass_error_set(JAVACLASS_ERR_PARSE, "Invalid pool address");
+    new->attributes = attributes_parse(r, new->pool);
+    if(!new->attributes)
         goto fail;
-    }
 
     if(membuff_has_error(r)) {
         javaclass_error_set(JAVACLASS_ERR_PARSE, "Parse error: length mismatch");

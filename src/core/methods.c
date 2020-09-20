@@ -32,8 +32,8 @@ struct method_items *methods_parse(struct membuff *reader, struct constant_pool 
             goto fail;
         }
 
-        (*method)->attributes = attributes_parse(reader);
-        if(!attributes_ensure_integrity((*method)->attributes, pool))
+        (*method)->attributes = attributes_parse(reader, pool);
+        if(!(*method)->attributes)
             goto fail;
     }
 

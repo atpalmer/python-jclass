@@ -4,20 +4,7 @@
 #include "membuff.h"
 #include "mem.h"
 
-struct attribute_items *attributes_ensure_integrity(struct attribute_items *this, struct constant_pool *pool) {
-    if(!this)
-        return NULL;
-    for(uint16_t i = 0; i < this->count; ++i) {
-        struct attribute *attr = this->items[i];
-        if(!attr)
-            return NULL;
-        if(!constant_pool_item(pool, attr->name_index))
-            return NULL;
-    }
-    return this;
-}
-
-struct attribute_items *attributes_parse(struct membuff *reader) {
+struct attribute_items *attributes_parse(struct membuff *reader, struct constant_pool *pool) {
     uint16_t count = membuff_next_uint16(reader);
     struct attribute_items *obj = mem_calloc(1, sizeof(struct attribute_items) + (sizeof(struct attribute *) * count));
     if(!obj)
@@ -28,6 +15,11 @@ struct attribute_items *attributes_parse(struct membuff *reader) {
         struct attribute **attr = &obj->items[i];
 
         uint16_t name_index = membuff_next_uint16(reader);
+        if(!constant_pool_item(pool, name_index)) {
+            javaclass_error_set(JAVACLASS_ERR_PARSE, "Invalid attribute name index");
+            goto fail;
+        }
+
         uint32_t length = membuff_next_uint32(reader);
 
         *attr = mem_malloc(sizeof(struct attribute) + length);

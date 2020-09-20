@@ -9,19 +9,6 @@
 #include "mem.h"
 #include "error.h"
 
-static struct attribute_items *_attributes_ensure_integrity(struct attribute_items *this, struct constant_pool *pool) {
-    if(!this)
-        return NULL;
-    for(uint16_t i = 0; i < this->count; ++i) {
-        struct attribute *attr = this->items[i];
-        if(!attr)
-            return NULL;
-        if(!constant_pool_item(pool, attr->name_index))
-            return NULL;
-    }
-    return this;
-}
-
 static struct field_items *_fields_ensure_integrity(struct field_items *this, struct constant_pool *pool) {
     if(!this)
         return NULL;
@@ -33,7 +20,7 @@ static struct field_items *_fields_ensure_integrity(struct field_items *this, st
             return NULL;
         if(!constant_pool_item(pool, field->descriptor_index))
             return NULL;
-        if(!_attributes_ensure_integrity(field->attributes, pool))
+        if(!attributes_ensure_integrity(field->attributes, pool))
             return NULL;
     }
     return this;
@@ -50,7 +37,7 @@ static struct method_items *_methods_ensure_integrity(struct method_items *this,
             return NULL;
         if(!constant_pool_item(pool, method->descriptor_index))
             return NULL;
-        if(!_attributes_ensure_integrity(method->attributes, pool))
+        if(!attributes_ensure_integrity(method->attributes, pool))
             return NULL;
     }
     return this;
@@ -83,7 +70,7 @@ static struct javaclass *_javaclass_ensure_integrity(struct javaclass *this) {
         return NULL;
     if(!_methods_ensure_integrity(this->methods, this->pool))
         return NULL;
-    if(!_attributes_ensure_integrity(this->attributes, this->pool))
+    if(!attributes_ensure_integrity(this->attributes, this->pool))
         return NULL;
 
     return this;

@@ -1,8 +1,21 @@
 #include "error.h"
 #include "attributes.h"
+#include "constant_pool.h"
 #include "membuff.h"
 #include "mem.h"
 
+struct attribute_items *attributes_ensure_integrity(struct attribute_items *this, struct constant_pool *pool) {
+    if(!this)
+        return NULL;
+    for(uint16_t i = 0; i < this->count; ++i) {
+        struct attribute *attr = this->items[i];
+        if(!attr)
+            return NULL;
+        if(!constant_pool_item(pool, attr->name_index))
+            return NULL;
+    }
+    return this;
+}
 
 struct attribute_items *attributes_parse(struct membuff *reader) {
     uint16_t count = membuff_next_uint16(reader);

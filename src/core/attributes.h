@@ -2,6 +2,7 @@
 #define ATTRIBUTES_H
 
 #include "membuff.h"
+#include "constant_pool.h"
 
 struct attribute {
     uint16_t name_index;
@@ -14,6 +15,7 @@ struct attribute_items {
     struct attribute *items[];
 };
 
+struct attribute_items *attributes_ensure_integrity(struct attribute_items *this, struct constant_pool *pool);
 struct attribute_items *attributes_parse(struct membuff *reader);
 void attributes_free(struct attribute_items *this);
 

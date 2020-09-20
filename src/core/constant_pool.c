@@ -125,7 +125,7 @@ fail:
 void constant_pool_free(struct constant_pool *this) {
     if(!this)
         return;
-    for(int i = 0; i < this->count - 1; ++i)
-        mem_free(this->items[i]);
+    for(uint16_t i = 1; i < this->count; ++i)
+        mem_free(this->items[i - 1]);
     mem_free(this);
 }

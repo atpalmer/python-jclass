@@ -4,24 +4,7 @@
 #include "membuff.h"
 #include "mem.h"
 
-struct method_items *methods_ensure_integrity(struct method_items *this, struct constant_pool *pool) {
-    if(!this)
-        return NULL;
-    for(uint16_t i = 0; i < this->count; ++i) {
-        struct method *method = this->items[i];
-        if(!method)
-            return NULL;
-        if(!constant_pool_item(pool, method->name_index))
-            return NULL;
-        if(!constant_pool_item(pool, method->descriptor_index))
-            return NULL;
-        if(!attributes_ensure_integrity(method->attributes, pool))
-            return NULL;
-    }
-    return this;
-}
-
-struct method_items *methods_parse(struct membuff *reader) {
+struct method_items *methods_parse(struct membuff *reader, struct constant_pool *pool) {
     uint16_t count = membuff_next_uint16(reader);
     struct method_items *obj = mem_malloc(sizeof(struct method_items) + (sizeof(struct method *) * count));
     if(!obj)
@@ -36,9 +19,22 @@ struct method_items *methods_parse(struct membuff *reader) {
             goto fail;
 
         (*method)->access_flags = membuff_next_uint16(reader);
+
         (*method)->name_index = membuff_next_uint16(reader);
+        if(!constant_pool_item(pool, (*method)->name_index)) {
+            javaclass_error_set(JAVACLASS_ERR_PARSE, "Invalid method name index");
+            goto fail;
+        }
+
         (*method)->descriptor_index = membuff_next_uint16(reader);
+        if(!constant_pool_item(pool, (*method)->descriptor_index)) {
+            javaclass_error_set(JAVACLASS_ERR_PARSE, "Invalid method descriptor index");
+            goto fail;
+        }
+
         (*method)->attributes = attributes_parse(reader);
+        if(!attributes_ensure_integrity((*method)->attributes, pool))
+            goto fail;
     }
 
     return obj;

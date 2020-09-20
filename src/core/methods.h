@@ -2,6 +2,7 @@
 #define METHODS_H
 
 #include "attributes.h"
+#include "constant_pool.h"
 #include "membuff.h"
 
 struct method {
@@ -16,8 +17,7 @@ struct method_items {
     struct method *items[];
 };
 
-struct method_items *methods_ensure_integrity(struct method_items *this, struct constant_pool *pool);
-struct method_items *methods_parse(struct membuff *reader);
+struct method_items *methods_parse(struct membuff *reader, struct constant_pool *pool);
 void methods_free(struct method_items *this);
 
 #endif

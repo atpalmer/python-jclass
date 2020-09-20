@@ -53,8 +53,12 @@ static PyObject *_fields(PyObject *self, PyObject *arg) {
     for(int i = 0; i < fields->count; ++i) {
         struct field *field = fields->items[i];
 
-        struct pool_Utf8 *name = constant_pool_item(pool, field->name_index);
-        struct pool_Utf8 *descriptor = constant_pool_item(pool, field->descriptor_index);
+        struct pool_Utf8 *name = constant_pool_Utf8_item(pool, field->name_index);
+        if(!name)
+            goto fail;
+        struct pool_Utf8 *descriptor = constant_pool_Utf8_item(pool, field->descriptor_index);
+        if(!descriptor)
+            goto fail;
 
         PyObject *t = PyTuple_New(4);
         PyTuple_SetItem(t, 0, conv_flags_to_PySet(field->access_flags));
@@ -66,6 +70,11 @@ static PyObject *_fields(PyObject *self, PyObject *arg) {
     }
 
     return result;
+
+fail:
+    Py_DECREF(result);
+    PyErr_SetString(PyExc_ValueError, "Corrupt class file");
+    return NULL;
 }
 
 static PyObject *_methods(PyObject *self, PyObject *arg) {
@@ -77,8 +86,12 @@ static PyObject *_methods(PyObject *self, PyObject *arg) {
     for(int i = 0; i < methods->count; ++i) {
         struct method *method = methods->items[i];
 
-        struct pool_Utf8 *name = constant_pool_item(pool, method->name_index);
-        struct pool_Utf8 *descriptor = constant_pool_item(pool, method->descriptor_index);
+        struct pool_Utf8 *name = constant_pool_Utf8_item(pool, method->name_index);
+        if(!name)
+            goto fail;
+        struct pool_Utf8 *descriptor = constant_pool_Utf8_item(pool, method->descriptor_index);
+        if(!descriptor)
+            goto fail;
 
         PyObject *t = PyTuple_New(4);
         PyTuple_SetItem(t, 0, conv_flags_to_PySet(method->access_flags));
@@ -90,6 +103,11 @@ static PyObject *_methods(PyObject *self, PyObject *arg) {
     }
 
     return result;
+
+fail:
+    Py_DECREF(result);
+    PyErr_SetString(PyExc_SystemError, "Corrupt class file");
+    return NULL;
 }
 
 static PyObject *_attributes(PyObject *self, PyObject *arg) {
@@ -160,16 +178,32 @@ static PyObject *_is_enum(PyObject *self, void *closure) {
 
 static PyObject *_name(PyObject *self, void *closure) {
     struct javaclass *class = ((JavaClass *)self)->javaclass;
-    struct pool_Class *this_class = constant_pool_item(class->pool, class->this_class);
-    struct pool_Utf8 *name = constant_pool_item(class->pool, this_class->name_index);
+    struct pool_Class *this_class = constant_pool_item(class->pool, class->this_class);  /* TODO: strong getter */
+    if(!this_class)
+        goto fail;
+    struct pool_Utf8 *name = constant_pool_Utf8_item(class->pool, this_class->name_index);
+    if(!name)
+        goto fail;
     return conv_utf8_to_PyUnicode(name);
+
+fail:
+    PyErr_SetString(PyExc_SystemError, "Corrupt class file");
+    return NULL;
 }
 
 static PyObject *_superclass_name(PyObject *self, void *closure) {
     struct javaclass *class = ((JavaClass *)self)->javaclass;
-    struct pool_Class *super_class = constant_pool_item(class->pool, class->super_class);
-    struct pool_Utf8 *name = constant_pool_item(class->pool, super_class->name_index);
+    struct pool_Class *super_class = constant_pool_item(class->pool, class->super_class);  /* TODO: strong getter */
+    if(!super_class)
+        goto fail;
+    struct pool_Utf8 *name = constant_pool_Utf8_item(class->pool, super_class->name_index);
+    if(!name)
+        goto fail;
     return conv_utf8_to_PyUnicode(name);
+
+fail:
+    PyErr_SetString(PyExc_SystemError, "Corrupt class file");
+    return NULL;
 }
 
 static PyMethodDef methods[] = {

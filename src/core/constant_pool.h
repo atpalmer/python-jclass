@@ -67,5 +67,6 @@ void constant_pool_free(struct constant_pool *this);
 void *constant_pool_item(struct constant_pool *this, uint16_t i);
 
 struct pool_Utf8 *constant_pool_Utf8_item(struct constant_pool *this, uint16_t i);
+struct pool_Class *constant_pool_Class_item(struct constant_pool *this, uint16_t i);
 
 #endif

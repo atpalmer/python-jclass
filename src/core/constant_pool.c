@@ -18,6 +18,15 @@ struct pool_Utf8 *constant_pool_Utf8_item(struct constant_pool *this, uint16_t i
     return (struct pool_Utf8 *)item;
 }
 
+struct pool_Class *constant_pool_Class_item(struct constant_pool *this, uint16_t i) {
+    struct pool_CONSTANT *item = constant_pool_item(this, i);
+    if(!item)
+        return NULL;
+    if(item->tag != CONSTANT_TAG_Class)
+        return NULL;
+    return (struct pool_Class *)item;
+}
+
 static struct pool_CONSTANT *_read_Utf8(struct membuff *reader) {
     uint8_t tag = membuff_next_uint8(reader);
     uint16_t length = membuff_next_uint16(reader);

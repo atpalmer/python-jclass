@@ -35,13 +35,13 @@ struct javaclass *javaclass_from_membuff(struct membuff *r) {
     new->access_flags = membuff_next_uint16(r);
 
     new->this_class = membuff_next_uint16(r);
-    if(!constant_pool_item(new->pool, new->this_class)) {
+    if(!constant_pool_Class_item(new->pool, new->this_class)) {
         javaclass_error_set(JAVACLASS_ERR_PARSE, "Invalid this_class pool address");
         goto fail;
     }
 
     new->super_class = membuff_next_uint16(r);
-    if(!constant_pool_item(new->pool, new->super_class)) {
+    if(!constant_pool_Class_item(new->pool, new->super_class)) {
         javaclass_error_set(JAVACLASS_ERR_PARSE, "Invalid super_class pool address");
         goto fail;
     }

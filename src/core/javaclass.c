@@ -9,28 +9,6 @@
 #include "mem.h"
 #include "error.h"
 
-static struct javaclass *_javaclass_ensure_integrity(struct javaclass *this) {
-    if(!this)
-        return NULL;
-    if(!this->pool)
-        return NULL;
-
-    if(!constant_pool_item(this->pool, this->this_class))
-        return NULL;
-    if(!constant_pool_item(this->pool, this->super_class))
-        return NULL;
-
-    /* interfaces already validated */
-
-    /* fields already validated */
-
-    /* methods already validated */
-
-    if(!attributes_ensure_integrity(this->attributes, this->pool))
-        return NULL;
-
-    return this;
-}
 
 struct javaclass *javaclass_from_membuff(struct membuff *r) {
     struct javaclass *new = mem_calloc(1, sizeof(*new));
@@ -57,8 +35,18 @@ struct javaclass *javaclass_from_membuff(struct membuff *r) {
         goto fail;
 
     new->access_flags = membuff_next_uint16(r);
+
     new->this_class = membuff_next_uint16(r);
+    if(!constant_pool_item(new->pool, new->this_class)) {
+        javaclass_error_set(JAVACLASS_ERR_PARSE, "Invalid this_class pool address");
+        goto fail;
+    }
+
     new->super_class = membuff_next_uint16(r);
+    if(!constant_pool_item(new->pool, new->super_class)) {
+        javaclass_error_set(JAVACLASS_ERR_PARSE, "Invalid super_class pool address");
+        goto fail;
+    }
 
     new->interfaces = interfaces_parse(r, new->pool);
     if(!new->interfaces)
@@ -73,18 +61,17 @@ struct javaclass *javaclass_from_membuff(struct membuff *r) {
         goto fail;
 
     new->attributes = attributes_parse(r);
+    if(!attributes_ensure_integrity(new->attributes, new->pool)) {
+        javaclass_error_set(JAVACLASS_ERR_PARSE, "Invalid pool address");
+        goto fail;
+    }
 
     if(membuff_has_error(r)) {
         javaclass_error_set(JAVACLASS_ERR_PARSE, "Parse error: length mismatch");
         goto fail;
     }
 
-    struct javaclass *result = _javaclass_ensure_integrity(new);
-    if(!result) {
-        javaclass_error_set(JAVACLASS_ERR_PARSE, "Parse error: invalid pool address");
-        goto fail;
-    }
-    return result;
+    return new;
 
 fail:
     javaclass_free(new);

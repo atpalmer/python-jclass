@@ -9,12 +9,26 @@ typedef struct {
     struct javaclass *javaclass;
 } JavaClass;
 
+enum javaclass_errcode _set_pyerr(void) {
+    const char *msg = NULL;
+    enum javaclass_errcode code = javaclass_error_get(&msg);
+    if(code == JAVACLASS_ERR_OS)
+        PyErr_SetString(PyExc_OSError, msg);
+    if(code == JAVACLASS_ERR_CAFEBABE)
+        PyErr_SetString(PyExc_ValueError, msg);
+    if(code == JAVACLASS_ERR_BADVER)
+        PyErr_SetString(PyExc_ValueError, msg);
+    if(code == JAVACLASS_ERR_PARSE)
+        PyErr_SetString(PyExc_ValueError, msg);
+    return code;
+}
+
 PyObject *JavaClass_from_filename(const char *filename) {
     JavaClass *new = (JavaClass *)JavaClass_Type.tp_alloc(&JavaClass_Type, 0);
     if(!new)
         return NULL;
     new->javaclass = javaclass_from_filename(filename);
-    if(!new->javaclass)
+    if(_set_pyerr() != JAVACLASS_ERR_OK)
         goto fail;
     return (PyObject *)new;
 

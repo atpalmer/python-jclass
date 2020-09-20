@@ -7,6 +7,7 @@
 #include "fields.h"
 #include "methods.h"
 #include "attributes.h"
+#include "error.h"
 
 struct javaclass {
     uint32_t magic;

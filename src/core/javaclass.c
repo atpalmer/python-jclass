@@ -1,5 +1,3 @@
-#include <Python.h>
-#include "structmember.h"
 #include "membuff.h"
 #include "access.h"
 #include "constant_pool.h"
@@ -139,38 +137,18 @@ fail:
     return NULL;
 }
 
-enum javaclass_errcode _set_pyerr(void) {
-    /* TODO: remove Python. */
-    const char *msg = NULL;
-    enum javaclass_errcode code = javaclass_error_get(&msg);
-    if(code == JAVACLASS_ERR_OS)
-        PyErr_SetString(PyExc_OSError, msg);
-    if(code == JAVACLASS_ERR_CAFEBABE)
-        PyErr_SetString(PyExc_ValueError, msg);
-    if(code == JAVACLASS_ERR_BADVER)
-        PyErr_SetString(PyExc_ValueError, msg);
-    if(code == JAVACLASS_ERR_PARSE)
-        PyErr_SetString(PyExc_ValueError, msg);
-    return code;
-}
-
 struct javaclass *javaclass_from_filename(const char *filename) {
+    struct javaclass *new = NULL;
     struct membuff *r;
     int errno_ = membuff_from_filename(filename, &r);
     if(errno_) {
         javaclass_error_set(JAVACLASS_ERR_OS, strerror(errno_));
-        goto fail;
+        goto out;
     }
-    struct javaclass *new = javaclass_from_membuff(r);
-    if(!new)
-        goto fail;
+    new = javaclass_from_membuff(r);
+out:
     membuff_free(r);
     return new;
-
-fail:
-    _set_pyerr();
-    membuff_free(r);
-    return NULL;
 }
 
 void javaclass_free(struct javaclass *this) {

@@ -10,6 +10,7 @@ enum javaclass_errcode {
     JAVACLASS_ERR_OS,
     JAVACLASS_ERR_CAFEBABE,
     JAVACLASS_ERR_BADVER,
+    JAVACLASS_ERR_PARSE,
 };
 
 void javaclass_error_clear(void);

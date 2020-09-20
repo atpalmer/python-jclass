@@ -123,15 +123,13 @@ struct javaclass *javaclass_from_membuff(struct membuff *r) {
     new->attributes = attributes_parse(r);
 
     if(membuff_has_error(r)) {
-        /* TODO: remove Python */
-        PyErr_SetString(PyExc_ValueError, "Parse error");
+        javaclass_error_set(JAVACLASS_ERR_PARSE, "Parse error: length mismatch");
         goto fail;
     }
 
     struct javaclass *result = _javaclass_ensure_integrity(new);
     if(!result) {
-        /* TODO: remove Python */
-        PyErr_SetString(PyExc_ValueError, "Parse error");
+        javaclass_error_set(JAVACLASS_ERR_PARSE, "Parse error: invalid pool address");
         goto fail;
     }
     return result;
@@ -150,6 +148,8 @@ enum javaclass_errcode _set_pyerr(void) {
     if(code == JAVACLASS_ERR_CAFEBABE)
         PyErr_SetString(PyExc_ValueError, msg);
     if(code == JAVACLASS_ERR_BADVER)
+        PyErr_SetString(PyExc_ValueError, msg);
+    if(code == JAVACLASS_ERR_PARSE)
         PyErr_SetString(PyExc_ValueError, msg);
     return code;
 }

@@ -66,4 +66,6 @@ struct constant_pool *constant_pool_parse(struct membuff *reader);
 void constant_pool_free(struct constant_pool *this);
 void *constant_pool_item(struct constant_pool *this, uint16_t i);
 
+struct pool_Utf8 *constant_pool_Utf8_item(struct constant_pool *this, uint16_t i);
+
 #endif

@@ -15,7 +15,7 @@ struct attribute_items *attributes_parse(struct membuff *reader, struct constant
         struct attribute **attr = &obj->items[i];
 
         uint16_t name_index = membuff_next_uint16(reader);
-        if(!constant_pool_item(pool, name_index)) {
+        if(!constant_pool_Utf8_item(pool, name_index)) {
             javaclass_error_set(JAVACLASS_ERR_PARSE, "Invalid attribute name index");
             goto fail;
         }

@@ -21,13 +21,13 @@ struct method_items *methods_parse(struct membuff *reader, struct constant_pool 
         (*method)->access_flags = membuff_next_uint16(reader);
 
         (*method)->name_index = membuff_next_uint16(reader);
-        if(!constant_pool_item(pool, (*method)->name_index)) {
+        if(!constant_pool_Utf8_item(pool, (*method)->name_index)) {
             javaclass_error_set(JAVACLASS_ERR_PARSE, "Invalid method name index");
             goto fail;
         }
 
         (*method)->descriptor_index = membuff_next_uint16(reader);
-        if(!constant_pool_item(pool, (*method)->descriptor_index)) {
+        if(!constant_pool_Utf8_item(pool, (*method)->descriptor_index)) {
             javaclass_error_set(JAVACLASS_ERR_PARSE, "Invalid method descriptor index");
             goto fail;
         }

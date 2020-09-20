@@ -22,13 +22,13 @@ struct field_items *fields_parse(struct membuff *reader, struct constant_pool *p
         (*field)->access_flags = membuff_next_uint16(reader);
 
         (*field)->name_index = membuff_next_uint16(reader);
-        if(!constant_pool_item(pool, (*field)->name_index)) {
+        if(!constant_pool_Utf8_item(pool, (*field)->name_index)) {
             javaclass_error_set(JAVACLASS_ERR_PARSE, "Invalid field name index");
             goto fail;
         }
 
         (*field)->descriptor_index = membuff_next_uint16(reader);
-        if(!constant_pool_item(pool, (*field)->descriptor_index)) {
+        if(!constant_pool_Utf8_item(pool, (*field)->descriptor_index)) {
             javaclass_error_set(JAVACLASS_ERR_PARSE, "Invalid field descriptor index");
             goto fail;
         }

@@ -178,7 +178,7 @@ static PyObject *_is_enum(PyObject *self, void *closure) {
 
 static PyObject *_name(PyObject *self, void *closure) {
     struct javaclass *class = ((JavaClass *)self)->javaclass;
-    struct pool_Class *this_class = constant_pool_item(class->pool, class->this_class);  /* TODO: strong getter */
+    struct pool_Class *this_class = constant_pool_Class_item(class->pool, class->this_class);
     if(!this_class)
         goto fail;
     struct pool_Utf8 *name = constant_pool_Utf8_item(class->pool, this_class->name_index);
@@ -193,7 +193,7 @@ fail:
 
 static PyObject *_superclass_name(PyObject *self, void *closure) {
     struct javaclass *class = ((JavaClass *)self)->javaclass;
-    struct pool_Class *super_class = constant_pool_item(class->pool, class->super_class);  /* TODO: strong getter */
+    struct pool_Class *super_class = constant_pool_Class_item(class->pool, class->super_class);
     if(!super_class)
         goto fail;
     struct pool_Utf8 *name = constant_pool_Utf8_item(class->pool, super_class->name_index);

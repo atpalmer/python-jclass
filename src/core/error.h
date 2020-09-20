@@ -8,11 +8,11 @@ enum javaclass_errcode {
     JAVACLASS_ERR_OK = 0,
     JAVACLASS_ERR_MEMORY,
     JAVACLASS_ERR_OS,
+    JAVACLASS_ERR_CAFEBABE,
 };
 
-extern enum javaclass_errcode javaclass_errcode;
-extern const char *javaclass_errmsg;
-
+void javaclass_error_clear(void);
 void javaclass_error_set(enum javaclass_errcode code, const char *msg);
+enum javaclass_errcode javaclass_error_get(const char **msg);
 
 #endif

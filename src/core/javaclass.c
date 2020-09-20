@@ -99,8 +99,7 @@ struct javaclass *javaclass_from_membuff(struct membuff *r) {
     new->magic = membuff_next_uint32(r);
 
     if(new->magic != 0xCAFEBABE) {
-        /* TODO: remove Python */
-        PyErr_SetString(PyExc_ValueError, "File is not a class file");
+        javaclass_error_set(JAVACLASS_ERR_CAFEBABE, "File is not a class file");
         goto fail;
     }
 
@@ -143,6 +142,17 @@ fail:
     return NULL;
 }
 
+enum javaclass_errcode _set_pyerr(void) {
+    /* TODO: remove Python. */
+    const char *msg = NULL;
+    enum javaclass_errcode code = javaclass_error_get(&msg);
+    if(code == JAVACLASS_ERR_OS)
+        PyErr_SetString(PyExc_OSError, msg);
+    if(code == JAVACLASS_ERR_CAFEBABE)
+        PyErr_SetString(PyExc_ValueError, msg);
+    return code;
+}
+
 struct javaclass *javaclass_from_filename(const char *filename) {
     struct membuff *r;
     int errno_ = membuff_from_filename(filename, &r);
@@ -151,13 +161,13 @@ struct javaclass *javaclass_from_filename(const char *filename) {
         goto fail;
     }
     struct javaclass *new = javaclass_from_membuff(r);
+    if(!new)
+        goto fail;
     membuff_free(r);
     return new;
 
 fail:
-    /* TODO: remove Python. */
-    if(javaclass_errcode == JAVACLASS_ERR_OS)
-        PyErr_SetString(PyExc_OSError, strerror(errno_));
+    _set_pyerr();
     membuff_free(r);
     return NULL;
 }

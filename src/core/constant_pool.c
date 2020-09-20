@@ -1,5 +1,6 @@
-#include "membuff.h"
 #include "constant_pool.h"
+#include "error.h"
+#include "membuff.h"
 #include "mem.h"
 
 void *constant_pool_item(struct constant_pool *this, uint16_t i) {
@@ -96,6 +97,7 @@ static struct pool_CONSTANT *_read_CONSTANT(struct membuff *reader) {
     case CONSTANT_TAG_NameAndType:
         return _read_NameAndType(reader);
     default:
+        javaclass_error_set(JAVACLASS_ERR_PARSE, "Unknown constant tag");
         return NULL;
     }
 }

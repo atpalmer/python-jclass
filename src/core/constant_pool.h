@@ -36,6 +36,32 @@ struct pool_Utf8 {
     char bytes[];
 };
 
+/* no 2 */
+
+/* 3 */
+struct pool_Integer {
+    uint8_t tag;
+    int32_t bytes;
+};
+
+/* 4 */
+struct pool_Float {
+    uint8_t tag;
+    float bytes;
+};
+
+/* 5 */
+struct pool_Long {
+    uint8_t tag;
+    int64_t bytes;
+};
+
+/* 6 */
+struct pool_Double {
+    uint8_t tag;
+    double bytes;
+};
+
 /* 7 */
 struct pool_Class {
     uint8_t tag;
@@ -74,6 +100,32 @@ struct pool_NameAndType {
     uint8_t tag;
     uint16_t name_index;
     uint16_t descriptor_index;
+};
+
+/* no 13 */
+
+/* no 14 */
+
+/* 15 */
+struct pool_MethodHandle {
+    uint8_t tag;
+    uint8_t reference_kind;
+    uint16_t reference_index;
+};
+
+/* 16 */
+struct pool_MethodType {
+    uint8_t tag;
+    uint16_t descriptor_index;
+};
+
+/* no 17 */
+
+/* 18 */
+struct pool_InvokeDynamic {
+    uint8_t tag;
+    uint16_t bootstrap_method_attr_index;
+    uint16_t name_and_type_index;
 };
 
 /* items */

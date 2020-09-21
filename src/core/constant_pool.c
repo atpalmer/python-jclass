@@ -9,6 +9,7 @@ void *constant_pool_item(struct constant_pool *this, uint16_t i) {
     return this->items[i - 1];
 }
 
+/* 1 */
 struct pool_Utf8 *constant_pool_Utf8_item(struct constant_pool *this, uint16_t i) {
     struct pool_CONSTANT *item = constant_pool_item(this, i);
     if(!item)
@@ -18,6 +19,7 @@ struct pool_Utf8 *constant_pool_Utf8_item(struct constant_pool *this, uint16_t i
     return (struct pool_Utf8 *)item;
 }
 
+/* 7 */
 struct pool_Class *constant_pool_Class_item(struct constant_pool *this, uint16_t i) {
     struct pool_CONSTANT *item = constant_pool_item(this, i);
     if(!item)
@@ -27,6 +29,8 @@ struct pool_Class *constant_pool_Class_item(struct constant_pool *this, uint16_t
     return (struct pool_Class *)item;
 }
 
+
+/* 1 */
 static struct pool_CONSTANT *_read_Utf8(struct membuff *reader) {
     uint8_t tag = membuff_next_uint8(reader);
     uint16_t length = membuff_next_uint16(reader);
@@ -42,6 +46,62 @@ static struct pool_CONSTANT *_read_Utf8(struct membuff *reader) {
     return (struct pool_CONSTANT *)new;
 }
 
+/* no 2 */
+
+/* 3 */
+static struct pool_CONSTANT *_read_Integer(struct membuff *reader) {
+    struct pool_Integer *new = mem_malloc(sizeof(*new));
+    if(!new)
+        return NULL;
+
+    new->tag = membuff_next_uint8(reader);
+    new->bytes = membuff_next_uint32(reader);
+
+    return (struct pool_CONSTANT *)new;
+}
+
+/* 4 */
+static struct pool_CONSTANT *_read_Float(struct membuff *reader) {
+    struct pool_Float *new = mem_malloc(sizeof(*new));
+    if(!new)
+        return NULL;
+
+    new->tag = membuff_next_uint8(reader);
+    new->bytes = membuff_next_uint32(reader);
+
+    return (struct pool_CONSTANT *)new;
+}
+
+/* 5 */
+static struct pool_CONSTANT *_read_Long(struct membuff *reader) {
+    struct pool_Long *new = mem_malloc(sizeof(*new));
+    if(!new)
+        return NULL;
+
+    new->tag = membuff_next_uint8(reader);
+    uint32_t high = membuff_next_uint32(reader);
+    uint32_t low = membuff_next_uint32(reader);
+    new->bytes = ((uint64_t)high << 32) | low;
+
+    return (struct pool_CONSTANT *)new;
+}
+
+/* 6 */
+static struct pool_CONSTANT *_read_Double(struct membuff *reader) {
+    struct pool_Double *new = mem_malloc(sizeof(*new));
+    if(!new)
+        return NULL;
+
+    new->tag = membuff_next_uint8(reader);
+    uint32_t high = membuff_next_uint32(reader);
+    uint32_t low = membuff_next_uint32(reader);
+    uint64_t bytes = ((uint64_t)high << 32) | low;
+    new->bytes = *(double *)&bytes;
+
+    return (struct pool_CONSTANT *)new;
+}
+
+/* 7 */
 static struct pool_CONSTANT *_read_Class(struct membuff *reader) {
     struct pool_Class *new = mem_malloc(sizeof(*new));
     if(!new)
@@ -53,6 +113,7 @@ static struct pool_CONSTANT *_read_Class(struct membuff *reader) {
     return (struct pool_CONSTANT *)new;
 }
 
+/* 8 */
 static struct pool_CONSTANT *_read_String(struct membuff *reader) {
     struct pool_String *new = mem_malloc(sizeof(*new));
     if(!new)
@@ -64,6 +125,7 @@ static struct pool_CONSTANT *_read_String(struct membuff *reader) {
     return (struct pool_CONSTANT *)new;
 }
 
+/* 9 */
 static struct pool_CONSTANT *_read_Fieldref(struct membuff *reader) {
     struct pool_Fieldref *new = mem_malloc(sizeof(*new));
     if(!new)
@@ -76,14 +138,17 @@ static struct pool_CONSTANT *_read_Fieldref(struct membuff *reader) {
     return (struct pool_CONSTANT *)new;
 }
 
+/* 10 */
 static struct pool_CONSTANT *_read_Methodref(struct membuff *reader) {
     return _read_Fieldref(reader);
 }
 
+/* 11 */
 static struct pool_CONSTANT *_read_InterfaceMethodref(struct membuff *reader) {
     return _read_Fieldref(reader);
 }
 
+/* 12 */
 static struct pool_CONSTANT *_read_NameAndType(struct membuff *reader) {
     struct pool_NameAndType *new = mem_malloc(sizeof(*new));
     if(!new)
@@ -96,24 +161,46 @@ static struct pool_CONSTANT *_read_NameAndType(struct membuff *reader) {
     return (struct pool_CONSTANT *)new;
 }
 
+/* no 13 */
+/* no 14 */
+/* TODO: 15 */
+/* TODO: 16 */
+/* no 17 */
+/* TODO: 18 */
+
 static struct pool_CONSTANT *_read_CONSTANT(struct membuff *reader) {
     uint8_t constant_tag = membuff_peek_uint8(reader);
 
     switch(constant_tag) {
-    case CONSTANT_TAG_Utf8:
+    case CONSTANT_TAG_Utf8:  /* 1 */
         return _read_Utf8(reader);
-    case CONSTANT_TAG_Class:
+    /* no 2 */
+    case CONSTANT_TAG_Integer:  /* 3 */
+        return _read_Integer(reader);
+    case CONSTANT_TAG_Float:  /* 4 */
+        return _read_Float(reader);
+    case CONSTANT_TAG_Long:  /* 5 */
+        return _read_Long(reader);
+    case CONSTANT_TAG_Double:  /* 6 */
+        return _read_Double(reader);
+    case CONSTANT_TAG_Class:  /* 7 */
         return _read_Class(reader);
-    case CONSTANT_TAG_String:
+    case CONSTANT_TAG_String:  /* 8 */
         return _read_String(reader);
-    case CONSTANT_TAG_Fieldref:
+    case CONSTANT_TAG_Fieldref:  /* 9 */
         return _read_Fieldref(reader);
-    case CONSTANT_TAG_Methodref:
+    case CONSTANT_TAG_Methodref:  /* 10 */
         return _read_Methodref(reader);
-    case CONSTANT_TAG_InterfaceMethodref:
+    case CONSTANT_TAG_InterfaceMethodref:  /* 11 */
         return _read_InterfaceMethodref(reader);
-    case CONSTANT_TAG_NameAndType:
+    case CONSTANT_TAG_NameAndType:  /* 12 */
         return _read_NameAndType(reader);
+    /* no 13 */
+    /* no 14 */
+    /* TODO: 15 */
+    /* TODO: 16 */
+    /* no 17 */
+    /* TODO: 18 */
     default:
         javaclass_error_set(JAVACLASS_ERR_PARSE, "Unknown constant tag");
         return NULL;

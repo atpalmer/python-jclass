@@ -3,7 +3,7 @@
 #include "javaclassobj.h"
 
 
-static PyObject *jclass_load(PyObject *self, PyObject *args) {
+static PyObject *jclass_load(PyObject *Py_UNUSED(self), PyObject *args) {
     char *fname;
     if(!PyArg_ParseTuple(args, "s", &fname))
         return NULL;

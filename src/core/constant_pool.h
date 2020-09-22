@@ -21,7 +21,7 @@ enum constant_tag {
     CONSTANT_TAG_MethodHandle = 15,
     CONSTANT_TAG_MethodType = 16,
     /* no 17 */
-    CONSTANT_TAG_InvokeDynaic = 18,
+    CONSTANT_TAG_InvokeDynamic = 18,
 };
 
 /* base */

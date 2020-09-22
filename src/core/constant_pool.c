@@ -192,7 +192,18 @@ static struct pool_CONSTANT *_read_MethodType(struct membuff *reader) {
 
 /* no 17 */
 
-/* TODO: 18 */
+/* 18 */
+static struct pool_CONSTANT *_read_InvokeDynamic(struct membuff *reader) {
+    struct pool_InvokeDynamic *new = mem_malloc(sizeof(*new));
+    if(!new)
+        return NULL;
+
+    new->tag = membuff_next_uint8(reader);
+    new->bootstrap_method_attr_index = membuff_next_uint16(reader);
+    new->name_and_type_index = membuff_next_uint16(reader);
+
+    return (struct pool_CONSTANT *)new;
+}
 
 static struct pool_CONSTANT *_read_CONSTANT(struct membuff *reader) {
     uint8_t constant_tag = membuff_peek_uint8(reader);
@@ -228,7 +239,8 @@ static struct pool_CONSTANT *_read_CONSTANT(struct membuff *reader) {
     case CONSTANT_TAG_MethodType:  /* 16 */
         return _read_MethodType(reader);
     /* no 17 */
-    /* TODO: 18 */
+    case CONSTANT_TAG_InvokeDynamic:  /* 18 */
+        return _read_InvokeDynamic(reader);
     default:
         javaclass_error_set(JAVACLASS_ERR_PARSE, "Unknown constant tag");
         return NULL;

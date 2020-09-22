@@ -27,7 +27,7 @@ PyObject *conv_flags_to_PySet(uint16_t flags) {
     return set;
 }
 
-static PyObject *_attr_RAW(struct attr_RAW *attr, struct constant_pool *pool) {
+static PyObject *_attr_RAW(struct attr_RAW *attr, struct constant_pool *Py_UNUSED(pool)) {
     return PyBytes_FromStringAndSize((void *)attr->info, attr->length);
 }
 

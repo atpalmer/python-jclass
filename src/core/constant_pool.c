@@ -178,7 +178,17 @@ static struct pool_CONSTANT *_read_MethodHandle(struct membuff *reader) {
     return (struct pool_CONSTANT *)new;
 }
 
-/* TODO: 16 */
+/* 16 */
+static struct pool_CONSTANT *_read_MethodType(struct membuff *reader) {
+    struct pool_MethodType *new = mem_malloc(sizeof(*new));
+    if(!new)
+        return NULL;
+
+    new->tag = membuff_next_uint8(reader);
+    new->descriptor_index = membuff_next_uint16(reader);
+
+    return (struct pool_CONSTANT *)new;
+}
 
 /* no 17 */
 
@@ -215,7 +225,8 @@ static struct pool_CONSTANT *_read_CONSTANT(struct membuff *reader) {
     /* no 14 */
     case CONSTANT_TAG_MethodHandle:  /* 15 */
         return _read_MethodHandle(reader);
-    /* TODO: 16 */
+    case CONSTANT_TAG_MethodType:  /* 16 */
+        return _read_MethodType(reader);
     /* no 17 */
     /* TODO: 18 */
     default:

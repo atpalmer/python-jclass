@@ -15,7 +15,7 @@ struct field_items *fields_parse(struct membuff *reader, struct constant_pool *p
     for(uint16_t i = 0; i < count; ++i) {
         struct field **field = &obj->items[i];
 
-        *field = mem_malloc(sizeof(struct field));
+        *field = mem_calloc(1, sizeof(struct field));
         if(!*field)
             goto fail;
 
@@ -47,7 +47,7 @@ fail:
 
 static void field_free(struct field *this) {
     if(!this)
-        return
+        return;
     attributes_free(this->attributes);
     mem_free(this);
 }

@@ -4,25 +4,28 @@
 #include "membuff.h"
 #include "mem.h"
 
-static struct attribute *_parse_attr_info(struct membuff *reader, uint32_t len, uint16_t name_index, struct constant_pool *pool) {
+static struct attribute *_parse_attr_info_Raw(struct membuff *reader, uint32_t len, struct pool_Utf8 *name, struct constant_pool *pool) {
     struct attribute *new = mem_malloc(sizeof(struct attribute) + len);
     if(!new)
         return NULL;
-
-    struct pool_Utf8 *name = constant_pool_Utf8_item(pool, name_index);
-    if(!name) {
-        javaclass_error_set(JAVACLASS_ERR_PARSE, "Invalid attribute name index");
-        goto fail;
-    }
 
     new->name = name;
     new->length = len;
     membuff_copy_next(reader, len, new->info);
     return new;
+}
 
-fail:
-    mem_free(new);
-    return NULL;
+static struct attribute *_parse_attr_info(struct membuff *reader, uint32_t len, uint16_t name_index, struct constant_pool *pool) {
+    struct pool_Utf8 *name = constant_pool_Utf8_item(pool, name_index);
+    if(!name) {
+        javaclass_error_set(JAVACLASS_ERR_PARSE, "Invalid attribute name index");
+        return NULL;
+    }
+
+    struct attribute *new = _parse_attr_info_Raw(reader, len, name, pool);
+    if(!new)
+        return NULL;
+    return new;
 }
 
 struct attribute_items *attributes_parse(struct membuff *reader, struct constant_pool *pool) {

@@ -53,7 +53,7 @@ static void _dealloc(PyObject *self) {
     Py_TYPE(self)->tp_free(self);
 }
 
-static PyObject *_fields(PyObject *self, PyObject *arg) {
+static PyObject *_fields(PyObject *self, PyObject *Py_UNUSED(arg)) {
     struct javaclass *class = ((JavaClass *)self)->javaclass;
     struct field_items *fields = class->fields;
     struct constant_pool *pool = class->pool;
@@ -86,7 +86,7 @@ fail:
     return NULL;
 }
 
-static PyObject *_methods(PyObject *self, PyObject *arg) {
+static PyObject *_methods(PyObject *self, PyObject *Py_UNUSED(arg)) {
     struct javaclass *class = ((JavaClass *)self)->javaclass;
     struct method_items *methods = class->methods;
     struct constant_pool *pool = class->pool;
@@ -119,7 +119,7 @@ fail:
     return NULL;
 }
 
-static PyObject *_attributes(PyObject *self, PyObject *arg) {
+static PyObject *_attributes(PyObject *self, PyObject *Py_UNUSED(arg)) {
     struct javaclass *class = ((JavaClass *)self)->javaclass;
     return conv_attributes_to_PyDict(class->attributes, class->pool);
 }

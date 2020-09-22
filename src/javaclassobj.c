@@ -124,68 +124,68 @@ static PyObject *_attributes(PyObject *self, PyObject *arg) {
     return conv_attributes_to_PyDict(class->attributes, class->pool);
 }
 
-static PyObject *_magic(PyObject *self, void *closure) {
+static PyObject *_magic(PyObject *self, void *Py_UNUSED(closure)) {
     struct javaclass *class = ((JavaClass *)self)->javaclass;
     return PyLong_FromUnsignedLong(class->magic);
 }
 
-static PyObject *_minor_version(PyObject *self, void *closure) {
+static PyObject *_minor_version(PyObject *self, void *Py_UNUSED(closure)) {
     struct javaclass *class = ((JavaClass *)self)->javaclass;
     return PyLong_FromUnsignedLong(class->minor_version);
 }
 
-static PyObject *_major_version(PyObject *self, void *closure) {
+static PyObject *_major_version(PyObject *self, void *Py_UNUSED(closure)) {
     struct javaclass *class = ((JavaClass *)self)->javaclass;
     return PyLong_FromUnsignedLong(class->major_version);
 }
 
-static PyObject *_access_set(PyObject *self, void *closure) {
+static PyObject *_access_set(PyObject *self, void *Py_UNUSED(closure)) {
     struct javaclass *class = ((JavaClass *)self)->javaclass;
     return conv_flags_to_PySet(class->access_flags);
 }
 
-static PyObject *_is_public(PyObject *self, void *closure) {
+static PyObject *_is_public(PyObject *self, void *Py_UNUSED(closure)) {
     struct javaclass *class = ((JavaClass *)self)->javaclass;
     return PyBool_FromLong(class->access_flags & ACC_PUBLIC);
 }
 
-static PyObject *_is_final(PyObject *self, void *closure) {
+static PyObject *_is_final(PyObject *self, void *Py_UNUSED(closure)) {
     struct javaclass *class = ((JavaClass *)self)->javaclass;
     return PyBool_FromLong(class->access_flags & ACC_FINAL);
 }
 
-static PyObject *_is_super(PyObject *self, void *closure) {
+static PyObject *_is_super(PyObject *self, void *Py_UNUSED(closure)) {
     struct javaclass *class = ((JavaClass *)self)->javaclass;
     return PyBool_FromLong(class->access_flags & ACC_SUPER);
 }
 
-static PyObject *_is_interface(PyObject *self, void *closure) {
+static PyObject *_is_interface(PyObject *self, void *Py_UNUSED(closure)) {
     struct javaclass *class = ((JavaClass *)self)->javaclass;
     return PyBool_FromLong(class->access_flags & ACC_INTERFACE);
 }
 
-static PyObject *_is_abstract(PyObject *self, void *closure) {
+static PyObject *_is_abstract(PyObject *self, void *Py_UNUSED(closure)) {
     struct javaclass *class = ((JavaClass *)self)->javaclass;
     return PyBool_FromLong(class->access_flags & ACC_ABSTRACT);
 }
 
-static PyObject *_is_synthetic(PyObject *self, void *closure) {
+static PyObject *_is_synthetic(PyObject *self, void *Py_UNUSED(closure)) {
     struct javaclass *class = ((JavaClass *)self)->javaclass;
     return PyBool_FromLong(class->access_flags & ACC_SYNTHETIC);
 }
 
-static PyObject *_is_annotation(PyObject *self, void *closure) {
+static PyObject *_is_annotation(PyObject *self, void *Py_UNUSED(closure)) {
     struct javaclass *class = ((JavaClass *)self)->javaclass;
     return PyBool_FromLong(class->access_flags & ACC_SYNTHETIC);
     return PyBool_FromLong(class->access_flags & ACC_ANNOTATION);
 }
 
-static PyObject *_is_enum(PyObject *self, void *closure) {
+static PyObject *_is_enum(PyObject *self, void *Py_UNUSED(closure)) {
     struct javaclass *class = ((JavaClass *)self)->javaclass;
     return PyBool_FromLong(class->access_flags & ACC_ENUM);
 }
 
-static PyObject *_name(PyObject *self, void *closure) {
+static PyObject *_name(PyObject *self, void *Py_UNUSED(closure)) {
     struct javaclass *class = ((JavaClass *)self)->javaclass;
     struct pool_Class *this_class = constant_pool_Class_item(class->pool, class->this_class);
     if(!this_class)
@@ -200,7 +200,7 @@ fail:
     return NULL;
 }
 
-static PyObject *_superclass_name(PyObject *self, void *closure) {
+static PyObject *_superclass_name(PyObject *self, void *Py_UNUSED(closure)) {
     struct javaclass *class = ((JavaClass *)self)->javaclass;
     struct pool_Class *super_class = constant_pool_Class_item(class->pool, class->super_class);
     if(!super_class)

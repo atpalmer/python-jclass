@@ -14,7 +14,7 @@ struct method_items *methods_parse(struct membuff *reader, struct constant_pool 
     for(int i = 0; i < count; ++i) {
         struct method **method = &obj->items[i];
 
-        *method = mem_malloc(sizeof(struct method));
+        *method = mem_calloc(1, sizeof(struct method));
         if(!*method)
             goto fail;
 

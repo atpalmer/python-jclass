@@ -13,7 +13,7 @@ struct interfaces *interfaces_parse(struct membuff *reader, struct constant_pool
 
     for(uint16_t i = 0; i < count; ++i) {
         obj->indexes[i] = membuff_next_uint16(reader);
-        if(!constant_pool_item(pool, obj->indexes[i])) {
+        if(!constant_pool_Class_item(pool, obj->indexes[i])) {
             javaclass_error_set(JAVACLASS_ERR_PARSE, "Bad interface pool index");
             goto fail;
         }

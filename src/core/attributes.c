@@ -15,7 +15,7 @@ static struct attribute *_parse_attr_info(struct membuff *reader, uint32_t len, 
         goto fail;
     }
 
-    new->name_index = name_index;
+    new->name = name;
     new->length = len;
     membuff_copy_next(reader, len, new->info);
     return new;

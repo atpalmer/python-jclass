@@ -5,7 +5,7 @@
 #include "constant_pool.h"
 
 struct attribute {
-    uint16_t name_index;
+    struct pool_Utf8 *name;
     uint32_t length;
     uint8_t info[];
 };

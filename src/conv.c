@@ -33,9 +33,7 @@ PyObject *conv_attributes_to_PyDict(struct attribute_items *attributes, struct c
     for(uint16_t i = 0; i < attributes->count; ++i) {
         struct attribute *attr = attributes->items[i];
 
-        struct pool_Utf8 *name = constant_pool_Utf8_item(pool, attr->name_index);
-        if(!name)
-            goto fail;
+        struct pool_Utf8 *name = attr->name;
         PyObject *key = PyUnicode_FromStringAndSize(name->bytes, name->length);
         PyObject *value = PyBytes_FromStringAndSize((void *)attr->info, attr->length);
 
@@ -43,8 +41,4 @@ PyObject *conv_attributes_to_PyDict(struct attribute_items *attributes, struct c
     }
 
     return dict;
-
-fail:
-    PyErr_SetString(PyExc_SystemError, "Corrupt class file");
-    return NULL;
 }

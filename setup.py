@@ -12,19 +12,22 @@ setup(
     url='https://github.com/atpalmer/python-jclass',
 
     ext_modules=[
-        Extension('jclass', sources=[
-            'src/jclass.c',
-            'src/javaclassobj.c',
-            'src/conv.c',
-            'src/core/error.c',
-            'src/core/javaclass.c',
-            'src/core/membuff.c',
-            'src/core/constant_pool.c',
-            'src/core/interfaces.c',
-            'src/core/fields.c',
-            'src/core/methods.c',
-            'src/core/attributes.c',
-        ])
+        Extension('jclass',
+            extra_compile_args=['-Wall'],
+            sources=[
+                'src/jclass.c',
+                'src/javaclassobj.c',
+                'src/conv.c',
+                'src/core/error.c',
+                'src/core/javaclass.c',
+                'src/core/membuff.c',
+                'src/core/constant_pool.c',
+                'src/core/interfaces.c',
+                'src/core/fields.c',
+                'src/core/methods.c',
+                'src/core/attributes.c',
+            ],
+        )
     ],
 
     classifiers=[

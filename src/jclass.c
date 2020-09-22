@@ -16,7 +16,7 @@ static PyObject *jclass_load(PyObject *self, PyObject *args) {
 }
 
 static PyMethodDef module_methods[] = {
-    {"load", jclass_load, METH_VARARGS},
+    {"load", jclass_load, METH_VARARGS, NULL},
     {0},
 };
 

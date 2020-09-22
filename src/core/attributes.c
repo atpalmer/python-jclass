@@ -4,25 +4,26 @@
 #include "membuff.h"
 #include "mem.h"
 
-static struct attribute *_parse_attr_info_Raw(struct membuff *reader, uint32_t len, struct pool_Utf8 *name, struct constant_pool *pool) {
-    struct attribute *new = mem_malloc(sizeof(struct attribute) + len);
+static struct attr_BASE *_parse_attr_info_Raw(struct membuff *reader, uint32_t len, struct pool_Utf8 *name, struct constant_pool *pool) {
+    struct attr_RAW *new = mem_malloc(sizeof(*new) + len);
     if(!new)
         return NULL;
 
+    new->is_raw = 1;
     new->name = name;
     new->length = len;
     membuff_copy_next(reader, len, new->info);
-    return new;
+    return (struct attr_BASE *)new;
 }
 
-static struct attribute *_parse_attr_info(struct membuff *reader, uint32_t len, uint16_t name_index, struct constant_pool *pool) {
+static struct attr_BASE *_parse_attr_info(struct membuff *reader, uint32_t len, uint16_t name_index, struct constant_pool *pool) {
     struct pool_Utf8 *name = constant_pool_Utf8_item(pool, name_index);
     if(!name) {
         javaclass_error_set(JAVACLASS_ERR_PARSE, "Invalid attribute name index");
         return NULL;
     }
 
-    struct attribute *new = _parse_attr_info_Raw(reader, len, name, pool);
+    struct attr_BASE *new = _parse_attr_info_Raw(reader, len, name, pool);
     if(!new)
         return NULL;
     return new;
@@ -36,7 +37,7 @@ struct attribute_items *attributes_parse(struct membuff *reader, struct constant
     obj->count = count;
 
     for(uint16_t i = 0; i < count; ++i) {
-        struct attribute **attr = &obj->items[i];
+        struct attr_BASE **attr = &obj->items[i];
 
         uint16_t name_index = membuff_next_uint16(reader);
         uint32_t length = membuff_next_uint32(reader);

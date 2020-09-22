@@ -27,16 +27,25 @@ PyObject *conv_flags_to_PySet(uint16_t flags) {
     return set;
 }
 
+static PyObject *_attr_RAW(struct attr_RAW *attr, struct constant_pool *pool) {
+    return PyBytes_FromStringAndSize((void *)attr->info, attr->length);
+}
+
+static PyObject *_attr_value(struct attr_BASE *attr, struct constant_pool *pool) {
+    if(!attr->is_raw) {
+        /* TODO: support all attr types */
+        Py_RETURN_NONE;
+    }
+    return _attr_RAW((struct attr_RAW *)attr, pool);
+}
+
 PyObject *conv_attributes_to_PyDict(struct attribute_items *attributes, struct constant_pool *pool) {
     PyObject *dict = PyDict_New();
 
     for(uint16_t i = 0; i < attributes->count; ++i) {
-        struct attribute *attr = attributes->items[i];
-
-        struct pool_Utf8 *name = attr->name;
-        PyObject *key = PyUnicode_FromStringAndSize(name->bytes, name->length);
-        PyObject *value = PyBytes_FromStringAndSize((void *)attr->info, attr->length);
-
+        struct attr_BASE *attr = attributes->items[i];
+        PyObject *key = PyUnicode_FromStringAndSize(attr->name->bytes, attr->name->length);
+        PyObject *value = _attr_value(attr, pool);
         PyDict_SetItem(dict, key, value);
     }
 

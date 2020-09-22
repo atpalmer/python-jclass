@@ -4,7 +4,13 @@
 #include "membuff.h"
 #include "constant_pool.h"
 
-struct attribute {
+struct attr_BASE {
+    int is_raw;
+    struct pool_Utf8 *name;
+};
+
+struct attr_RAW {
+    int is_raw;
     struct pool_Utf8 *name;
     uint32_t length;
     uint8_t info[];
@@ -12,7 +18,7 @@ struct attribute {
 
 struct attribute_items {
     uint16_t count;
-    struct attribute *items[];
+    struct attr_BASE *items[];
 };
 
 struct attribute_items *attributes_parse(struct membuff *reader, struct constant_pool *pool);

@@ -13,7 +13,7 @@ setup(
 
     ext_modules=[
         Extension('jclass',
-            extra_compile_args=['-Wall', '-Wextra'],
+            extra_compile_args=['-Wall', '-Wextra', '-pedantic'],
             sources=[
                 'src/jclass.c',
                 'src/javaclassobj.c',

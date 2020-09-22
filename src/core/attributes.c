@@ -4,7 +4,7 @@
 #include "membuff.h"
 #include "mem.h"
 
-static struct attr_BASE *_parse_attr_info_Raw(struct membuff *reader, uint32_t len, struct pool_Utf8 *name, struct constant_pool *pool) {
+static struct attr_BASE *_parse_attr_info_Raw(struct membuff *reader, uint32_t len, struct pool_Utf8 *name) {
     struct attr_RAW *new = mem_malloc(sizeof(*new) + len);
     if(!new)
         return NULL;
@@ -23,7 +23,7 @@ static struct attr_BASE *_parse_attr_info(struct membuff *reader, uint32_t len, 
         return NULL;
     }
 
-    struct attr_BASE *new = _parse_attr_info_Raw(reader, len, name, pool);
+    struct attr_BASE *new = _parse_attr_info_Raw(reader, len, name);
     if(!new)
         return NULL;
     return new;

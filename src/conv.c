@@ -27,25 +27,31 @@ PyObject *conv_flags_to_PySet(uint16_t flags) {
     return set;
 }
 
-static PyObject *_attr_RAW(struct attr_RAW *attr, struct constant_pool *Py_UNUSED(pool)) {
+static PyObject *_attr_RAW(struct attr_RAW *attr) {
     return PyBytes_FromStringAndSize((void *)attr->info, attr->length);
 }
 
-static PyObject *_attr_value(struct attr_BASE *attr, struct constant_pool *pool) {
-    if(!attr->is_raw) {
-        /* TODO: support all attr types */
-        Py_RETURN_NONE;
-    }
-    return _attr_RAW((struct attr_RAW *)attr, pool);
+static PyObject *_attr_SourceFile(struct attr_SourceFile *attr) {
+    return PyUnicode_FromStringAndSize(attr->sourcefile->bytes, attr->sourcefile->length);
 }
 
-PyObject *conv_attributes_to_PyDict(struct attribute_items *attributes, struct constant_pool *pool) {
+static PyObject *_attr_value(struct attr_BASE *attr) {
+    if(attr->is_raw)
+        return _attr_RAW((struct attr_RAW *)attr);
+    if(pool_Utf8_eq_str(attr->name, "SourceFile"))
+        return _attr_SourceFile((struct attr_SourceFile *)attr);
+
+    PyErr_SetString(PyExc_SystemError, "Attribute not implemented");
+    return NULL;
+}
+
+PyObject *conv_attributes_to_PyDict(struct attribute_items *attributes, struct constant_pool *Py_UNUSED(pool)) {
     PyObject *dict = PyDict_New();
 
     for(uint16_t i = 0; i < attributes->count; ++i) {
         struct attr_BASE *attr = attributes->items[i];
         PyObject *key = PyUnicode_FromStringAndSize(attr->name->bytes, attr->name->length);
-        PyObject *value = _attr_value(attr, pool);
+        PyObject *value = _attr_value(attr);
         PyDict_SetItem(dict, key, value);
     }
 

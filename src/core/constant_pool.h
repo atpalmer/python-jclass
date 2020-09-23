@@ -1,6 +1,7 @@
 #ifndef CONSTANT_POOL_H
 #define CONSTANT_POOL_H
 
+#include <string.h>
 #include "membuff.h"
 
 enum constant_tag {
@@ -133,6 +134,12 @@ struct constant_pool {
     uint16_t count;
     struct pool_CONSTANT *items[];
 };
+
+static inline int pool_Utf8_eq_str(struct pool_Utf8 *utf8, const char *s) {
+    if(strlen(s) != utf8->length)
+        return 0;
+    return memcmp(s, utf8->bytes, utf8->length) == 0;
+}
 
 struct constant_pool *constant_pool_parse(struct membuff *reader);
 void constant_pool_free(struct constant_pool *this);

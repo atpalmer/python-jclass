@@ -39,7 +39,6 @@ def test_JavaClass_magic():
         }),
     ]
     assert jcls.attributes() == {
-            'SourceFile':
-                b'\x00\x1f'
+            'SourceFile': 'HelloWorld.java'
     }
 

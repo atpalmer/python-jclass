@@ -4,7 +4,24 @@
 #include "membuff.h"
 #include "mem.h"
 
-static struct attr_BASE *_parse_attr_info_Raw(struct membuff *reader, uint32_t len, struct pool_Utf8 *name) {
+static struct attr_BASE *_parse_attr_info_SourceFile(
+        struct membuff *reader, uint32_t len, struct pool_Utf8 *name, struct constant_pool *pool) {
+    uint16_t sourcefile_index = membuff_next_uint16(reader);
+    struct pool_Utf8 *sourcefile = constant_pool_Utf8_item(pool, sourcefile_index);
+    if(!sourcefile)
+        return NULL;
+
+    struct attr_SourceFile *new = mem_malloc(sizeof(*new) + len);
+    if(!new)
+        return NULL;
+
+    new->is_raw = 0;
+    new->name = name;
+    new->sourcefile = sourcefile;
+    return (struct attr_BASE *)new;
+}
+
+static struct attr_BASE *_parse_attr_info_RAW(struct membuff *reader, uint32_t len, struct pool_Utf8 *name) {
     struct attr_RAW *new = mem_malloc(sizeof(*new) + len);
     if(!new)
         return NULL;
@@ -16,17 +33,20 @@ static struct attr_BASE *_parse_attr_info_Raw(struct membuff *reader, uint32_t l
     return (struct attr_BASE *)new;
 }
 
-static struct attr_BASE *_parse_attr_info(struct membuff *reader, uint32_t len, uint16_t name_index, struct constant_pool *pool) {
+static struct attr_BASE *_parse_attr_info(struct membuff *reader, struct constant_pool *pool) {
+    uint16_t name_index = membuff_next_uint16(reader);
+    uint32_t length = membuff_next_uint32(reader);
+
     struct pool_Utf8 *name = constant_pool_Utf8_item(pool, name_index);
     if(!name) {
         javaclass_error_set(JAVACLASS_ERR_PARSE, "Invalid attribute name index");
         return NULL;
     }
 
-    struct attr_BASE *new = _parse_attr_info_Raw(reader, len, name);
-    if(!new)
-        return NULL;
-    return new;
+    if(pool_Utf8_eq_str(name, "SourceFile"))
+        return _parse_attr_info_SourceFile(reader, length, name, pool);
+
+    return _parse_attr_info_RAW(reader, length, name);
 }
 
 struct attribute_items *attributes_parse(struct membuff *reader, struct constant_pool *pool) {
@@ -38,11 +58,7 @@ struct attribute_items *attributes_parse(struct membuff *reader, struct constant
 
     for(uint16_t i = 0; i < count; ++i) {
         struct attr_BASE **attr = &obj->items[i];
-
-        uint16_t name_index = membuff_next_uint16(reader);
-        uint32_t length = membuff_next_uint32(reader);
-
-        *attr = _parse_attr_info(reader, length, name_index, pool);
+        *attr = _parse_attr_info(reader, pool);
         if(!*attr)
             goto fail;
     }

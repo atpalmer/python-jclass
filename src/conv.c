@@ -31,13 +31,24 @@ static PyObject *_attr_RAW(struct attr_RAW *attr) {
     return PyBytes_FromStringAndSize((void *)attr->info, attr->length);
 }
 
+static PyObject *_attr_ConstantValue(struct attr_ConstantValue *attr, struct constant_pool *pool) {
+    if(attr->constant->tag == CONSTANT_TAG_String) {
+        struct pool_String *s = (struct pool_String *)attr->constant;
+        struct pool_Utf8 *sval = constant_pool_Utf8_item(pool, s->string_index);
+        return PyUnicode_FromStringAndSize(sval->bytes, sval->length);
+    }
+    return PyLong_FromLong(attr->constant->tag);
+}
+
 static PyObject *_attr_SourceFile(struct attr_SourceFile *attr) {
     return PyUnicode_FromStringAndSize(attr->sourcefile->bytes, attr->sourcefile->length);
 }
 
-static PyObject *_attr_value(struct attr_BASE *attr) {
+static PyObject *_attr_value(struct attr_BASE *attr, struct constant_pool *pool) {
     if(attr->is_raw)
         return _attr_RAW((struct attr_RAW *)attr);
+    if(pool_Utf8_eq_str(attr->name, "ConstantValue"))
+        return _attr_ConstantValue((struct attr_ConstantValue *)attr, pool);
     if(pool_Utf8_eq_str(attr->name, "SourceFile"))
         return _attr_SourceFile((struct attr_SourceFile *)attr);
 
@@ -45,13 +56,13 @@ static PyObject *_attr_value(struct attr_BASE *attr) {
     return NULL;
 }
 
-PyObject *conv_attributes_to_PyDict(struct attribute_items *attributes, struct constant_pool *Py_UNUSED(pool)) {
+PyObject *conv_attributes_to_PyDict(struct attribute_items *attributes, struct constant_pool *pool) {
     PyObject *dict = PyDict_New();
 
     for(uint16_t i = 0; i < attributes->count; ++i) {
         struct attr_BASE *attr = attributes->items[i];
         PyObject *key = PyUnicode_FromStringAndSize(attr->name->bytes, attr->name->length);
-        PyObject *value = _attr_value(attr);
+        PyObject *value = _attr_value(attr, pool);
         PyDict_SetItem(dict, key, value);
     }
 

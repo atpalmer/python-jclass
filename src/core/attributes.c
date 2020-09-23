@@ -4,6 +4,33 @@
 #include "membuff.h"
 #include "mem.h"
 
+static struct attr_BASE *_parse_attr_info_ConstantValue(
+        struct membuff *reader, uint32_t len, struct pool_Utf8 *name, struct constant_pool *pool) {
+    uint16_t index = membuff_next_uint16(reader);
+    struct pool_CONSTANT *constant = constant_pool_item(pool, index);
+    if(!constant)
+        return NULL;
+    switch(constant->tag) {
+    case CONSTANT_TAG_Long:
+    case CONSTANT_TAG_Float:
+    case CONSTANT_TAG_Double:
+    case CONSTANT_TAG_Integer:
+    case CONSTANT_TAG_String:
+        break;
+    default:
+        return NULL;
+    }
+
+    struct attr_ConstantValue *new = mem_malloc(sizeof(*new) + len);
+    if(!new)
+        return NULL;
+
+    new->is_raw = 0;
+    new->name = name;
+    new->constant = constant;
+    return (struct attr_BASE *)new;
+}
+
 static struct attr_BASE *_parse_attr_info_SourceFile(
         struct membuff *reader, uint32_t len, struct pool_Utf8 *name, struct constant_pool *pool) {
     uint16_t sourcefile_index = membuff_next_uint16(reader);
@@ -43,6 +70,8 @@ static struct attr_BASE *_parse_attr_info(struct membuff *reader, struct constan
         return NULL;
     }
 
+    if(pool_Utf8_eq_str(name, "ConstantValue"))
+        return _parse_attr_info_ConstantValue(reader, length, name, pool);
     if(pool_Utf8_eq_str(name, "SourceFile"))
         return _parse_attr_info_SourceFile(reader, length, name, pool);
 

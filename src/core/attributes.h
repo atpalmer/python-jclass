@@ -9,6 +9,12 @@ struct attr_BASE {
     struct pool_Utf8 *name;
 };
 
+struct attr_ConstantValue {
+    int is_raw;
+    struct pool_Utf8 *name;
+    struct pool_CONSTANT *constant;
+};
+
 struct attr_SourceFile {
     int is_raw;
     struct pool_Utf8 *name;

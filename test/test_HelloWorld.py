@@ -20,8 +20,7 @@ def test_JavaClass_magic():
     assert jcls.is_enum is False
     assert jcls.fields() == [
         ({'final'}, 'Ljava/lang/String;', '_message', {
-            'ConstantValue':
-                b'\x00\x0f'
+            'ConstantValue': 'Hello, world'
         }),
     ]
     assert jcls.methods() == [

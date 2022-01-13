@@ -55,23 +55,35 @@ void membuff_copy_next(struct membuff *this, size_t size, void *target) {
 }
 
 int membuff_from_filename(const char *filename, struct membuff **r) {
-    *r = malloc(sizeof(struct membuff) + 4096);
-    if(!*r)
-        return errno;
-
-    (*r)->pos = 0;
+    int errno_ = 0;
 
     FILE *fp = fopen(filename, "rb");
-    if(!fp) {
-        int errno_ = errno;
-        membuff_free(*r);
-        *r = NULL;
-        return errno_;
-    }
-    (*r)->size = fread((*r)->data, 1, 4096, fp);
+    if(!fp)
+        goto fail;
+
+    if(fseek(fp, 0, SEEK_END))
+        goto fail;
+    long filesize = ftell(fp);
+    if(fseek(fp, 0, SEEK_SET))
+        goto fail;
+
+    *r = malloc(sizeof(struct membuff) + filesize);
+    if(!*r)
+        goto fail;
+
+    (*r)->pos = 0;
+    (*r)->size = fread((*r)->data, 1, filesize, fp);
     fclose(fp);
 
     return 0;
+
+fail:
+    errno_ = errno;
+    if(fp)
+        fclose(fp);
+    membuff_free(*r);
+    *r = NULL;
+    return errno_;
 }
 
 void membuff_free(struct membuff *this) {

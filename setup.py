@@ -19,6 +19,7 @@ setup(
                 'src/jclass.c',
                 'src/javaclassobj.c',
                 'src/conv.c',
+                'src/error.c',
                 'libjclass/src/error.c',
                 'libjclass/src/javaclass.c',
                 'libjclass/src/membuff.c',

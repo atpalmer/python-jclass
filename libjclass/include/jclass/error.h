@@ -1,5 +1,5 @@
-#ifndef ERROR_H
-#define ERROR_H
+#ifndef JCLASS_ERROR_H
+#define JCLASS_ERROR_H
 
 #include <errno.h>
 #include <string.h>

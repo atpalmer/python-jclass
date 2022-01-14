@@ -1,7 +1,6 @@
-#include "constant_pool.h"
-#include "error.h"
-#include "membuff.h"
-#include "mem.h"
+#include <jclass/javaclass.h>
+#include <jclass/internal/membuff.h>
+#include <jclass/internal/mem.h>
 
 void *constant_pool_item(struct constant_pool *this, uint16_t i) {
     if(i < 1 || i > this->count - 1)

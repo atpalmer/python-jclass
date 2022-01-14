@@ -1,5 +1,5 @@
-#ifndef CONSTANT_POOL_H
-#define CONSTANT_POOL_H
+#ifndef JCLASS_CONSTANT_POOL_H
+#define JCLASS_CONSTANT_POOL_H
 
 #include <string.h>
 #include "membuff.h"

@@ -1,8 +1,7 @@
-#include "interfaces.h"
-#include "constant_pool.h"
-#include "error.h"
-#include "membuff.h"
-#include "mem.h"
+#include <jclass/javaclass.h>
+#include <jclass/error.h>
+#include <jclass/internal/membuff.h>
+#include <jclass/internal/mem.h>
 
 struct interfaces *interfaces_parse(struct membuff *reader, struct constant_pool *pool) {
     uint16_t count = membuff_next_uint16(reader);

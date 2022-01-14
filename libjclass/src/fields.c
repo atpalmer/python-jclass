@@ -1,9 +1,7 @@
-#include "access.h"
-#include "error.h"
-#include "attributes.h"
-#include "fields.h"
-#include "membuff.h"
-#include "mem.h"
+#include <jclass/javaclass.h>
+#include <jclass/error.h>
+#include <jclass/internal/membuff.h>
+#include <jclass/internal/mem.h>
 
 struct field_items *fields_parse(struct membuff *reader, struct constant_pool *pool) {
     uint16_t count = membuff_next_uint16(reader);

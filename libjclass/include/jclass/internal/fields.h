@@ -1,5 +1,5 @@
-#ifndef FIELDS_H
-#define FIELDS_H
+#ifndef JCLASS_FIELDS_H
+#define JCLASS_FIELDS_H
 
 #include "attributes.h"
 #include "membuff.h"

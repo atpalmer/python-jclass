@@ -1,8 +1,6 @@
-#include "access.h"
-#include "attributes.h"
-#include "methods.h"
-#include "membuff.h"
-#include "mem.h"
+#include <jclass/javaclass.h>
+#include <jclass/internal/membuff.h>
+#include <jclass/internal/mem.h>
 
 struct method_items *methods_parse(struct membuff *reader, struct constant_pool *pool) {
     uint16_t count = membuff_next_uint16(reader);

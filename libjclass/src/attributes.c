@@ -1,8 +1,6 @@
-#include "error.h"
-#include "attributes.h"
-#include "constant_pool.h"
-#include "membuff.h"
-#include "mem.h"
+#include <jclass/javaclass.h>
+#include <jclass/internal/membuff.h>
+#include <jclass/internal/mem.h>
 
 static struct attr_BASE *_parse_attr_info_ConstantValue(
         struct membuff *reader, uint32_t len, struct pool_Utf8 *name, struct constant_pool *pool) {

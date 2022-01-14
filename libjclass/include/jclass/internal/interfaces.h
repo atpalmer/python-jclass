@@ -1,5 +1,5 @@
-#ifndef INTERFACES_H
-#define INTERFACES_H
+#ifndef JCLASS_INTERFACES_H
+#define JCLASS_INTERFACES_H
 
 #include "membuff.h"
 #include "constant_pool.h"

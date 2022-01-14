@@ -1,13 +1,12 @@
-#ifndef JAVACLASS_H
-#define JAVACLASS_H
+#ifndef JCLASS_JAVACLASS_H
+#define JCLASS_JAVACLASS_H
 
-#include "access.h"
-#include "constant_pool.h"
-#include "interfaces.h"
-#include "fields.h"
-#include "methods.h"
-#include "attributes.h"
-#include "error.h"
+#include "internal/access.h"
+#include "internal/constant_pool.h"
+#include "internal/interfaces.h"
+#include "internal/fields.h"
+#include "internal/methods.h"
+#include "internal/attributes.h"
 
 struct javaclass {
     uint32_t magic;

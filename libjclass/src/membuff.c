@@ -3,7 +3,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "membuff.h"
+#include <jclass/internal/membuff.h>
 
 static int _ensure_can_read(struct membuff *this, size_t size) {
     if(this->pos + size > this->size) {

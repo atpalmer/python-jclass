@@ -1,5 +1,5 @@
-#ifndef ACCESS_H
-#define ACCESS_H
+#ifndef JCLASS_ACCESS_H
+#define JCLASS_ACCESS_H
 
 #include <stdint.h>
 

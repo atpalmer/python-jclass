@@ -1,5 +1,5 @@
-#ifndef ATTRIBUTES_H
-#define ATTRIBUTES_H
+#ifndef JCLASS_ATTRIBUTES_H
+#define JCLASS_ATTRIBUTES_H
 
 #include "membuff.h"
 #include "constant_pool.h"

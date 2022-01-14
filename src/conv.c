@@ -1,7 +1,5 @@
 #include <Python.h>
-#include "core/access.h"
-#include "core/attributes.h"
-#include "core/constant_pool.h"
+#include <jclass/javaclass.h>
 #include "conv.h"
 
 PyObject *conv_flags_to_PySet(uint16_t flags)

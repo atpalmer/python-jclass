@@ -1,4 +1,4 @@
-#include "error.h"
+#include <jclass/error.h>
 
 enum javaclass_errcode javaclass_errcode = JAVACLASS_ERR_OK;
 const char *javaclass_errmsg = NULL;

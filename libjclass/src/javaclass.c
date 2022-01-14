@@ -1,13 +1,7 @@
-#include "membuff.h"
-#include "access.h"
-#include "constant_pool.h"
-#include "interfaces.h"
-#include "fields.h"
-#include "methods.h"
-#include "attributes.h"
-#include "javaclass.h"
-#include "mem.h"
-#include "error.h"
+#include <jclass/internal/membuff.h>
+#include <jclass/internal/mem.h>
+#include <jclass/javaclass.h>
+#include <jclass/error.h>
 
 
 struct javaclass *javaclass_from_membuff(struct membuff *r) {

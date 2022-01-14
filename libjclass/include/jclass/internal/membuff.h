@@ -1,5 +1,5 @@
-#ifndef MEMBUFF_H
-#define MEMBUFF_H
+#ifndef JCLASS_MEMBUFF_H
+#define JCLASS_MEMBUFF_H
 
 #include <arpa/inet.h>
 

@@ -1,6 +1,7 @@
 #include <Python.h>
+#include <jclass/javaclass.h>
+#include <jclass/error.h>
 #include "structmember.h"
-#include "core/javaclass.h"
 #include "conv.h"
 #include "javaclassobj.h"
 

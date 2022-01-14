@@ -1,8 +1,8 @@
-#ifndef MEM_H
-#define MEM_H
+#ifndef JCLASS_MEM_H
+#define JCLASS_MEM_H
 
 #include <stdlib.h>
-#include "error.h"
+#include <jclass/error.h>
 
 static inline void *mem_malloc(size_t s) {
     void *result = malloc(s);

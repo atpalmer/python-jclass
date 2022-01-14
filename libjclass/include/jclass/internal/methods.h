@@ -1,5 +1,5 @@
-#ifndef METHODS_H
-#define METHODS_H
+#ifndef JCLASS_METHODS_H
+#define JCLASS_METHODS_H
 
 #include "attributes.h"
 #include "constant_pool.h"

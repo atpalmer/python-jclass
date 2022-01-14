@@ -3,13 +3,14 @@
 #include "javaclassobj.h"
 
 
-static PyObject *jclass_load(PyObject *Py_UNUSED(self), PyObject *args) {
+static PyObject *jclass_load(PyObject *Py_UNUSED(self), PyObject *args)
+{
     char *fname;
-    if(!PyArg_ParseTuple(args, "s", &fname))
+    if (!PyArg_ParseTuple(args, "s", &fname))
         return NULL;
 
     PyObject *new = JavaClass_from_filename(fname);
-    if(!new)
+    if (!new)
         return NULL;
 
     return new;
@@ -27,10 +28,11 @@ static PyModuleDef module = {
     .m_methods = module_methods,
 };
 
-PyMODINIT_FUNC PyInit_jclass(void) {
+PyMODINIT_FUNC PyInit_jclass(void)
+{
     PyObject *m = PyModule_Create(&module);
 
-    if(PyType_Ready(&JavaClass_Type) < 0)
+    if (PyType_Ready(&JavaClass_Type) < 0)
         return NULL;
 
     Py_INCREF(&JavaClass_Type);

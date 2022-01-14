@@ -193,7 +193,6 @@ static PyObject *_is_synthetic(PyObject *self, void *Py_UNUSED(closure))
 static PyObject *_is_annotation(PyObject *self, void *Py_UNUSED(closure))
 {
     struct javaclass *class = ((JavaClass *)self)->javaclass;
-    return PyBool_FromLong(class->access_flags & ACC_SYNTHETIC);
     return PyBool_FromLong(class->access_flags & ACC_ANNOTATION);
 }
 

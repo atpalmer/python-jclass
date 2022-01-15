@@ -1,10 +1,10 @@
 #include <jclass/javaclass.h>
-#include <jclass/internal/membuff.h>
+#include <jclass/internal/stream.h>
 #include <jclass/internal/mem.h>
 
 static struct attr_BASE *_parse_attr_info_ConstantValue(
-        struct membuff *reader, uint32_t len, struct pool_Utf8 *name, struct constant_pool *pool) {
-    uint16_t index = membuff_next_uint16(reader);
+        FILE *reader, uint32_t len, struct pool_Utf8 *name, struct constant_pool *pool) {
+    uint16_t index = stream_next_uint16(reader);
     struct pool_CONSTANT *constant = constant_pool_item(pool, index);
     if(!constant)
         return NULL;
@@ -30,9 +30,9 @@ static struct attr_BASE *_parse_attr_info_ConstantValue(
 }
 
 static struct attr_BASE *_parse_attr_info_SourceFile(
-        struct membuff *reader, uint32_t len, struct pool_Utf8 *name, struct constant_pool *pool) {
-    uint16_t sourcefile_index = membuff_next_uint16(reader);
-    struct pool_Utf8 *sourcefile = constant_pool_Utf8_item(pool, sourcefile_index);
+        FILE *reader, uint32_t len, struct pool_Utf8 *name, struct constant_pool *pool) {
+    uint16_t sourcestream_index = stream_next_uint16(reader);
+    struct pool_Utf8 *sourcefile = constant_pool_Utf8_item(pool, sourcestream_index);
     if(!sourcefile)
         return NULL;
 
@@ -46,7 +46,7 @@ static struct attr_BASE *_parse_attr_info_SourceFile(
     return (struct attr_BASE *)new;
 }
 
-static struct attr_BASE *_parse_attr_info_RAW(struct membuff *reader, uint32_t len, struct pool_Utf8 *name) {
+static struct attr_BASE *_parse_attr_info_RAW(FILE *reader, uint32_t len, struct pool_Utf8 *name) {
     struct attr_RAW *new = mem_malloc(sizeof(*new) + len);
     if(!new)
         return NULL;
@@ -54,13 +54,13 @@ static struct attr_BASE *_parse_attr_info_RAW(struct membuff *reader, uint32_t l
     new->is_raw = 1;
     new->name = name;
     new->length = len;
-    membuff_copy_next(reader, len, new->info);
+    fread(new->info, 1, len, reader);
     return (struct attr_BASE *)new;
 }
 
-static struct attr_BASE *_parse_attr_info(struct membuff *reader, struct constant_pool *pool) {
-    uint16_t name_index = membuff_next_uint16(reader);
-    uint32_t length = membuff_next_uint32(reader);
+static struct attr_BASE *_parse_attr_info(FILE *reader, struct constant_pool *pool) {
+    uint16_t name_index = stream_next_uint16(reader);
+    uint32_t length = stream_next_uint32(reader);
 
     struct pool_Utf8 *name = constant_pool_Utf8_item(pool, name_index);
     if(!name) {
@@ -76,8 +76,8 @@ static struct attr_BASE *_parse_attr_info(struct membuff *reader, struct constan
     return _parse_attr_info_RAW(reader, length, name);
 }
 
-struct attribute_items *attributes_parse(struct membuff *reader, struct constant_pool *pool) {
-    uint16_t count = membuff_next_uint16(reader);
+struct attribute_items *attributes_parse(FILE *reader, struct constant_pool *pool) {
+    uint16_t count = stream_next_uint16(reader);
     struct attribute_items *obj = mem_calloc(1, sizeof(struct attribute_items) + (sizeof(struct attribute *) * count));
     if(!obj)
         return NULL;

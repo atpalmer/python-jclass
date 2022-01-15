@@ -2,7 +2,6 @@
 #define JCLASS_FIELDS_H
 
 #include "attributes.h"
-#include "membuff.h"
 
 struct field {
     uint16_t access_flags;
@@ -16,7 +15,7 @@ struct field_items {
     struct field *items[];
 };
 
-struct field_items *fields_parse(struct membuff *reader, struct constant_pool *pool);
+struct field_items *fields_parse(FILE *reader, struct constant_pool *pool);
 void fields_free(struct field_items *this);
 
 #endif

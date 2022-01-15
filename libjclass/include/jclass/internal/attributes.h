@@ -1,7 +1,6 @@
 #ifndef JCLASS_ATTRIBUTES_H
 #define JCLASS_ATTRIBUTES_H
 
-#include "membuff.h"
 #include "constant_pool.h"
 
 struct attr_BASE {
@@ -33,7 +32,7 @@ struct attribute_items {
     struct attr_BASE *items[];
 };
 
-struct attribute_items *attributes_parse(struct membuff *reader, struct constant_pool *pool);
+struct attribute_items *attributes_parse(FILE *reader, struct constant_pool *pool);
 void attributes_free(struct attribute_items *this);
 
 #endif

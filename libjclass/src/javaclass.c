@@ -1,22 +1,22 @@
-#include <jclass/internal/membuff.h>
+#include <jclass/internal/stream.h>
 #include <jclass/internal/mem.h>
 #include <jclass/javaclass.h>
 #include <jclass/error.h>
 
 
-struct javaclass *javaclass_from_membuff(struct membuff *r) {
+struct javaclass *javaclass_from_file(FILE *r) {
     struct javaclass *new = mem_calloc(1, sizeof(*new));
     if(!new)
         return NULL;
 
-    new->magic = membuff_next_uint32(r);
+    new->magic = stream_next_uint32(r);
     if(new->magic != 0xCAFEBABE) {
         javaclass_error_set(JAVACLASS_ERR_CAFEBABE, "File is not a class file");
         goto fail;
     }
 
-    new->minor_version = membuff_next_uint16(r);
-    new->major_version = membuff_next_uint16(r);
+    new->minor_version = stream_next_uint16(r);
+    new->major_version = stream_next_uint16(r);
     if(!(new->major_version == 58 && new->minor_version == 0)) {
         javaclass_error_set(JAVACLASS_ERR_BADVER, "Unsupported version");
         goto fail;
@@ -26,15 +26,15 @@ struct javaclass *javaclass_from_membuff(struct membuff *r) {
     if(!new->pool)
         goto fail;
 
-    new->access_flags = membuff_next_uint16(r);
+    new->access_flags = stream_next_uint16(r);
 
-    new->this_class = membuff_next_uint16(r);
+    new->this_class = stream_next_uint16(r);
     if(!constant_pool_Class_item(new->pool, new->this_class)) {
         javaclass_error_set(JAVACLASS_ERR_PARSE, "Invalid this_class pool address");
         goto fail;
     }
 
-    new->super_class = membuff_next_uint16(r);
+    new->super_class = stream_next_uint16(r);
     if(!constant_pool_Class_item(new->pool, new->super_class)) {
         javaclass_error_set(JAVACLASS_ERR_PARSE, "Invalid super_class pool address");
         goto fail;
@@ -56,8 +56,8 @@ struct javaclass *javaclass_from_membuff(struct membuff *r) {
     if(!new->attributes)
         goto fail;
 
-    if(membuff_has_error(r)) {
-        javaclass_error_set(JAVACLASS_ERR_PARSE, "Parse error: length mismatch");
+    if(ferror(r)) {
+        javaclass_error_set(JAVACLASS_ERR_PARSE, "Error reading file");
         goto fail;
     }
 
@@ -69,17 +69,14 @@ fail:
 }
 
 struct javaclass *javaclass_from_filename(const char *filename) {
-    struct javaclass *new = NULL;
-    struct membuff *r;
-    int errno_ = membuff_from_filename(filename, &r);
-    if(errno_) {
-        javaclass_error_set(JAVACLASS_ERR_OS, strerror(errno_));
-        goto out;
+    FILE *r = fopen(filename, "rb");
+    if(!r) {
+        javaclass_error_set(JAVACLASS_ERR_OS, strerror(errno));
+        return NULL;
     }
-    new = javaclass_from_membuff(r);
-out:
-    membuff_free(r);
-    return new;
+    struct javaclass *result = javaclass_from_file(r);
+    fclose(r);
+    return result;
 }
 
 void javaclass_free(struct javaclass *this) {

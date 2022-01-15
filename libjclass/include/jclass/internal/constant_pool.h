@@ -1,8 +1,8 @@
 #ifndef JCLASS_CONSTANT_POOL_H
 #define JCLASS_CONSTANT_POOL_H
 
+#include <stdio.h>
 #include <string.h>
-#include "membuff.h"
 
 enum constant_tag {
     CONSTANT_TAG_Utf8 = 1,
@@ -141,7 +141,7 @@ static inline int pool_Utf8_eq_str(struct pool_Utf8 *utf8, const char *s) {
     return memcmp(s, utf8->bytes, utf8->length) == 0;
 }
 
-struct constant_pool *constant_pool_parse(struct membuff *reader);
+struct constant_pool *constant_pool_parse(FILE *reader);
 void constant_pool_free(struct constant_pool *this);
 
 void *constant_pool_item(struct constant_pool *this, uint16_t i);

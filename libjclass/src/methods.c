@@ -1,9 +1,9 @@
 #include <jclass/javaclass.h>
-#include <jclass/internal/membuff.h>
+#include <jclass/internal/stream.h>
 #include <jclass/internal/mem.h>
 
-struct method_items *methods_parse(struct membuff *reader, struct constant_pool *pool) {
-    uint16_t count = membuff_next_uint16(reader);
+struct method_items *methods_parse(FILE *reader, struct constant_pool *pool) {
+    uint16_t count = stream_next_uint16(reader);
     struct method_items *obj = mem_malloc(sizeof(struct method_items) + (sizeof(struct method *) * count));
     if(!obj)
         return NULL;
@@ -16,15 +16,15 @@ struct method_items *methods_parse(struct membuff *reader, struct constant_pool 
         if(!*method)
             goto fail;
 
-        (*method)->access_flags = membuff_next_uint16(reader);
+        (*method)->access_flags = stream_next_uint16(reader);
 
-        (*method)->name_index = membuff_next_uint16(reader);
+        (*method)->name_index = stream_next_uint16(reader);
         if(!constant_pool_Utf8_item(pool, (*method)->name_index)) {
             javaclass_error_set(JAVACLASS_ERR_PARSE, "Invalid method name index");
             goto fail;
         }
 
-        (*method)->descriptor_index = membuff_next_uint16(reader);
+        (*method)->descriptor_index = stream_next_uint16(reader);
         if(!constant_pool_Utf8_item(pool, (*method)->descriptor_index)) {
             javaclass_error_set(JAVACLASS_ERR_PARSE, "Invalid method descriptor index");
             goto fail;

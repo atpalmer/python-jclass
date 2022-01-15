@@ -1,5 +1,5 @@
 #include <jclass/javaclass.h>
-#include <jclass/internal/membuff.h>
+#include <jclass/internal/stream.h>
 #include <jclass/internal/mem.h>
 
 void *constant_pool_item(struct constant_pool *this, uint16_t i) {
@@ -30,9 +30,9 @@ struct pool_Class *constant_pool_Class_item(struct constant_pool *this, uint16_t
 
 
 /* 1 */
-static struct pool_CONSTANT *_read_Utf8(struct membuff *reader) {
-    uint8_t tag = membuff_next_uint8(reader);
-    uint16_t length = membuff_next_uint16(reader);
+static struct pool_CONSTANT *_read_Utf8(FILE *reader) {
+    uint8_t tag = stream_next_uint8(reader);
+    uint16_t length = stream_next_uint16(reader);
 
     struct pool_Utf8 *new = mem_malloc(sizeof(*new) + length);
     if(!new)
@@ -40,7 +40,7 @@ static struct pool_CONSTANT *_read_Utf8(struct membuff *reader) {
 
     new->tag = tag;
     new->length = length;
-    membuff_copy_next(reader, length, new->bytes);
+    fread(new->bytes, 1, length, reader);
 
     return (struct pool_CONSTANT *)new;
 }
@@ -48,52 +48,52 @@ static struct pool_CONSTANT *_read_Utf8(struct membuff *reader) {
 /* no 2 */
 
 /* 3 */
-static struct pool_CONSTANT *_read_Integer(struct membuff *reader) {
+static struct pool_CONSTANT *_read_Integer(FILE *reader) {
     struct pool_Integer *new = mem_malloc(sizeof(*new));
     if(!new)
         return NULL;
 
-    new->tag = membuff_next_uint8(reader);
-    new->bytes = membuff_next_uint32(reader);
+    new->tag = stream_next_uint8(reader);
+    new->bytes = stream_next_uint32(reader);
 
     return (struct pool_CONSTANT *)new;
 }
 
 /* 4 */
-static struct pool_CONSTANT *_read_Float(struct membuff *reader) {
+static struct pool_CONSTANT *_read_Float(FILE *reader) {
     struct pool_Float *new = mem_malloc(sizeof(*new));
     if(!new)
         return NULL;
 
-    new->tag = membuff_next_uint8(reader);
-    new->bytes = membuff_next_uint32(reader);
+    new->tag = stream_next_uint8(reader);
+    new->bytes = stream_next_uint32(reader);
 
     return (struct pool_CONSTANT *)new;
 }
 
 /* 5 */
-static struct pool_CONSTANT *_read_Long(struct membuff *reader) {
+static struct pool_CONSTANT *_read_Long(FILE *reader) {
     struct pool_Long *new = mem_malloc(sizeof(*new));
     if(!new)
         return NULL;
 
-    new->tag = membuff_next_uint8(reader);
-    uint32_t high = membuff_next_uint32(reader);
-    uint32_t low = membuff_next_uint32(reader);
+    new->tag = stream_next_uint8(reader);
+    uint32_t high = stream_next_uint32(reader);
+    uint32_t low = stream_next_uint32(reader);
     new->bytes = ((uint64_t)high << 32) | low;
 
     return (struct pool_CONSTANT *)new;
 }
 
 /* 6 */
-static struct pool_CONSTANT *_read_Double(struct membuff *reader) {
+static struct pool_CONSTANT *_read_Double(FILE *reader) {
     struct pool_Double *new = mem_malloc(sizeof(*new));
     if(!new)
         return NULL;
 
-    new->tag = membuff_next_uint8(reader);
-    uint32_t high = membuff_next_uint32(reader);
-    uint32_t low = membuff_next_uint32(reader);
+    new->tag = stream_next_uint8(reader);
+    uint32_t high = stream_next_uint32(reader);
+    uint32_t low = stream_next_uint32(reader);
     uint64_t bytes = ((uint64_t)high << 32) | low;
     new->bytes = *(double *)&bytes;
 
@@ -101,61 +101,61 @@ static struct pool_CONSTANT *_read_Double(struct membuff *reader) {
 }
 
 /* 7 */
-static struct pool_CONSTANT *_read_Class(struct membuff *reader) {
+static struct pool_CONSTANT *_read_Class(FILE *reader) {
     struct pool_Class *new = mem_malloc(sizeof(*new));
     if(!new)
         return NULL;
 
-    new->tag = membuff_next_uint8(reader);
-    new->name_index = membuff_next_uint16(reader);
+    new->tag = stream_next_uint8(reader);
+    new->name_index = stream_next_uint16(reader);
 
     return (struct pool_CONSTANT *)new;
 }
 
 /* 8 */
-static struct pool_CONSTANT *_read_String(struct membuff *reader) {
+static struct pool_CONSTANT *_read_String(FILE *reader) {
     struct pool_String *new = mem_malloc(sizeof(*new));
     if(!new)
         return NULL;
 
-    new->tag = membuff_next_uint8(reader);
-    new->string_index = membuff_next_uint16(reader);
+    new->tag = stream_next_uint8(reader);
+    new->string_index = stream_next_uint16(reader);
 
     return (struct pool_CONSTANT *)new;
 }
 
 /* 9 */
-static struct pool_CONSTANT *_read_Fieldref(struct membuff *reader) {
+static struct pool_CONSTANT *_read_Fieldref(FILE *reader) {
     struct pool_Fieldref *new = mem_malloc(sizeof(*new));
     if(!new)
         return NULL;
 
-    new->tag = membuff_next_uint8(reader);
-    new->class_index = membuff_next_uint16(reader);
-    new->name_and_type_index = membuff_next_uint16(reader);
+    new->tag = stream_next_uint8(reader);
+    new->class_index = stream_next_uint16(reader);
+    new->name_and_type_index = stream_next_uint16(reader);
 
     return (struct pool_CONSTANT *)new;
 }
 
 /* 10 */
-static struct pool_CONSTANT *_read_Methodref(struct membuff *reader) {
+static struct pool_CONSTANT *_read_Methodref(FILE *reader) {
     return _read_Fieldref(reader);
 }
 
 /* 11 */
-static struct pool_CONSTANT *_read_InterfaceMethodref(struct membuff *reader) {
+static struct pool_CONSTANT *_read_InterfaceMethodref(FILE *reader) {
     return _read_Fieldref(reader);
 }
 
 /* 12 */
-static struct pool_CONSTANT *_read_NameAndType(struct membuff *reader) {
+static struct pool_CONSTANT *_read_NameAndType(FILE *reader) {
     struct pool_NameAndType *new = mem_malloc(sizeof(*new));
     if(!new)
         return NULL;
 
-    new->tag = membuff_next_uint8(reader);
-    new->name_index = membuff_next_uint16(reader);
-    new->descriptor_index = membuff_next_uint16(reader);
+    new->tag = stream_next_uint8(reader);
+    new->name_index = stream_next_uint16(reader);
+    new->descriptor_index = stream_next_uint16(reader);
 
     return (struct pool_CONSTANT *)new;
 }
@@ -165,26 +165,26 @@ static struct pool_CONSTANT *_read_NameAndType(struct membuff *reader) {
 /* no 14 */
 
 /* 15 */
-static struct pool_CONSTANT *_read_MethodHandle(struct membuff *reader) {
+static struct pool_CONSTANT *_read_MethodHandle(FILE *reader) {
     struct pool_MethodHandle *new = mem_malloc(sizeof(*new));
     if(!new)
         return NULL;
 
-    new->tag = membuff_next_uint8(reader);
-    new->reference_kind = membuff_next_uint8(reader);
-    new->reference_index = membuff_next_uint16(reader);
+    new->tag = stream_next_uint8(reader);
+    new->reference_kind = stream_next_uint8(reader);
+    new->reference_index = stream_next_uint16(reader);
 
     return (struct pool_CONSTANT *)new;
 }
 
 /* 16 */
-static struct pool_CONSTANT *_read_MethodType(struct membuff *reader) {
+static struct pool_CONSTANT *_read_MethodType(FILE *reader) {
     struct pool_MethodType *new = mem_malloc(sizeof(*new));
     if(!new)
         return NULL;
 
-    new->tag = membuff_next_uint8(reader);
-    new->descriptor_index = membuff_next_uint16(reader);
+    new->tag = stream_next_uint8(reader);
+    new->descriptor_index = stream_next_uint16(reader);
 
     return (struct pool_CONSTANT *)new;
 }
@@ -192,20 +192,20 @@ static struct pool_CONSTANT *_read_MethodType(struct membuff *reader) {
 /* no 17 */
 
 /* 18 */
-static struct pool_CONSTANT *_read_InvokeDynamic(struct membuff *reader) {
+static struct pool_CONSTANT *_read_InvokeDynamic(FILE *reader) {
     struct pool_InvokeDynamic *new = mem_malloc(sizeof(*new));
     if(!new)
         return NULL;
 
-    new->tag = membuff_next_uint8(reader);
-    new->bootstrap_method_attr_index = membuff_next_uint16(reader);
-    new->name_and_type_index = membuff_next_uint16(reader);
+    new->tag = stream_next_uint8(reader);
+    new->bootstrap_method_attr_index = stream_next_uint16(reader);
+    new->name_and_type_index = stream_next_uint16(reader);
 
     return (struct pool_CONSTANT *)new;
 }
 
-static struct pool_CONSTANT *_read_CONSTANT(struct membuff *reader) {
-    uint8_t constant_tag = membuff_peek_uint8(reader);
+static struct pool_CONSTANT *_read_CONSTANT(FILE *reader) {
+    uint8_t constant_tag = stream_peek_uint8(reader);
 
     switch(constant_tag) {
     case CONSTANT_TAG_Utf8:  /* 1 */
@@ -246,8 +246,8 @@ static struct pool_CONSTANT *_read_CONSTANT(struct membuff *reader) {
     }
 }
 
-struct constant_pool *constant_pool_parse(struct membuff *reader) {
-    uint16_t count = membuff_next_uint16(reader);
+struct constant_pool *constant_pool_parse(FILE *reader) {
+    uint16_t count = stream_next_uint16(reader);
     struct constant_pool *obj = mem_calloc(1, sizeof(struct constant_pool) + (sizeof(struct pool_CONSTANT *) * count));
     if(!obj)
         return NULL;

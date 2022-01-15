@@ -22,7 +22,7 @@ setup(
                 'src/error.c',
                 'libjclass/src/error.c',
                 'libjclass/src/javaclass.c',
-                'libjclass/src/membuff.c',
+                'libjclass/src/stream.c',
                 'libjclass/src/constant_pool.c',
                 'libjclass/src/interfaces.c',
                 'libjclass/src/fields.c',

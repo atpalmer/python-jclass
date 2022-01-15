@@ -1,10 +1,10 @@
 #include <jclass/javaclass.h>
 #include <jclass/error.h>
-#include <jclass/internal/membuff.h>
+#include <jclass/internal/stream.h>
 #include <jclass/internal/mem.h>
 
-struct field_items *fields_parse(struct membuff *reader, struct constant_pool *pool) {
-    uint16_t count = membuff_next_uint16(reader);
+struct field_items *fields_parse(FILE *reader, struct constant_pool *pool) {
+    uint16_t count = stream_next_uint16(reader);
     struct field_items *obj = mem_calloc(1, sizeof(struct field_items) + (sizeof(struct field *) * count));
     if(!obj)
         return NULL;
@@ -17,15 +17,15 @@ struct field_items *fields_parse(struct membuff *reader, struct constant_pool *p
         if(!*field)
             goto fail;
 
-        (*field)->access_flags = membuff_next_uint16(reader);
+        (*field)->access_flags = stream_next_uint16(reader);
 
-        (*field)->name_index = membuff_next_uint16(reader);
+        (*field)->name_index = stream_next_uint16(reader);
         if(!constant_pool_Utf8_item(pool, (*field)->name_index)) {
             javaclass_error_set(JAVACLASS_ERR_PARSE, "Invalid field name index");
             goto fail;
         }
 
-        (*field)->descriptor_index = membuff_next_uint16(reader);
+        (*field)->descriptor_index = stream_next_uint16(reader);
         if(!constant_pool_Utf8_item(pool, (*field)->descriptor_index)) {
             javaclass_error_set(JAVACLASS_ERR_PARSE, "Invalid field descriptor index");
             goto fail;

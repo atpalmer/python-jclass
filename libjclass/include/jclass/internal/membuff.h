@@ -7,11 +7,6 @@
 #define UINT16(p)   (ntohs(*(uint16_t *)p))
 #define UINT32(p)   (ntohl(*(uint32_t *)p))
 
-#define UINT8_AT(p, i)      UINT8(&(((uint8_t *)(p))[(i)]))
-#define UINT16_AT(p, i)     UINT16(&(((uint8_t *)(p))[(i)]))
-#define UINT32_AT(p, i)     UINT32(&(((uint8_t *)(p))[(i)]))
-#define POINTER_AT(p, i)    ((void *)&(((uint8_t *)(p))[(i)]))
-
 struct membuff {
     size_t size;
     size_t pos;

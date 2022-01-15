@@ -6,96 +6,69 @@
 #include <string.h>
 #include <jclass/internal/membuff.h>
 
-#define UINT8(p)    (*(p))
-#define UINT16(p)   (ntohs(*(uint16_t *)p))
-#define UINT32(p)   (ntohl(*(uint32_t *)p))
+uint32_t file_next_uint32(FILE *f) {
+    uint32_t data;
+    fread(&data, 1, 4, f);
+    return ntohl(data);
+}
 
-static int _ensure_can_read(struct membuff *this, size_t size) {
-    if(this->pos + size > this->size) {
-        this->pos = SIZE_MAX;
-        return 0;
-    }
-    return 1;
+uint16_t file_next_uint16(FILE *f) {
+    uint16_t data;
+    fread(&data, 1, 2, f);
+    return ntohs(data);
+}
+
+uint8_t file_next_uint8(FILE *f) {
+    uint8_t data;
+    fread(&data, 1, 1, f);
+    return data;
+}
+
+uint8_t file_peek_uint8(FILE *f) {
+    uint8_t data;
+    fread(&data, 1, 1, f);
+    fseek(f, -1, SEEK_CUR);
+    return data;
 }
 
 int membuff_has_error(struct membuff *this) {
-    return this->pos > this->size;
+    return ferror(this->fh);
 }
 
 uint32_t membuff_next_uint32(struct membuff *this) {
-    if(!_ensure_can_read(this, sizeof(uint32_t)))
-        return 0;
-    uint32_t result = UINT32(MEMBUFF_CURR(this));
-    this->pos += sizeof(result);
-    return result;
+    return file_next_uint32(this->fh);
 }
 
 uint16_t membuff_next_uint16(struct membuff *this) {
-    if(!_ensure_can_read(this, sizeof(uint16_t)))
-        return 0;
-    uint16_t result = UINT16(MEMBUFF_CURR(this));
-    this->pos += sizeof(result);
-    return result;
+    return file_next_uint16(this->fh);
 }
 
 uint8_t membuff_next_uint8(struct membuff *this) {
-    if(!_ensure_can_read(this, sizeof(uint8_t)))
-        return 0;
-    uint8_t result = UINT8(MEMBUFF_CURR(this));
-    this->pos += sizeof(result);
-    return result;
+    return file_next_uint8(this->fh);
 }
 
 uint8_t membuff_peek_uint8(struct membuff *this) {
-    if(!_ensure_can_read(this, sizeof(uint8_t)))
-        return 0;
-    return UINT8(MEMBUFF_CURR(this));
+    return file_peek_uint8(this->fh);
 }
 
 void membuff_copy_next(struct membuff *this, size_t size, void *target) {
-    if(!_ensure_can_read(this, size))
-        return;
-    memcpy(target, MEMBUFF_CURR(this), size);
-    this->pos += size;
+    fread(target, 1, size, this->fh);
 }
 
 int membuff_from_filename(const char *filename, struct membuff **r) {
-    int errno_ = 0;
-
-    FILE *fp = fopen(filename, "rb");
-    if(!fp)
-        goto fail;
-
-    if(fseek(fp, 0, SEEK_END))
-        goto fail;
-    long filesize = ftell(fp);
-    if(fseek(fp, 0, SEEK_SET))
-        goto fail;
-
-    *r = malloc(sizeof(struct membuff) + filesize);
-    if(!*r)
-        goto fail;
-
-    (*r)->pos = 0;
-    (*r)->size = fread((*r)->data, 1, filesize, fp);
-    fclose(fp);
-
-    return 0;
-
-fail:
-    errno_ = errno;
-    if(fp)
-        fclose(fp);
-    membuff_free(*r);
     *r = NULL;
-    return errno_;
+    FILE *fh = fopen(filename, "rb");
+    if(!fh)
+        return errno;
+    *r = malloc(sizeof(struct membuff));
+    (*r)->fh = fh;
+    return 0;
 }
 
 void membuff_free(struct membuff *this) {
+    if(!this)
+        return;
+    if(this->fh)
+        fclose(this->fh);
     free(this);
-}
-
-void membuff_print(struct membuff *this) {
-    printf("Bytes Read: %lu\n", this->pos);
-    printf("Total Bytes: %lu\n", this->size);
 }

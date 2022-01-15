@@ -1,9 +1,14 @@
+#include <arpa/inet.h>
 #include <errno.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <jclass/internal/membuff.h>
+
+#define UINT8(p)    (*(p))
+#define UINT16(p)   (ntohs(*(uint16_t *)p))
+#define UINT32(p)   (ntohl(*(uint32_t *)p))
 
 static int _ensure_can_read(struct membuff *this, size_t size) {
     if(this->pos + size > this->size) {

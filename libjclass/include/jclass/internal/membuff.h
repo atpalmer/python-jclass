@@ -1,11 +1,7 @@
 #ifndef JCLASS_MEMBUFF_H
 #define JCLASS_MEMBUFF_H
 
-#include <arpa/inet.h>
-
-#define UINT8(p)    (*(p))
-#define UINT16(p)   (ntohs(*(uint16_t *)p))
-#define UINT32(p)   (ntohl(*(uint32_t *)p))
+#include <stdlib.h>
 
 struct membuff {
     size_t size;

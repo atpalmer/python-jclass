@@ -113,16 +113,10 @@ static PyObject *_magic(PyObject *self, void *Py_UNUSED(closure))
     return PyLong_FromUnsignedLong(class->magic);
 }
 
-static PyObject *_minor_version(PyObject *self, void *Py_UNUSED(closure))
+static PyObject *_version(PyObject *self, void *Py_UNUSED(closure))
 {
     struct javaclass *class = ((JavaClass *)self)->javaclass;
-    return PyLong_FromUnsignedLong(class->minor_version);
-}
-
-static PyObject *_major_version(PyObject *self, void *Py_UNUSED(closure))
-{
-    struct javaclass *class = ((JavaClass *)self)->javaclass;
-    return PyLong_FromUnsignedLong(class->major_version);
+    return Py_BuildValue("(kk)", class->major_version, class->minor_version);
 }
 
 static PyObject *_access_set(PyObject *self, void *Py_UNUSED(closure))
@@ -220,8 +214,7 @@ static PyMethodDef methods[] = {
 
 static PyGetSetDef getset[] = {
     {"magic", _magic, NULL, NULL, NULL},
-    {"minor_version", _minor_version, NULL, NULL, NULL},
-    {"major_version", _major_version, NULL, NULL, NULL},
+    {"version", _version, NULL, NULL, NULL},
     {"access_set", _access_set, NULL, NULL, NULL},
     {"is_public", _is_public, NULL, NULL, NULL},
     {"is_final", _is_final, NULL, NULL, NULL},

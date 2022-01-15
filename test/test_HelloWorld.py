@@ -5,8 +5,7 @@ import jclass
 def test_JavaClass_magic():
     jcls = jclass.load('java/HelloWorld/HelloWorld.class')
     assert jcls.magic == 0xCAFEBABE
-    assert jcls.minor_version == 0
-    assert jcls.major_version == 58
+    assert jcls.version == (58, 0)
     assert jcls.name == 'HelloWorld'
     assert jcls.superclass_name == 'java/lang/Object'
     assert jcls.access_set == {'public', 'super'}

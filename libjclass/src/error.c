@@ -1,7 +1,8 @@
+#include <stdatomic.h>
 #include <jclass/error.h>
 
-enum javaclass_errcode javaclass_errcode = JAVACLASS_ERR_OK;
-const char *javaclass_errmsg = NULL;
+__thread enum javaclass_errcode javaclass_errcode = JAVACLASS_ERR_OK;
+__thread const char *javaclass_errmsg = NULL;
 
 void javaclass_error_clear(void) {
     javaclass_errcode = JAVACLASS_ERR_OK;
